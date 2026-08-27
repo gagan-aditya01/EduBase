@@ -9,8 +9,8 @@ const validateStudentInput = (req, res, next) => {
     if (!name || typeof name !== 'string' || !name.trim()) {
       return res.status(400).json({ error: 'Valid Student Name is required' });
     }
-    if (age === undefined || typeof Number(age) !== 'number' || isNaN(Number(age)) || Number(age) <= 0) {
-      return res.status(400).json({ error: 'Valid Age (positive number) is required' });
+    if (age === undefined || typeof Number(age) !== 'number' || isNaN(Number(age)) || Number(age) < 16 || Number(age) > 90) {
+      return res.status(400).json({ error: 'Age must be a number between 16 and 90' });
     }
     if (!department || typeof department !== 'string' || !department.trim()) {
       return res.status(400).json({ error: 'Valid Department is required' });
@@ -18,8 +18,8 @@ const validateStudentInput = (req, res, next) => {
   }
 
   if (req.method === 'PUT') {
-    if (age !== undefined && (isNaN(Number(age)) || Number(age) <= 0)) {
-      return res.status(400).json({ error: 'Valid Age (positive number) is required' });
+    if (age !== undefined && (isNaN(Number(age)) || Number(age) < 16 || Number(age) > 90)) {
+      return res.status(400).json({ error: 'Age must be a number between 16 and 90' });
     }
   }
 

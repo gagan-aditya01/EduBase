@@ -16,6 +16,8 @@ const studentSchema = new mongoose.Schema(
     age: {
       type: Number,
       required: [true, 'Please add student age'],
+      min: [16, 'Age must be a number between 16 and 90'],
+      max: [90, 'Age must be a number between 16 and 90'],
     },
     department: {
       type: String,

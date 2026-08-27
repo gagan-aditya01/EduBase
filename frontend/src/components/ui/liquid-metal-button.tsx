@@ -8,6 +8,8 @@ interface LiquidMetalButtonProps {
   onClick?: () => void;
   viewMode?: "text" | "icon";
   theme?: "light" | "dark";
+  type?: "button" | "submit" | "reset";
+  width?: number;
 }
 
 export function LiquidMetalButton({
@@ -15,6 +17,8 @@ export function LiquidMetalButton({
   onClick,
   viewMode = "text",
   theme = "dark",
+  type = "button",
+  width,
 }: LiquidMetalButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -29,6 +33,8 @@ export function LiquidMetalButton({
 
   const isDark = theme === "dark";
 
+  const buttonWidth = width || (viewMode === "icon" ? 46 : 142);
+
   const dimensions = useMemo(() => {
     if (viewMode === "icon") {
       return {
@@ -41,15 +47,15 @@ export function LiquidMetalButton({
       };
     } else {
       return {
-        width: 142,
+        width: buttonWidth,
         height: 46,
-        innerWidth: 138,
+        innerWidth: buttonWidth - 4,
         innerHeight: 42,
-        shaderWidth: 142,
+        shaderWidth: buttonWidth,
         shaderHeight: 46,
       };
     }
-  }, [viewMode]);
+  }, [viewMode, buttonWidth]);
 
   useEffect(() => {
     const styleId = "shader-canvas-style-exploded";
@@ -307,6 +313,7 @@ export function LiquidMetalButton({
 
           <button
             ref={buttonRef}
+            type={type}
             onClick={handleClick}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}

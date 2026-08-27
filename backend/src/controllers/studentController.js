@@ -13,6 +13,11 @@ const createStudent = async (req, res) => {
       return res.status(400).json({ error: 'All fields (studentId, name, age, department) are required' });
     }
 
+    const parsedAge = Number(age);
+    if (isNaN(parsedAge) || parsedAge < 16 || parsedAge > 90) {
+      return res.status(400).json({ error: 'Age must be a number between 16 and 90' });
+    }
+
     // Check if student already exists
     const studentExists = await Student.findOne({ studentId });
     if (studentExists) {
@@ -167,7 +172,13 @@ const updateStudent = async (req, res) => {
     }
 
     if (name) student.name = name;
-    if (age) student.age = age;
+    if (age) {
+      const parsedAge = Number(age);
+      if (isNaN(parsedAge) || parsedAge < 16 || parsedAge > 90) {
+        return res.status(400).json({ error: 'Age must be a number between 16 and 90' });
+      }
+      student.age = parsedAge;
+    }
     if (department) {
       student.department = department;
       let deptDoc = await Department.findOne({ name: { $regex: new RegExp(`^${department.trim()}$`, 'i') } });

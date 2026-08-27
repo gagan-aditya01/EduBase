@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Sparkles, GraduationCap, ArrowRight, User as UserIcon, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { LiquidMetalButton } from './ui/liquid-metal-button';
 
 interface AuthPageProps {
   onAuthSuccess: (token: string, username: string, role: 'admin' | 'guest') => void;
@@ -180,24 +181,14 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className={`w-full py-2.5 rounded-xl font-bold text-sm tracking-wide text-white border flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-lg disabled:opacity-50 ${
-              isDark
-                ? 'bg-zinc-850 hover:bg-zinc-800 border-zinc-750'
-                : 'bg-gradient-to-r from-[#e05a47] to-[#cc5a37] border-red-500/15'
-            }`}
-          >
-            {loading ? (
-              <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
-            ) : (
-              <>
-                {isLogin ? 'Sign In' : 'Create Account'}
-                <ArrowRight size={14} />
-              </>
-            )}
-          </button>
+          <div className="flex justify-center w-full pt-2">
+            <LiquidMetalButton
+              type="submit"
+              label={loading ? "Authenticating..." : (isLogin ? "Sign In" : "Create Account")}
+              theme={theme}
+              width={384}
+            />
+          </div>
         </form>
 
         <div className="pt-6 border-t border-zinc-850/10 text-center">
