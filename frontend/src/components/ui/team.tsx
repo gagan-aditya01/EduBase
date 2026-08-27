@@ -1,3 +1,5 @@
+import { motion } from 'framer-motion';
+
 interface TeamMember {
   name: string;
   role: string;
@@ -36,13 +38,47 @@ export default function TeamSection({
   const isDark = theme === "dark";
 
   return (
-    <section className="py-12 md:py-20 relative z-10 border-t border-zinc-850/10 dark:border-zinc-850/40">
-      <div className="mx-auto max-w-4xl px-6">
-        <div className="flex flex-col items-center text-center mb-10">
-          <h2 className="text-2xl font-bold tracking-tight md:text-4xl gradient-text">
+    <section className="py-16 md:py-24 relative z-10 overflow-hidden">
+      {/* Background ambient glowing blobs matching workspace visual theme */}
+      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
+        <motion.div
+          className={`absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 rounded-full filter blur-[110px] opacity-20 ${
+            isDark ? 'bg-[#cc5a37]' : 'bg-[#e05a47]/30'
+          }`}
+          animate={{
+            scale: [1, 1.15, 1],
+            x: [0, 20, 0],
+            y: [0, -20, 0],
+          }}
+          transition={{
+            duration: 12,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+        <motion.div
+          className={`absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 rounded-full filter blur-[110px] opacity-15 ${
+            isDark ? 'bg-amber-500' : 'bg-amber-400/20'
+          }`}
+          animate={{
+            scale: [1, 1.2, 1],
+            x: [0, -20, 0],
+            y: [0, 20, 0],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
+      </div>
+
+      <div className="mx-auto max-w-4xl px-6 relative z-10">
+        <div className="flex flex-col items-center text-center mb-12">
+          <h2 className="text-2xl font-bold tracking-tight md:text-4xl lg:text-5xl gradient-text">
             {heading}
           </h2>
-          <p className="mt-2 text-xs md:text-sm text-zinc-500 max-w-md">
+          <p className="mt-2.5 text-xs md:text-sm text-zinc-500 max-w-md">
             {subheading}
           </p>
         </div>
@@ -51,24 +87,28 @@ export default function TeamSection({
           {members.map((member, index) => (
             <div
               key={index}
-              className={`p-6 rounded-[32px] border flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] shadow-xl backdrop-blur-md ${
+              className={`p-8 rounded-[40px] border flex flex-col items-center text-center transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl backdrop-blur-3xl relative overflow-hidden group ${
                 isDark
-                  ? "bg-zinc-900/75 border-zinc-800/90 text-zinc-100 shadow-black/40"
-                  : "bg-white/90 border-[#e5e2d9] text-zinc-900 shadow-zinc-200/50"
+                  ? "bg-zinc-950/50 border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)] text-zinc-100 shadow-black/50"
+                  : "bg-white/70 border-[#e5e2d9]/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] text-zinc-900 shadow-zinc-200/50"
               }`}
             >
-              <div className={`size-32 rounded-full border-2 p-1 shadow-xl overflow-hidden mb-4 relative ${
-                isDark ? "border-zinc-700 bg-zinc-950" : "border-[#cc5a37]/30 bg-white"
-              }`}>
-                <img
-                  className="aspect-square w-full h-full rounded-full object-cover"
-                  src={member.avatar}
-                  alt={member.name}
-                  loading="lazy"
-                />
+              {/* Avatar with glowing gradient ring */}
+              <div className="p-[2.5px] bg-gradient-to-tr from-amber-500 via-[#cc5a37] to-[#e05a47] rounded-full shadow-xl mb-5 group-hover:scale-105 transition-transform duration-300">
+                <div className={`size-28 md:size-32 rounded-full overflow-hidden p-0.5 ${
+                  isDark ? "bg-zinc-950" : "bg-white"
+                }`}>
+                  <img
+                    className="aspect-square w-full h-full rounded-full object-cover"
+                    src={member.avatar}
+                    alt={member.name}
+                    loading="lazy"
+                  />
+                </div>
               </div>
-              <h3 className="text-base font-bold tracking-tight">{member.name}</h3>
-              <span className="text-[11px] font-semibold px-3 py-1 rounded-full border mt-2 mb-2.5 bg-[#cc5a37]/10 border-[#cc5a37]/30 text-[#cc5a37]">
+
+              <h3 className="text-lg font-bold tracking-tight">{member.name}</h3>
+              <span className="text-[11px] font-bold px-3.5 py-1 rounded-full border mt-2 mb-3 bg-[#cc5a37]/10 border-[#cc5a37]/30 text-[#cc5a37]">
                 {member.role}
               </span>
               {member.bio && (
