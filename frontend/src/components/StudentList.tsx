@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Trash2, Edit2, Filter, X, CheckSquare, Square, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Trash2, Edit2, Filter, X, CheckSquare, Square, ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Student {
@@ -156,6 +156,35 @@ export function StudentList({
               <X size={12} /> Clear all filters
             </button>
           )}
+          <button
+            onClick={() => {
+              if (!students || students.length === 0) return;
+              const headers = ['Student ID', 'Name', 'Age', 'Department', 'Created By'];
+              const rows = students.map((s) => [
+                `"${s.studentId}"`,
+                `"${s.name.replace(/"/g, '""')}"`,
+                s.age,
+                `"${s.department.replace(/"/g, '""')}"`,
+                `"${s.createdBy || 'Admin'}"`,
+              ]);
+              const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+              const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.setAttribute('download', `edubase_students_${Date.now()}.csv`);
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+            }}
+            className={`text-xs px-3 py-1 rounded-full border flex items-center gap-1.5 transition-all cursor-pointer font-medium ml-auto ${
+              isDark
+                ? 'bg-zinc-900 hover:bg-zinc-800 text-zinc-200 border-zinc-700'
+                : 'bg-white hover:bg-zinc-50 text-zinc-800 border-zinc-300 shadow-xs'
+            }`}
+          >
+            <Download size={13} /> Export CSV
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

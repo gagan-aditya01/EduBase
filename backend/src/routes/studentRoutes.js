@@ -8,16 +8,17 @@ const {
   deleteStudent,
 } = require('../controllers/studentController');
 const { protect, admin } = require('../middlewares/authMiddleware');
+const { validateStudentInput } = require('../middlewares/validateMiddleware');
 
 // Routes for /api/students
 router.route('/')
-  .post(protect, admin, createStudent)
+  .post(protect, admin, validateStudentInput, createStudent)
   .get(protect, getStudents);
 
 // Routes for /api/students/:studentId
 router.route('/:studentId')
   .get(protect, getStudentById)
-  .put(protect, admin, updateStudent)
+  .put(protect, admin, validateStudentInput, updateStudent)
   .delete(protect, admin, deleteStudent);
 
 module.exports = router;

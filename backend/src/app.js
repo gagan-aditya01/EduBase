@@ -10,9 +10,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+const { errorHandler } = require('./middlewares/errorMiddleware');
+
 // API routes
 app.use('/api/students', studentRoutes);
 app.use('/api/auth', authRoutes);
+
+// Centralized error handling middleware
+app.use(errorHandler);
 
 // Basic sanity/health check route returning a premium status page
 app.get('/', (req, res) => {
