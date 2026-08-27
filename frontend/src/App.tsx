@@ -15,6 +15,7 @@ import { AuthPage } from './components/AuthPage';
 import { UserManageSidebar } from './components/UserManageSidebar';
 import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
+import TeamSection from './components/ui/team';
 
 interface Student {
   studentId: string;
@@ -797,6 +798,9 @@ export default function App() {
 
         {/* Tech Stack Marquee Section */}
         <Logos3 heading="Powered by Modern Tech Stack" theme={theme} />
+
+        {/* Team Section */}
+        <TeamSection theme={theme} />
         </main>
       </motion.div>
 
