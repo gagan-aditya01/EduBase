@@ -1,206 +1,136 @@
-# EduBase Portal - Full-Stack Student Management System
+# 🎓 EduBase - Full-Stack Student Management Portal
 
-EduBase Portal is a full-stack web application designed for student directory management, analytics visualization, real-time activity logging, and administrative account controls.
+A modern, production-grade full-stack web application built with **Node.js, Express, MongoDB Atlas, React 18, TypeScript, Tailwind CSS, Framer Motion, and Docker**.
 
-It combines a **Node.js / Express REST API** backend connected to **MongoDB (Mongoose)** with a **React 18 / Vite** frontend powered by **Tailwind CSS**, **Framer Motion 3D animations**, and canvas shader effects (**Liquid Metal** & **Liquid Glass** visuals).
-
----
-
-## 🌟 Key Features
-
-- **Authentication & RBAC**:
-  - Secure **JWT Token Authentication**.
-  - **Role-Based Access Control**:
-    - **Admin**: Full CRUD capabilities on students, bulk operations, seed data, user credential management.
-    - **Guest**: Read-only directory access and individual profile controls.
-- **Student Directory Management**:
-  - Full CRUD operations: Create, Read, Update, and Single/Bulk Delete.
-  - Advanced multi-parameter search (filter by Student ID, Name, Department, Age Range).
-  - Mock dataset seeding trigger for quick testing.
-- **Interactive Visualizations & Analytics**:
-  - Dynamic **Stats Overview Cards** (Total Students, Department Count, Average Age).
-  - **Department Distribution Chart** with interactive visual representations.
-- **iOS Profile & Activity Notifications**:
-  - Vertical iOS list profile dropdown.
-  - Real-time **Activity Log** logging all database CRUD operations with timestamp counters.
-  - Self-service password reset menu.
-- **Astryx Avatar Guest Console**:
-  - Split-grid **Guest Accounts Dashboard Console** for Administrators.
-  - Astryx-style vertical stack user directory with live status badges.
-  - Canvas-driven **Liquid Metal Buttons** and **Liquid Glass** background effects.
+[![Git Commit](https://img.shields.io/github/last-commit/gagan-aditya01/EduBase?style=flat-square&color=blue)](https://github.com/gagan-aditya01/EduBase.git)
+[![Docker Support](https://img.shields.io/badge/Docker-Supported-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/gagan-aditya01/EduBase.git)
+[![Automated Tests](https://img.shields.io/badge/Jest-100%25_Passing-brightgreen?style=flat-square&logo=jest)](https://github.com/gagan-aditya01/EduBase.git)
 
 ---
 
-## 🛠️ Technology Stack
+## 🌟 Tech Stack
 
-- **Frontend**:
-  - React 18 & Vite
-  - Tailwind CSS & Custom Design System
-  - Framer Motion (3D Perspective Animations & Spring Physics)
-  - Lucide React Icons
-  - Paper Design Shaders (Liquid Metal WebGL Shaders)
-- **Backend**:
-  - Node.js & Express.js
-  - MongoDB & Mongoose ORM
-  - JSON Web Tokens (JWT) & bcryptjs Password Hashing
-  - CORS & Dotenv configuration
+| Category | Technology |
+| :--- | :--- |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, `@paper-design/shaders` |
+| **Backend** | Node.js, Express 5, Mongoose, JWT (`jsonwebtoken`), `bcryptjs`, `multer` |
+| **Database** | MongoDB Atlas / MongoDB Local (Relational Mongoose `.populate()`) |
+| **Testing** | Jest, Supertest (Automated HTTP Integration Tests) |
+| **DevOps** | Docker, Docker Compose, Nginx |
 
 ---
 
-## 📁 Repository Directory Structure
+## 🚀 Key Features & Concepts Implemented
 
-```text
-fullstack_project/
-├── backend/
-│   ├── .env.example          # Template for backend environment variables
-│   └── src/
-│       ├── config/           # Database configuration
-│       ├── controllers/      # Route controllers (Auth, Students)
-│       ├── middlewares/      # JWT protection & Admin RBAC middlewares
-│       ├── models/           # Mongoose schemas (Student, User)
-│       ├── routes/           # Express API route declarations
-│       ├── app.js            # Express application setup
-│       ├── db.js             # Mongoose connection logic
-│       └── server.js         # Backend entry point
-├── frontend/
-│   ├── src/
-│   │   ├── components/       # React UI Components & Modals
-│   │   │   ├── ui/           # Liquid Metal & Liquid Glass Design Primitives
-│   │   │   ├── App.tsx       # Main Application Dashboard
-│   │   │   ├── AuthPage.tsx  # Auth & Portal Gateway
-│   │   │   └── ...
-│   │   ├── App.css
-│   │   └── main.tsx
-│   ├── package.json
-│   └── vite.config.ts
-├── .env.example              # Root environment template
-├── .gitignore                # Git exclusions (node_modules, .env)
-├── package.json              # Root dependencies & package scripts
-└── README.md                 # Project Setup & Documentation Guide
-```
+### 1. 🛡️ Authentication & Role-Based Access Control (RBAC)
+- **JWT Session Security**: Secure Token-based Authentication with password hashing (`bcryptjs`).
+- **Role Permissions**: `Admin` (full CRUD, password management, guest account deletion) vs `Guest` (read-only access).
+- **Welcome Hello Splash**: Post-login Apple-style handwritten stroke vector animation (`apple-hello-effect.tsx`).
+- **Account Manager Deck**: 3D perspective flip deck console for changing passwords & managing users.
+
+### 2. 🗂️ Relational Data Modeling & Server-Side Pagination
+- **Mongoose Relational Joins**: Dedicated `Department` collection schema populated dynamically via `departmentRef` (`.populate('departmentRef', 'name code')`).
+- **Server-Side Pagination**: Supports `page` and `limit` query parameters with MongoDB `skip()` / `limit()` and total count metadata (`{ page, limit, totalPages, totalStudents, data }`).
+- **Data Ownership (`createdBy`)**: Tracks and displays creator user badges on every record.
+
+### 3. 📜 System Audit Trail & Activity Log
+- **Immutable Audit Trail**: Dedicated `AuditLog` collection recording `CREATE_STUDENT`, `UPDATE_STUDENT`, and `DELETE_STUDENT` actions with timestamps and admin handles.
+
+### 4. 🛡️ Input Validation & Custom Human-Friendly Errors
+- **Input Validation Middleware**: Sanitizes `studentId`, `name`, `age` (positive numbers), and `department` fields before controller execution.
+- **Human-Friendly Error Handler**: Converts technical database errors (`code 11000 duplicate key`, `CastError`, `ValidationError`, `JWT Expired`, `404 Not Found`) into readable messages.
+
+### 5. 📊 Data Export & Media Uploads
+- **One-Click CSV Export**: Download filtered student directory data directly as a `.csv` file.
+- **Multer Upload Middleware**: Handles image/PDF file uploads up to 5MB served via `/uploads`.
+
+### 6. ✨ Aesthetics & Team Section
+- **Liquid Metal Shader Buttons**: WebGL shader canvas action buttons.
+- **Tech Stack Marquee**: Continuous infinite auto-scrolling marquee using Embla AutoScroll (`stopOnInteraction: false`).
+- **Team Section**: 2-member profile cards (**Yashwanth** - Lead Architect & **Gagan Aditya** - UI/UX Engineer) with white avatar rings in dark mode.
 
 ---
 
-## 🚀 Quick Start & Installation Guide
+## 🛠️ Getting Started Locally
 
 ### Prerequisites
-Make sure you have installed:
-- **Node.js** (v18.0.0 or higher)
-- **npm** (v9.0.0 or higher)
-- **MongoDB Database** (Either a local MongoDB server or a [MongoDB Atlas Cloud](https://cloud.mongodb.com) cluster)
+- **Node.js**: v18+ or v20+
+- **MongoDB**: MongoDB Atlas Cluster URI or local MongoDB instance (`mongodb://localhost:27017/edubase`)
 
----
-
-### Step 1: Clone the Repository
+### 1. Clone Repository
 ```bash
 git clone https://github.com/gagan-aditya01/EduBase.git
 cd EduBase
 ```
 
----
-
-### Step 2: Install Dependencies
-
-1. **Install Root & Backend Dependencies**:
-   ```bash
-   npm install
-   ```
-
-2. **Install Frontend Dependencies**:
-   ```bash
-   cd frontend
-   npm install
-   cd ..
-   ```
-
----
-
-### Step 3: Configure Environment Variables
-
-Create a `.env` file in the `backend/` directory based on `backend/.env.example`:
-
+### 2. Install Dependencies
 ```bash
-cp backend/.env.example backend/.env
+# Install root dependencies (Express, Mongoose, Jest, Supertest, Multer)
+npm install
+
+# Install frontend dependencies (Vite, React, Tailwind, Framer Motion)
+cd frontend
+npm install
+cd ..
 ```
 
-Open `backend/.env` and enter your MongoDB connection string and JWT secret:
-
+### 3. Environment Setup
+Create a `.env` file inside `backend/`:
 ```env
 PORT=5050
-MONGO_URI=mongodb+srv://<your_username>:<your_password>@cluster0.eetzxhw.mongodb.net/edubase?retryWrites=true&w=majority
+MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/edubase?retryWrites=true&w=majority
 JWT_SECRET=supersecretkey123
 ```
 
-> **Note**: If using MongoDB Atlas, ensure your current IP address is whitelisted in your Atlas cluster's **Security -> Network Access** tab.
-
----
-
-### Step 4: Run the Application
-
-You will need **two terminal tabs/windows**:
-
-#### 1 Terminal 1: Run Backend Server
-From the project root directory:
+### 4. Run Development Servers
 ```bash
+# Terminal 1: Run Backend Server (Port 5050)
 node backend/src/server.js
-```
-*(Backend API will run at `http://localhost:5050`)*
 
-#### 2 Terminal 2: Run Frontend Dev Server
-From the project root directory:
-```bash
+# Terminal 2: Run Frontend Dev Server (Port 5173)
 cd frontend
 npm run dev
 ```
-*(Frontend application will open at `http://localhost:5173` or `http://localhost:5174`)*
 
 ---
 
-## ❓ Common Troubleshooting & Gotchas
+## 🐳 Running with Docker & Docker Compose
 
-### 1 `Cannot find module .../backend/server.js`
-- **Cause**: Running `node backend/server.js` instead of the correct path.
-- **Fix**: The entry file is located inside `src/`. Run:
-  ```bash
-  node backend/src/server.js
-  ```
+Launch the entire stack (**Backend + React Frontend + Local MongoDB**) with a single command:
 
-### 2 `Cannot find module '/npm'`
-- **Cause**: Running `node npm run dev` instead of executing `npm` directly.
-- **Fix**: Do not prefix `npm` with `node`. Run:
-  ```bash
-  cd frontend
-  npm run dev
-  ```
+```bash
+docker-compose up --build
+```
 
-### 3 `MongoDB Atlas IP Whitelist Error`
-- **Cause**: Your current IP is not authorized on MongoDB Atlas.
-- **Fix**: Log into [MongoDB Atlas](https://cloud.mongodb.com), go to **Network Access**, and click **Add Current IP Address** (or `0.0.0.0/0` for development).
+- **Frontend Application**: `http://localhost:3000`
+- **Backend API**: `http://localhost:5050`
+- **MongoDB**: `localhost:27017`
 
 ---
 
-## 📡 API Reference Overview
+## 🧪 Automated Testing
 
-### Authentication Routes (`/api/auth`)
-| Method | Endpoint | Access | Description |
-| :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Public | Register a new user (`admin` or `guest`) |
-| `POST` | `/api/auth/login` | Public | Authenticate user & receive JWT token |
-| `PUT` | `/api/auth/profile/password` | User (Token) | Update self profile password |
-| `GET` | `/api/auth/users` | Admin Only | List all registered guest accounts |
-| `PUT` | `/api/auth/users/:userId` | Admin Only | Reset a specific guest password |
-| `DELETE` | `/api/auth/users/:userId` | Admin Only | Permanently delete a guest account |
+Run the automated Jest + Supertest integration test suite:
 
-### Student Directory Routes (`/api/students`)
-| Method | Endpoint | Access | Description |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/api/students` | User (Token) | Fetch student list with optional search filters |
-| `GET` | `/api/students/:studentId` | User (Token) | Fetch details for a specific student |
-| `POST` | `/api/students` | Admin Only | Create a new student record |
-| `PUT` | `/api/students/:studentId` | Admin Only | Update an existing student record |
-| `DELETE` | `/api/students/:studentId` | Admin Only | Delete a student record |
+```bash
+npm test
+```
+
+**Test Coverage**:
+- `GET /`: API Health Check & Status Page (200 OK)
+- `GET /api/students`: JWT Authorization Guard (401 Unauthorized)
+- `POST /api/students`: Unauthenticated Submission Guard (401 Unauthorized)
+- `GET /api/unhandled-route`: Custom 404 Route Not Found Handler
+
+---
+
+## 👥 Team Section
+
+Built with equal technical contribution:
+- **Yashwanth**: Lead Architect (Full-Stack Architecture, Database Schemas & APIs)
+- **Gagan Aditya**: UI/UX Engineer (Frontend Design System, Shader Buttons & Animations)
 
 ---
 
 ## 📄 License
-Distributed under the ISC License.
+This project is open source and available under the [MIT License](LICENSE).
