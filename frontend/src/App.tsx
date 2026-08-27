@@ -793,7 +793,7 @@ export default function App() {
         </div>
 
         {/* Tech Stack Marquee Section */}
-        <Logos3 heading="Powered by Modern Tech Stack" />
+        <Logos3 heading="Powered by Modern Tech Stack" theme={theme} />
         </main>
       </motion.div>
 
