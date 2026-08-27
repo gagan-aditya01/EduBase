@@ -42,8 +42,8 @@ export default function TeamSection({
       {/* Background ambient glowing blobs matching workspace visual theme */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
         <motion.div
-          className={`absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 rounded-full filter blur-[110px] opacity-20 ${
-            isDark ? 'bg-[#cc5a37]' : 'bg-[#e05a47]/30'
+          className={`absolute top-1/2 left-1/4 -translate-y-1/2 w-96 h-96 rounded-full filter blur-[120px] ${
+            isDark ? 'bg-zinc-800/25 opacity-40' : 'bg-[#e05a47]/30 opacity-20'
           }`}
           animate={{
             scale: [1, 1.15, 1],
@@ -57,8 +57,8 @@ export default function TeamSection({
           }}
         />
         <motion.div
-          className={`absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 rounded-full filter blur-[110px] opacity-15 ${
-            isDark ? 'bg-amber-500' : 'bg-amber-400/20'
+          className={`absolute top-1/2 right-1/4 -translate-y-1/2 w-96 h-96 rounded-full filter blur-[120px] ${
+            isDark ? 'bg-zinc-700/20 opacity-30' : 'bg-amber-400/20 opacity-15'
           }`}
           animate={{
             scale: [1, 1.2, 1],
@@ -93,8 +93,12 @@ export default function TeamSection({
                   : "bg-white/70 border-[#e5e2d9]/80 shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] text-zinc-900 shadow-zinc-200/50"
               }`}
             >
-              {/* Avatar with glowing gradient ring */}
-              <div className="p-[2.5px] bg-gradient-to-tr from-amber-500 via-[#cc5a37] to-[#e05a47] rounded-full shadow-xl mb-5 group-hover:scale-105 transition-transform duration-300">
+              {/* Avatar with glowing ring (White in dark mode, Gradient in light mode) */}
+              <div className={`p-[2.5px] rounded-full shadow-xl mb-5 group-hover:scale-105 transition-transform duration-300 ${
+                isDark
+                  ? "bg-white border border-white/80 shadow-[0_0_20px_rgba(255,255,255,0.3)]"
+                  : "bg-gradient-to-tr from-amber-500 via-[#cc5a37] to-[#e05a47]"
+              }`}>
                 <div className={`size-28 md:size-32 rounded-full overflow-hidden p-0.5 ${
                   isDark ? "bg-zinc-950" : "bg-white"
                 }`}>
