@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, GraduationCap, ArrowRight, User as UserIcon, Lock } from 'lucide-react';
+import { Sparkles, GraduationCap, User as UserIcon, Lock } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
 

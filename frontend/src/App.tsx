@@ -409,7 +409,7 @@ export default function App() {
 
   // 404 test page handler
   if (currentPage === '404') {
-    return <NotFound onGoHome={() => setCurrentPage('dashboard')} />;
+    return <NotFound onGoHome={() => setCurrentPage('dashboard')} theme={theme} />;
   }
 
   return (
