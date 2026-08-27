@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #09090b;
+  --text: #f4f4f5;
+  --border: #27272a;
+  --card: #18181b;
+}
+
+.light-theme {
+  --bg: #fbfaf7;
+  --text: #191919;
+  --border: #e5e2d9;
+  --card: #f5f2eb;
+}
+
+@layer base {
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    font-family: 'Outfit', 'Inter', -apple-system, sans-serif;
+  }
+}
+
+/* Custom transitions and premium aesthetics */
+.glass-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.light-theme .gradient-text {
+  background: linear-gradient(135deg, #e05a47 0%, #cc5a37 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.moving-gradient-card {
+  background: linear-gradient(135deg, rgba(20, 20, 23, 0.85), rgba(9, 9, 11, 0.95), rgba(39, 39, 42, 0.85), rgba(15, 15, 18, 0.95));
+  background-size: 300% 300%;
+  animation: gradient-shift 10s ease infinite;
+}
+
+.light-theme .moving-gradient-card {
+  background: linear-gradient(135deg, rgba(245, 242, 235, 0.85), rgba(251, 250, 247, 0.95), rgba(229, 226, 217, 0.85), rgba(240, 236, 228, 0.95));
+  background-size: 300% 300%;
+  animation: gradient-shift 10s ease infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.animate-shimmer::after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.03) 20%,
+    rgba(255, 255, 255, 0.08) 60%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.8s infinite;
+  content: '';
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+.animate-shake {
+  animation: shake 0.4s ease-in-out;
+}
