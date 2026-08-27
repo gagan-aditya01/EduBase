@@ -131,7 +131,7 @@ npm test
 <table>
   <tr>
     <td align="center" width="50%">
-      <a href="https://github.com/gagan-aditya01">
+      <a href="https://github.com/YashwanthReddyPuli">
         <img src="https://raw.githubusercontent.com/gagan-aditya01/EduBase/main/Teams/member1.jpg" width="140px" style="border-radius: 50%; object-fit: cover; aspect-ratio: 1/1;" alt="Yashwanth Profile Photo"/>
         <br />
         <br />
@@ -145,8 +145,8 @@ npm test
       <i>Full-Stack Architecture, Express 5 REST APIs, MongoDB Relational Models & JWT Security</i>
       <br />
       <br />
-      <a href="https://github.com/gagan-aditya01/EduBase/graphs/contributors">
-        <img src="https://img.shields.io/badge/Collaborator-Yashwanth-10B981?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Collaborator"/>
+      <a href="https://github.com/YashwanthReddyPuli">
+        <img src="https://img.shields.io/badge/GitHub-@YashwanthReddyPuli-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Profile"/>
       </a>
     </td>
     <td align="center" width="50%">
