@@ -17,9 +17,10 @@ interface UserManageSidebarProps {
   onClose: () => void;
   theme?: 'light' | 'dark';
   onAddNotification?: (type: 'info' | 'success' | 'warning', message: string) => void;
+  addToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
-export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddNotification }: UserManageSidebarProps) {
+export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddNotification, addToast }: UserManageSidebarProps) {
   const [users, setUsers] = useState<DBUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -57,7 +58,11 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
 
   const handlePasswordReset = async (userId: string) => {
     if (!passwordInput || passwordInput.trim().length < 4) {
-      alert('Password must be at least 4 characters long');
+      if (addToast) {
+        addToast('error', 'Password must be at least 4 characters long');
+      } else {
+        setError('Password must be at least 4 characters long');
+      }
       return;
     }
 
@@ -78,9 +83,14 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
 
       setPasswordInput('');
       onAddNotification?.('info', `Reset password for user: ${selectedUser?.username}`);
-      alert('Password updated successfully!');
+      if (addToast) {
+        addToast('success', 'Password updated successfully!');
+      }
     } catch (err: any) {
       setError(err.message);
+      if (addToast) {
+        addToast('error', err.message);
+      }
     }
   };
 

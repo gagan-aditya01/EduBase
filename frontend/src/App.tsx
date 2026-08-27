@@ -821,6 +821,7 @@ export default function App() {
             onClose={() => setShowUserSidebar(false)}
             theme={theme}
             onAddNotification={addNotification}
+            addToast={addToast}
           />
         )}
       </AnimatePresence>
