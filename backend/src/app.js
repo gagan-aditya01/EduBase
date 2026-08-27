@@ -3,6 +3,7 @@ const cors = require('cors');
 
 const studentRoutes = require('./routes/studentRoutes');
 const authRoutes = require('./routes/authRoutes');
+const { errorHandler, notFound } = require('./middlewares/errorMiddleware');
 
 const app = express();
 
@@ -10,19 +11,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-const { errorHandler, notFound } = require('./middlewares/errorMiddleware');
-
-// API routes
-app.use('/api/students', studentRoutes);
-app.use('/api/auth', authRoutes);
-
-// Catch 404 unhandled routes
-app.use(notFound);
-
-// Centralized custom error handling middleware
-app.use(errorHandler);
-
-// Basic sanity/health check route returning a premium status page
+// Basic sanity/health check route returning a status page
 app.get('/', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -85,18 +74,9 @@ app.get('/', (req, res) => {
           animation: pulse 1.6s infinite;
         }
         @keyframes pulse {
-          0% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
-          }
-          70% {
-            transform: scale(1);
-            box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
-          }
-          100% {
-            transform: scale(0.95);
-            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
-          }
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
       </style>
     </head>
@@ -113,5 +93,15 @@ app.get('/', (req, res) => {
     </html>
   `);
 });
+
+// API routes
+app.use('/api/students', studentRoutes);
+app.use('/api/auth', authRoutes);
+
+// Catch 404 unhandled routes
+app.use(notFound);
+
+// Centralized custom error handling middleware
+app.use(errorHandler);
 
 module.exports = app;

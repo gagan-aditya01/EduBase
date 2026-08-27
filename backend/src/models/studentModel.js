@@ -22,6 +22,10 @@ const studentSchema = new mongoose.Schema(
       required: [true, 'Please add a department'],
       trim: true,
     },
+    departmentRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Department',
+    },
     createdBy: {
       type: String,
       default: 'Admin',
