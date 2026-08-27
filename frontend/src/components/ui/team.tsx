@@ -14,14 +14,14 @@ interface TeamSectionProps {
 
 const defaultMembers: TeamMember[] = [
   {
-    name: "Gagan Aditya",
-    role: "Co-Creator & Lead Architect",
+    name: "Yashwanth",
+    role: "Lead Architect",
     avatar: "/Teams/member1.jpg",
     bio: "Full-stack development, database schema architecture & API design.",
   },
   {
-    name: "Co-Developer",
-    role: "Co-Creator & UI/UX Engineer",
+    name: "Gagan Aditya",
+    role: "UI/UX Engineer",
     avatar: "/Teams/member2.jpg",
     bio: "Frontend design system, interactive visual effects & animation engineering.",
   },
