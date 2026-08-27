@@ -2,7 +2,7 @@ const Student = require('../models/studentModel');
 
 // @desc    Create a new student
 // @route   POST /api/students
-// @access  Public
+// @access  Private/Admin
 const createStudent = async (req, res) => {
   try {
     const { studentId, name, age, department } = req.body;
@@ -17,11 +17,15 @@ const createStudent = async (req, res) => {
       return res.status(400).json({ error: 'Student with this ID already exists' });
     }
 
+    // Concept 2: Data Ownership - Automatically attach creator username from req.user
+    const createdBy = req.user ? req.user.username : 'Admin';
+
     const student = await Student.create({
       studentId,
       name,
       age,
       department,
+      createdBy,
     });
 
     res.status(201).json(student);
@@ -30,13 +34,24 @@ const createStudent = async (req, res) => {
   }
 };
 
-// @desc    Get all students (with support for rich multi-filtering using query parameters)
+// @desc    Get all students (with support for query filtering & searching)
 // @route   GET /api/students
-// @access  Public
+// @access  Private
 const getStudents = async (req, res) => {
   try {
-    const { studentId, name, age, minAge, maxAge, department } = req.query;
+    // Concept 3: Express req.query filtering
+    const { studentId, name, age, minAge, maxAge, department, createdBy, search } = req.query;
     const filter = {};
+
+    // Global multi-field search string if provided
+    if (search) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      filter.$or = [
+        { name: searchRegex },
+        { studentId: searchRegex },
+        { department: searchRegex },
+      ];
+    }
 
     // Filter by studentId (case-insensitive, partial match)
     if (studentId) {
@@ -51,6 +66,11 @@ const getStudents = async (req, res) => {
     // Filter by department (case-insensitive, partial match)
     if (department) {
       filter.department = { $regex: new RegExp(department.trim(), 'i') };
+    }
+
+    // Filter by data creator (Data Ownership)
+    if (createdBy) {
+      filter.createdBy = { $regex: new RegExp(createdBy.trim(), 'i') };
     }
 
     // Filter by age (exact, minimum, and/or maximum)
@@ -68,7 +88,7 @@ const getStudents = async (req, res) => {
       }
     }
 
-    const students = await Student.find(filter);
+    const students = await Student.find(filter).sort({ createdAt: -1 });
     res.json(students);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -77,7 +97,7 @@ const getStudents = async (req, res) => {
 
 // @desc    Get a single student by studentId (path parameter)
 // @route   GET /api/students/:studentId
-// @access  Public
+// @access  Private
 const getStudentById = async (req, res) => {
   try {
     const { studentId } = req.params;
@@ -95,7 +115,7 @@ const getStudentById = async (req, res) => {
 
 // @desc    Update a student (path parameter)
 // @route   PUT /api/students/:studentId
-// @access  Public
+// @access  Private/Admin
 const updateStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
@@ -121,7 +141,7 @@ const updateStudent = async (req, res) => {
 
 // @desc    Delete a student (path parameter)
 // @route   DELETE /api/students/:studentId
-// @access  Public
+// @access  Private/Admin
 const deleteStudent = async (req, res) => {
   try {
     const { studentId } = req.params;

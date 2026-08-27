@@ -22,6 +22,7 @@ interface Student {
   name: string;
   age: number;
   department: string;
+  createdBy?: string;
 }
 
 interface User {

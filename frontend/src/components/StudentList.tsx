@@ -7,6 +7,7 @@ interface Student {
   name: string;
   age: number;
   department: string;
+  createdBy?: string;
 }
 
 interface StudentListProps {
@@ -337,15 +338,22 @@ export function StudentList({
                               <HighlightMatch text={student.name} query={filters.name} />
                             </td>
                             <td className="p-4">{student.age}</td>
-                            <td className="p-4">
-                              <span className={`border px-2 py-0.5 rounded text-xs ${
-                                isDark
-                                  ? 'bg-zinc-800/40 text-zinc-400 border-zinc-800'
-                                  : 'bg-[#f5f2eb] text-zinc-600 border-[#e5e2d9]'
-                              }`}>
-                                <HighlightMatch text={student.department} query={filters.department} />
-                              </span>
-                            </td>
+                             <td className="p-4">
+                               <div className="flex flex-col gap-1 items-start">
+                                 <span className={`border px-2 py-0.5 rounded text-xs ${
+                                   isDark
+                                     ? 'bg-zinc-800/40 text-zinc-400 border-zinc-800'
+                                     : 'bg-[#f5f2eb] text-zinc-600 border-[#e5e2d9]'
+                                 }`}>
+                                   <HighlightMatch text={student.department} query={filters.department} />
+                                 </span>
+                                 {student.createdBy && (
+                                   <span className="text-[10px] text-zinc-500 font-mono">
+                                     by @{student.createdBy}
+                                   </span>
+                                 )}
+                               </div>
+                             </td>
                             {isAdmin && (
                               <td className="p-4 pr-6 text-right">
                                 <div className="flex items-center justify-end gap-3">

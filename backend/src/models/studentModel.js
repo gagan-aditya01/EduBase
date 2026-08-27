@@ -22,6 +22,11 @@ const studentSchema = new mongoose.Schema(
       required: [true, 'Please add a department'],
       trim: true,
     },
+    createdBy: {
+      type: String,
+      default: 'Admin',
+      trim: true,
+    },
   },
   {
     timestamps: true,
