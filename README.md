@@ -124,11 +124,54 @@ npm test
 
 ---
 
-## 👥 Team Section
+## 👥 Core Engineering Team
 
-Built with equal technical contribution:
-- **Yashwanth**: Lead Architect (Full-Stack Architecture, Database Schemas & APIs)
-- **Gagan Aditya**: UI/UX Engineer (Frontend Design System, Shader Buttons & Animations)
+<div align="center">
+
+<table>
+  <tr>
+    <td align="center" width="50%">
+      <a href="https://github.com/gagan-aditya01">
+        <img src="https://raw.githubusercontent.com/gagan-aditya01/EduBase/main/Teams/member1.jpg" width="140px" style="border-radius: 50%; object-fit: cover; aspect-ratio: 1/1;" alt="Yashwanth Profile Photo"/>
+        <br />
+        <br />
+        <sub><b>Yashwanth</b></sub>
+      </a>
+      <br />
+      <br />
+      <code><b>Lead Architect</b></code>
+      <br />
+      <br />
+      <i>Full-Stack Architecture, Express 5 REST APIs, MongoDB Relational Models & JWT Security</i>
+      <br />
+      <br />
+      <a href="https://github.com/gagan-aditya01/EduBase/graphs/contributors">
+        <img src="https://img.shields.io/badge/Collaborator-Yashwanth-10B981?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Collaborator"/>
+      </a>
+    </td>
+    <td align="center" width="50%">
+      <a href="https://github.com/gagan-aditya01">
+        <img src="https://raw.githubusercontent.com/gagan-aditya01/EduBase/main/Teams/member2.jpg" width="140px" style="border-radius: 50%; object-fit: cover; aspect-ratio: 1/1;" alt="Gagan Aditya Profile Photo"/>
+        <br />
+        <br />
+        <sub><b>Gagan Aditya</b></sub>
+      </a>
+      <br />
+      <br />
+      <code><b>UI/UX Engineer</b></code>
+      <br />
+      <br />
+      <i>Frontend Design System, Liquid Metal WebGL Shaders, Framer Motion Physics & UI Architecture</i>
+      <br />
+      <br />
+      <a href="https://github.com/gagan-aditya01">
+        <img src="https://img.shields.io/badge/GitHub-@gagan--aditya01-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Profile"/>
+      </a>
+    </td>
+  </tr>
+</table>
+
+</div>
 
 ---
 
