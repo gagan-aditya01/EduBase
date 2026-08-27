@@ -13,6 +13,7 @@ import { DepartmentChart } from './components/DepartmentChart';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { AuthPage } from './components/AuthPage';
 import { UserManageSidebar } from './components/UserManageSidebar';
+import { Logos3 } from './components/ui/logos3';
 
 interface Student {
   studentId: string;
@@ -790,6 +791,9 @@ export default function App() {
             )}
           </AnimatePresence>
         </div>
+
+        {/* Tech Stack Marquee Section */}
+        <Logos3 heading="Powered by Modern Tech Stack" />
         </main>
       </motion.div>
 
