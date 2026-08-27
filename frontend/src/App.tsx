@@ -14,6 +14,7 @@ import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { AuthPage } from './components/AuthPage';
 import { UserManageSidebar } from './components/UserManageSidebar';
 import { Logos3 } from './components/ui/logos3';
+import { WelcomeSplash } from './components/ui/WelcomeSplash';
 
 interface Student {
   studentId: string;
@@ -63,6 +64,7 @@ export default function App() {
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [showWelcomeSplash, setShowWelcomeSplash] = useState(false);
 
   const addNotification = (type: 'info' | 'success' | 'warning', message: string) => {
     const id = Date.now().toString();
@@ -165,6 +167,7 @@ export default function App() {
     const newUser: User = { token, username, role };
     setUser(newUser);
     localStorage.setItem('edubase_user', JSON.stringify(newUser));
+    setShowWelcomeSplash(true);
     addToast('success', `Welcome back, ${username}!`);
   };
 
@@ -826,6 +829,16 @@ export default function App() {
             theme={theme}
             onAddNotification={addNotification}
             addToast={addToast}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showWelcomeSplash && user && (
+          <WelcomeSplash
+            username={user.username}
+            role={user.role}
+            onComplete={() => setShowWelcomeSplash(false)}
+            theme={theme}
           />
         )}
       </AnimatePresence>
