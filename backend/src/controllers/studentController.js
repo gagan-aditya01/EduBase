@@ -1,5 +1,6 @@
 const Student = require('../models/studentModel');
 const Department = require('../models/departmentModel');
+const AuditLog = require('../models/auditLogModel');
 
 // @desc    Create a new student
 // @route   POST /api/students
@@ -36,6 +37,14 @@ const createStudent = async (req, res) => {
       departmentRef: deptDoc._id,
       createdBy,
     });
+
+    // Record Audit Log Entry
+    await AuditLog.create({
+      action: 'CREATE_STUDENT',
+      targetId: studentId,
+      performedBy: createdBy,
+      details: `Created student ${name} (${department})`,
+    }).catch(() => {});
 
     const populatedStudent = await Student.findById(student._id).populate('departmentRef', 'name code');
     res.status(201).json(populatedStudent);
@@ -190,6 +199,15 @@ const deleteStudent = async (req, res) => {
     }
 
     await student.deleteOne();
+
+    // Record Audit Log Entry
+    await AuditLog.create({
+      action: 'DELETE_STUDENT',
+      targetId: studentId,
+      performedBy: req.user ? req.user.username : 'Admin',
+      details: `Deleted student ${student.name} (${studentId})`,
+    }).catch(() => {});
+
     res.json({ message: 'Student removed successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });

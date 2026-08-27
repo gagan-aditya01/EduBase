@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  # Express Node.js Backend Service
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5050:5050"
+    environment:
+      - PORT=5050
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://mongo:27017/edubase
+      - JWT_SECRET=supersecretkey123
+    depends_on:
+      - mongo
+    restart: always
+
+  # React Vite Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: always
+
+  # MongoDB Service for Local Containerized Database
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+
+volumes:
+  mongodb_data:

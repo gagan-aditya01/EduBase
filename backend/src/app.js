@@ -7,9 +7,12 @@ const { errorHandler, notFound } = require('./middlewares/errorMiddleware');
 
 const app = express();
 
+const path = require('path');
+
 // Standard Middlewares
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Basic sanity/health check route returning a status page
 app.get('/', (req, res) => {
