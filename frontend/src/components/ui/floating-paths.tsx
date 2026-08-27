@@ -3,32 +3,37 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export function FloatingPathsBackground({
-  position,
+  position = 1,
   children,
   className,
 }: {
-  position: number;
+  position?: number;
   className?: string;
   children: React.ReactNode;
 }) {
-  const paths = Array.from({ length: 36 }, (_, i) => ({
-    id: i,
-    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
-      380 - i * 5 * position
-    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
-      152 - i * 5 * position
-    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
-      684 - i * 5 * position
-    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-    color: `rgba(15,23,42,${0.1 + i * 0.03})`,
-    width: 0.5 + i * 0.03,
+  // Generate sweeping organic bezier paths across a 1200x1200 coordinate space
+  const paths1 = Array.from({ length: 24 }, (_, i) => ({
+    id: `p1-${i}`,
+    d: `M-${200 - i * 15 * position} -${100 + i * 20} C${100 - i * 10} ${300 + i * 25}, ${400 + i * 20} ${500 - i * 15}, ${900 + i * 25} ${1200 + i * 10}`,
+    width: 0.8 + (i % 3) * 0.4,
+    duration: 18 + (i % 7) * 3,
+    delay: (i % 5) * 0.8,
+  }));
+
+  const paths2 = Array.from({ length: 20 }, (_, i) => ({
+    id: `p2-${i}`,
+    d: `M${1400 + i * 15 * position} -${50 + i * 25} C${1000 - i * 20} ${400 + i * 15}, ${600 - i * 15} ${800 - i * 20}, -${100 + i * 20} ${1300 + i * 15}`,
+    width: 0.6 + (i % 3) * 0.4,
+    duration: 22 + (i % 6) * 3,
+    delay: (i % 4) * 0.9,
   }));
 
   return (
-    <div className={cn("w-full relative", className)}>
+    <div className={cn("w-full relative min-h-screen", className)}>
+      {/* Background SVG Flow Lines Container */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
         <svg
-          className="text-zinc-500/60"
+          className="w-full h-full text-zinc-500/25 dark:text-zinc-400/20"
           style={{
             position: 'absolute',
             top: 0,
@@ -36,25 +41,47 @@ export function FloatingPathsBackground({
             width: '100%',
             height: '100%',
           }}
-          viewBox="0 0 696 316"
+          viewBox="0 0 1200 1200"
           fill="none"
-          preserveAspectRatio="none"
+          preserveAspectRatio="xMidYMin slice"
         >
-          {paths.map((path) => (
+          {paths1.map((path) => (
             <motion.path
               key={path.id}
               d={path.d}
               stroke="currentColor"
               strokeWidth={path.width}
-              strokeOpacity={0.25 + path.id * 0.02}
-              initial={{ pathLength: 0.3, opacity: 0.6 }}
+              strokeLinecap="round"
+              initial={{ pathLength: 0.2, opacity: 0.2 }}
               animate={{
-                pathLength: 1,
-                opacity: [0.3, 0.7, 0.3],
+                pathLength: [0.3, 0.95, 0.3],
+                opacity: [0.2, 0.55, 0.2],
                 pathOffset: [0, 1, 0],
               }}
               transition={{
-                duration: 15 + Math.random() * 10,
+                duration: path.duration,
+                delay: path.delay,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              }}
+            />
+          ))}
+          {paths2.map((path) => (
+            <motion.path
+              key={path.id}
+              d={path.d}
+              stroke="currentColor"
+              strokeWidth={path.width}
+              strokeLinecap="round"
+              initial={{ pathLength: 0.2, opacity: 0.15 }}
+              animate={{
+                pathLength: [0.25, 0.9, 0.25],
+                opacity: [0.15, 0.45, 0.15],
+                pathOffset: [0, 1, 0],
+              }}
+              transition={{
+                duration: path.duration,
+                delay: path.delay,
                 repeat: Number.POSITIVE_INFINITY,
                 ease: "linear",
               }}
@@ -62,6 +89,8 @@ export function FloatingPathsBackground({
           ))}
         </svg>
       </div>
+
+      {/* Main Content Container */}
       <div className="relative z-10 w-full flex flex-col min-h-screen">
         {children}
       </div>
