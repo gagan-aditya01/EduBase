@@ -258,12 +258,12 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
 
       {/* 2. Central Brand Core */}
       <div className="relative z-20 flex flex-col items-center justify-center pointer-events-none">
-        <span className="bg-gradient-to-b from-[#e05a47] to-[#cc5a37] dark:from-white dark:to-zinc-500 bg-clip-text text-center text-7xl font-extrabold tracking-tight leading-none text-transparent filter drop-shadow-xl">
+        <span className="bg-gradient-to-b from-[#e05a47] to-[#cc5a37] dark:from-white dark:to-zinc-500 bg-clip-text text-center text-6xl font-extrabold tracking-tight leading-none text-transparent filter drop-shadow-xl">
           {text}
         </span>
       </div>
 
-      {/* 3. Evenly Spaced Upright Orbiting Logos */}
+      {/* 3. Pure Floating Borderless Direct-Vector Brand Logos */}
       {uniqueRadii.map((radius) => {
         const group = iconsByRadius[radius];
         const count = group.length;
@@ -280,10 +280,10 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
                 position: 'absolute',
                 left: '50%',
                 top: '50%',
-                width: '42px',
-                height: '42px',
-                marginLeft: '-21px',
-                marginTop: '-21px',
+                width: '40px',
+                height: '40px',
+                marginLeft: '-20px',
+                marginTop: '-20px',
                 zIndex: 10,
               }}
               animate={{
@@ -300,11 +300,11 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
               <div
                 style={{
                   transform: `translateY(-${radius}px)`,
-                  width: '42px',
-                  height: '42px',
+                  width: '40px',
+                  height: '40px',
                 }}
               >
-                {/* Counter-rotate to keep icon upright */}
+                {/* Counter-rotate to keep logo upright without dark background box */}
                 <motion.div
                   animate={{
                     rotate: reverse
@@ -316,7 +316,7 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
                     repeat: Infinity,
                     ease: 'linear',
                   }}
-                  className="w-[42px] h-[42px] rounded-xl border shadow-lg backdrop-blur-md flex items-center justify-center bg-white/95 border-[#e5e2d9] text-[#191919] dark:bg-zinc-900/95 dark:border-zinc-700/80 dark:text-white transition-transform hover:scale-125 cursor-pointer"
+                  className="w-10 h-10 flex items-center justify-center transition-transform hover:scale-130 cursor-pointer filter drop-shadow-md"
                 >
                   {icon.component()}
                 </motion.div>
