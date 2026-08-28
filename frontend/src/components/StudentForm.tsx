@@ -181,7 +181,7 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
         <LiquidMetalButton
           label={initialData ? 'Save Changes' : 'Add Student'}
           theme={theme}
-          onClick={() => {}} // Form submit will handle it
+          type="submit"
         />
         {onCancel && (
           <button
