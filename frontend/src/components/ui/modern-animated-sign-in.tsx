@@ -203,71 +203,13 @@ const Ripple = memo(function Ripple({
   );
 });
 
-// ==================== OrbitingCircles Component ====================
-
-type OrbitingCirclesProps = {
-  className?: string;
-  children: ReactNode;
-  reverse?: boolean;
-  duration?: number;
-  delay?: number;
-  radius?: number;
-  path?: boolean;
-};
-
-const OrbitingCircles = memo(function OrbitingCircles({
-  className,
-  children,
-  reverse = false,
-  duration = 20,
-  delay = 10,
-  radius = 50,
-  path = true,
-}: OrbitingCirclesProps) {
-  return (
-    <>
-      {path && (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          version="1.1"
-          className="pointer-events-none absolute inset-0 size-full"
-        >
-          <circle
-            className="stroke-black/15 stroke-1 dark:stroke-white/10"
-            cx="50%"
-            cy="50%"
-            r={radius}
-            fill="none"
-          />
-        </svg>
-      )}
-      <section
-        style={
-          {
-            '--duration': duration,
-            '--radius': radius,
-            '--delay': -delay,
-          } as React.CSSProperties
-        }
-        className={cn(
-          'absolute flex size-full transform-gpu animate-orbit items-center justify-center rounded-full border bg-black/5 [animation-delay:calc(var(--delay)*1000ms)] dark:bg-white/10',
-          { '[animation-direction:reverse]': reverse },
-          className
-        )}
-      >
-        {children}
-      </section>
-    </>
-  );
-});
-
 // ==================== TechOrbitDisplay Component ====================
 
-type IconConfig = {
+export type IconConfig = {
   className?: string;
   duration?: number;
   delay?: number;
-  radius?: number;
+  radius: number;
   path?: boolean;
   reverse?: boolean;
   component: () => React.ReactNode;
@@ -282,25 +224,103 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
   iconsArray,
   text = 'EduBase',
 }: TechnologyOrbitDisplayProps) {
-  return (
-    <section className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg">
-      <span className="pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-[#e05a47] to-[#cc5a37] dark:from-white dark:to-zinc-600 bg-clip-text text-center text-7xl font-bold tracking-tight leading-none text-transparent">
-        {text}
-      </span>
+  // Extract unique radius values to render concentric SVG orbit rings ONCE
+  const uniqueRadii = Array.from(new Set(iconsArray.map((i) => i.radius))).sort((a, b) => a - b);
 
-      {iconsArray.map((icon, index) => (
-        <OrbitingCircles
-          key={index}
-          className={icon.className}
-          duration={icon.duration}
-          delay={icon.delay}
-          radius={icon.radius}
-          path={icon.path}
-          reverse={icon.reverse}
-        >
-          {icon.component()}
-        </OrbitingCircles>
-      ))}
+  // Group icons by radius to calculate even angular spacing (360 / count)
+  const iconsByRadius: { [radius: number]: IconConfig[] } = {};
+  iconsArray.forEach((icon) => {
+    if (!iconsByRadius[icon.radius]) {
+      iconsByRadius[icon.radius] = [];
+    }
+    iconsByRadius[icon.radius].push(icon);
+  });
+
+  return (
+    <section className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg z-10 select-none">
+      {/* 1. Concentric SVG Orbit Path Rings */}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="pointer-events-none absolute inset-0 size-full z-0"
+      >
+        {uniqueRadii.map((radius) => (
+          <circle
+            key={radius}
+            className="stroke-black/15 dark:stroke-white/10 stroke-[1.5]"
+            strokeDasharray="4 4"
+            cx="50%"
+            cy="50%"
+            r={radius}
+            fill="none"
+          />
+        ))}
+      </svg>
+
+      {/* 2. Central Brand Core */}
+      <div className="relative z-20 flex flex-col items-center justify-center pointer-events-none">
+        <span className="bg-gradient-to-b from-[#e05a47] to-[#cc5a37] dark:from-white dark:to-zinc-500 bg-clip-text text-center text-7xl font-extrabold tracking-tight leading-none text-transparent filter drop-shadow-xl">
+          {text}
+        </span>
+      </div>
+
+      {/* 3. Evenly Spaced Upright Orbiting Logos */}
+      {uniqueRadii.map((radius) => {
+        const group = iconsByRadius[radius];
+        const count = group.length;
+
+        return group.map((icon, idx) => {
+          const startAngle = (360 / count) * idx;
+          const duration = icon.duration || 25;
+          const reverse = !!icon.reverse;
+
+          return (
+            <motion.div
+              key={`${radius}-${idx}`}
+              style={{
+                position: 'absolute',
+                left: '50%',
+                top: '50%',
+                width: 0,
+                height: 0,
+                zIndex: 10,
+              }}
+              animate={{
+                rotate: reverse
+                  ? [startAngle, startAngle - 360]
+                  : [startAngle, startAngle + 360],
+              }}
+              transition={{
+                duration: duration,
+                repeat: Infinity,
+                ease: 'linear',
+              }}
+            >
+              <div
+                style={{
+                  transform: `translate(-50%, -50%) translateY(-${radius}px)`,
+                }}
+              >
+                {/* Counter-rotate to keep icon upright */}
+                <motion.div
+                  animate={{
+                    rotate: reverse
+                      ? [-startAngle, -startAngle + 360]
+                      : [-startAngle, -startAngle - 360],
+                  }}
+                  transition={{
+                    duration: duration,
+                    repeat: Infinity,
+                    ease: 'linear',
+                  }}
+                  className="flex items-center justify-center p-2 rounded-full bg-white/90 border border-[#e5e2d9] shadow-md dark:bg-zinc-900/90 dark:border-zinc-700/60 transition-transform hover:scale-125 cursor-pointer"
+                >
+                  {icon.component()}
+                </motion.div>
+              </div>
+            </motion.div>
+          );
+        });
+      })}
     </section>
   );
 });
@@ -600,7 +620,6 @@ export {
   Input,
   BoxReveal,
   Ripple,
-  OrbitingCircles,
   TechOrbitDisplay,
   AnimatedForm,
   AuthTabs,

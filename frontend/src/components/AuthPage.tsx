@@ -11,35 +11,29 @@ interface AuthPageProps {
 }
 
 const iconsArray = [
-  // Ring 1 (Radius 90px)
+  // Ring 1 (Inner - Radius 90px)
   {
     component: () => (
       <img
-        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg"
-        alt="React 18"
+        alt="React"
       />
     ),
-    className: 'size-[36px] border-none bg-transparent',
     duration: 18,
-    delay: 0,
     radius: 90,
-    path: true,
     reverse: false,
   },
   {
     component: () => (
       <img
-        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg"
         alt="TypeScript"
       />
     ),
-    className: 'size-[36px] border-none bg-transparent',
     duration: 18,
-    delay: 9,
     radius: 90,
-    path: true,
     reverse: false,
   },
 
@@ -47,46 +41,37 @@ const iconsArray = [
   {
     component: () => (
       <img
-        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg"
         alt="Node.js"
       />
     ),
-    className: 'size-[40px] border-none bg-transparent',
     duration: 22,
-    delay: 0,
     radius: 150,
-    path: true,
     reverse: true,
   },
   {
     component: () => (
       <img
-        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain bg-zinc-800 p-0.5 rounded-xs"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg"
-        alt="Express 5"
+        alt="Express.js"
       />
     ),
-    className: 'size-[40px] border-none bg-transparent',
     duration: 22,
-    delay: 7,
     radius: 150,
-    path: true,
     reverse: true,
   },
   {
     component: () => (
       <img
-        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vitejs/vitejs-original.svg"
         alt="Vite"
       />
     ),
-    className: 'size-[40px] border-none bg-transparent',
     duration: 22,
-    delay: 14,
     radius: 150,
-    path: true,
     reverse: true,
   },
 
@@ -94,46 +79,37 @@ const iconsArray = [
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg"
-        alt="MongoDB Atlas"
+        alt="MongoDB"
       />
     ),
-    className: 'size-[44px] border-none bg-transparent',
     duration: 26,
-    delay: 0,
     radius: 210,
-    path: true,
     reverse: false,
   },
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg"
         alt="Tailwind CSS"
       />
     ),
-    className: 'size-[44px] border-none bg-transparent',
     duration: 26,
-    delay: 9,
     radius: 210,
-    path: true,
     reverse: false,
   },
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jest/jest-plain.svg"
-        alt="Jest Testing"
+        alt="Jest"
       />
     ),
-    className: 'size-[44px] border-none bg-transparent',
     duration: 26,
-    delay: 17,
     radius: 210,
-    path: true,
     reverse: false,
   },
 
@@ -141,93 +117,75 @@ const iconsArray = [
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg"
         alt="Docker"
       />
     ),
-    className: 'size-[48px] border-none bg-transparent',
     duration: 30,
-    delay: 0,
     radius: 270,
-    path: true,
     reverse: true,
   },
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg"
-        alt="Git Version Control"
+        alt="Git"
       />
     ),
-    className: 'size-[48px] border-none bg-transparent',
     duration: 30,
-    delay: 10,
     radius: 270,
-    path: true,
     reverse: true,
   },
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg"
         alt="HTML5"
       />
     ),
-    className: 'size-[48px] border-none bg-transparent',
     duration: 30,
-    delay: 20,
     radius: 270,
-    path: true,
     reverse: true,
   },
 
-  // Ring 5 (Radius 330px)
+  // Ring 5 (Outer - Radius 330px)
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg"
         alt="CSS3"
       />
     ),
-    className: 'size-[52px] border-none bg-transparent',
     duration: 34,
-    delay: 0,
     radius: 330,
-    path: true,
     reverse: false,
   },
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg"
-        alt="JavaScript ES6"
+        alt="JavaScript"
       />
     ),
-    className: 'size-[52px] border-none bg-transparent',
     duration: 34,
-    delay: 11,
     radius: 330,
-    path: true,
     reverse: false,
   },
   {
     component: () => (
       <img
-        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        className="w-7 h-7 object-contain"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nginx/nginx-original.svg"
-        alt="Nginx Proxy"
+        alt="Nginx"
       />
     ),
-    className: 'size-[52px] border-none bg-transparent',
     duration: 34,
-    delay: 22,
     radius: 330,
-    path: true,
     reverse: false,
   },
 ];
