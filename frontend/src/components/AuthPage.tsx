@@ -1,22 +1,115 @@
 import React, { useState } from 'react';
-import { Sparkles, GraduationCap, User as UserIcon, Lock } from 'lucide-react';
-import { motion } from 'framer-motion';
-import { LiquidMetalButton } from './ui/liquid-metal-button';
+import {
+  Ripple,
+  TechOrbitDisplay,
+  AnimatedForm,
+} from './ui/modern-animated-sign-in';
 
 interface AuthPageProps {
   onAuthSuccess: (token: string, username: string, role: 'admin' | 'guest') => void;
   theme?: 'light' | 'dark';
 }
 
-export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
+const iconsArray = [
+  {
+    component: () => (
+      <img
+        className="w-7 h-7"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg"
+        alt="React"
+      />
+    ),
+    className: 'size-[36px] border-none bg-transparent',
+    duration: 22,
+    delay: 0,
+    radius: 100,
+    path: true,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        className="w-7 h-7"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg"
+        alt="TypeScript"
+      />
+    ),
+    className: 'size-[36px] border-none bg-transparent',
+    duration: 22,
+    delay: 11,
+    radius: 100,
+    path: true,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        className="w-7 h-7"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg"
+        alt="Node.js"
+      />
+    ),
+    className: 'size-[44px] border-none bg-transparent',
+    duration: 26,
+    delay: 0,
+    radius: 170,
+    path: true,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        className="w-7 h-7"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg"
+        alt="MongoDB"
+      />
+    ),
+    className: 'size-[44px] border-none bg-transparent',
+    duration: 26,
+    delay: 13,
+    radius: 170,
+    path: true,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        className="w-7 h-7"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg"
+        alt="Tailwind CSS"
+      />
+    ),
+    className: 'size-[50px] border-none bg-transparent',
+    duration: 30,
+    delay: 0,
+    radius: 240,
+    path: true,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        className="w-7 h-7"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg"
+        alt="Docker"
+      />
+    ),
+    className: 'size-[50px] border-none bg-transparent',
+    duration: 30,
+    delay: 15,
+    radius: 240,
+    path: true,
+    reverse: false,
+  },
+];
+
+export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'admin' | 'guest'>('guest');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const isDark = theme === 'dark';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,110 +147,73 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
     }
   };
 
+  const handleSocialLogin = async (provider: 'Google' | 'GitHub') => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5050/api/auth/social', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider,
+          username: `${provider.toLowerCase()}_user_${Math.floor(1000 + Math.random() * 9000)}`,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Social login failed');
+      }
+
+      onAuthSuccess(data.token, data.username, data.role);
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const formFields = [
+    {
+      label: 'Username',
+      required: true,
+      type: 'text',
+      placeholder: 'Enter your username',
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value),
+    },
+    {
+      label: 'Password',
+      required: true,
+      type: 'password',
+      placeholder: 'Enter your password',
+      onChange: (e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value),
+    },
+  ];
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Interactive Floating background effects */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className={`absolute top-1/4 left-1/4 w-72 h-72 rounded-full filter blur-[80px] opacity-20 ${
-          isDark ? 'bg-zinc-800' : 'bg-[#e05a47]/30'
-        }`} />
-        <div className={`absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full filter blur-[90px] opacity-20 ${
-          isDark ? 'bg-zinc-900' : 'bg-[#cc5a37]/20'
-        }`} />
+    <section className="flex min-h-screen w-full relative overflow-hidden bg-background text-foreground">
+      {/* Left Column: Tech Orbit & Animated Ripple Display (Hidden on Mobile) */}
+      <div className="relative hidden lg:flex w-1/2 items-center justify-center border-r border-border/40 bg-zinc-950/60 backdrop-blur-xl overflow-hidden">
+        <Ripple mainCircleSize={120} numCircles={8} />
+        <TechOrbitDisplay iconsArray={iconsArray} text="EduBase" />
       </div>
 
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0, y: 15 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
-        className={`w-full max-w-md border p-8 rounded-3xl shadow-2xl relative z-10 backdrop-blur-md transition-colors duration-300 ${
-          isDark ? 'bg-zinc-900/35 border-zinc-800/80 text-zinc-100' : 'bg-[#fbfaf7]/85 border-[#e5e2d9] text-[#191919]'
-        }`}
-      >
-        {/* Brand Header */}
-        <div className="flex flex-col items-center text-center gap-3 pb-6">
-          <div className={`p-3 rounded-2xl border transition-colors ${
-            isDark ? 'bg-zinc-950 border-zinc-850 text-zinc-400' : 'bg-[#cc5a37]/5 border-[#cc5a37]/20 text-[#cc5a37]'
-          }`}>
-            <GraduationCap size={32} />
-          </div>
-          <div>
-            <h2 className={`text-2xl font-bold tracking-tight flex items-center justify-center gap-1.5 ${
-              isDark ? 'text-zinc-100' : 'text-[#191919]'
-            }`}>
-              {isLogin ? 'Welcome Back' : 'Join EduBase'}
-              <Sparkles size={16} className={isDark ? 'text-zinc-500' : 'text-[#cc5a37]'} />
-            </h2>
-            <p className={`text-xs mt-1 font-medium ${isDark ? 'text-zinc-500' : 'text-zinc-500'}`}>
-              {isLogin ? 'Sign in to access your student directory' : 'Create an account to manage database registers'}
-            </p>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mb-4 bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-xl text-xs text-center">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>
-              Username
-            </label>
-            <div className="relative">
-              <UserIcon size={14} className="absolute left-3 top-3 text-zinc-500" />
-              <input
-                type="text"
-                placeholder="Enter username..."
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className={`w-full rounded-xl pl-9 pr-4 py-2.5 text-sm transition-colors focus:outline-none border ${
-                  isDark
-                    ? 'bg-zinc-950 border-zinc-850 text-zinc-100 placeholder-zinc-700 focus:border-zinc-700'
-                    : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400 focus:border-zinc-400'
-                }`}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-1">
-            <label className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>
-              Password
-            </label>
-            <div className="relative">
-              <Lock size={14} className="absolute left-3 top-3 text-zinc-500" />
-              <input
-                type="password"
-                placeholder="Enter password..."
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className={`w-full rounded-xl pl-9 pr-4 py-2.5 text-sm transition-colors focus:outline-none border ${
-                  isDark
-                    ? 'bg-zinc-950 border-zinc-850 text-zinc-100 placeholder-zinc-700 focus:border-zinc-700'
-                    : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400 focus:border-zinc-400'
-                }`}
-              />
-            </div>
-          </div>
-
+      {/* Right Column: Animated Login Form */}
+      <div className="w-full lg:w-1/2 h-[100vh] flex flex-col justify-center items-center px-6 lg:px-12 relative z-10 overflow-y-auto">
+        <div className="w-full max-w-md">
           {!isLogin && (
-            <div className="space-y-1">
-              <label className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-zinc-500' : 'text-zinc-600'}`}>
+            <div className="mb-4 flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
                 Select Account Role
               </label>
-              <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="grid grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => setRole('guest')}
-                  className={`py-2 border text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+                  className={`py-2 px-3 border text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                     role === 'guest'
-                      ? isDark
-                        ? 'bg-zinc-800 border-zinc-700 text-zinc-100'
-                        : 'bg-[#cc5a37]/10 border-[#cc5a37] text-[#cc5a37]'
-                      : isDark
-                      ? 'bg-zinc-950 border-zinc-850 text-zinc-500 hover:text-zinc-350'
-                      : 'bg-white border-[#e5e2d9] text-zinc-550 hover:text-zinc-800'
+                      ? 'bg-zinc-800 border-zinc-600 text-white'
+                      : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
                   Guest (Read-Only)
@@ -165,14 +221,10 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
                 <button
                   type="button"
                   onClick={() => setRole('admin')}
-                  className={`py-2 border text-xs font-semibold rounded-xl transition-all cursor-pointer ${
+                  className={`py-2 px-3 border text-xs font-semibold rounded-lg transition-all cursor-pointer ${
                     role === 'admin'
-                      ? isDark
-                        ? 'bg-zinc-800 border-zinc-700 text-zinc-100'
-                        : 'bg-[#cc5a37]/10 border-[#cc5a37] text-[#cc5a37]'
-                      : isDark
-                      ? 'bg-zinc-950 border-zinc-850 text-zinc-500 hover:text-zinc-350'
-                      : 'bg-white border-[#e5e2d9] text-zinc-550 hover:text-zinc-800'
+                      ? 'bg-zinc-800 border-zinc-600 text-white'
+                      : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
                   }`}
                 >
                   Admin (Full Access)
@@ -181,33 +233,32 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
             </div>
           )}
 
-          <div className="flex justify-center w-full pt-2">
-            <LiquidMetalButton
-              type="submit"
-              label={loading ? "Authenticating..." : (isLogin ? "Sign In" : "Create Account")}
-              theme={theme}
-              width={384}
-            />
-          </div>
-        </form>
-
-        <div className="pt-6 border-t border-zinc-850/10 text-center">
-          <button
-            type="button"
-            onClick={() => {
+          <AnimatedForm
+            header={isLogin ? 'Welcome Back' : 'Join EduBase'}
+            subHeader={
+              isLogin
+                ? 'Sign in to access your student directory'
+                : 'Create an account to manage student database registers'
+            }
+            fields={formFields}
+            submitButton={loading ? 'Authenticating...' : isLogin ? 'Sign In' : 'Create Account'}
+            errorField={error}
+            onSubmit={handleSubmit}
+            onGoogleClick={() => handleSocialLogin('Google')}
+            onGithubClick={() => handleSocialLogin('GitHub')}
+            textVariantButton={
+              isLogin
+                ? "Don't have an account? Sign Up"
+                : 'Already registered? Log In'
+            }
+            goTo={(e) => {
+              e.preventDefault();
               setIsLogin(!isLogin);
               setError('');
             }}
-            className={`text-xs font-semibold hover:underline cursor-pointer ${
-              isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-[#cc5a37]'
-            }`}
-          >
-            {isLogin
-              ? "Don't have an account? Sign Up"
-              : 'Already registered? Log In'}
-          </button>
+          />
         </div>
-      </motion.div>
-    </div>
+      </div>
+    </section>
   );
 }
