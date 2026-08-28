@@ -11,93 +11,222 @@ interface AuthPageProps {
 }
 
 const iconsArray = [
+  // Ring 1 (Radius 90px)
   {
     component: () => (
       <img
-        className="w-7 h-7"
+        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg"
-        alt="React"
+        alt="React 18"
       />
     ),
     className: 'size-[36px] border-none bg-transparent',
-    duration: 22,
+    duration: 18,
     delay: 0,
-    radius: 100,
+    radius: 90,
     path: true,
     reverse: false,
   },
   {
     component: () => (
       <img
-        className="w-7 h-7"
+        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg"
         alt="TypeScript"
       />
     ),
     className: 'size-[36px] border-none bg-transparent',
-    duration: 22,
-    delay: 11,
-    radius: 100,
+    duration: 18,
+    delay: 9,
+    radius: 90,
     path: true,
     reverse: false,
   },
+
+  // Ring 2 (Radius 150px)
   {
     component: () => (
       <img
-        className="w-7 h-7"
+        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg"
         alt="Node.js"
       />
     ),
-    className: 'size-[44px] border-none bg-transparent',
-    duration: 26,
+    className: 'size-[40px] border-none bg-transparent',
+    duration: 22,
     delay: 0,
-    radius: 170,
+    radius: 150,
     path: true,
     reverse: true,
   },
   {
     component: () => (
       <img
-        className="w-7 h-7"
+        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg"
+        alt="Express 5"
+      />
+    ),
+    className: 'size-[40px] border-none bg-transparent',
+    duration: 22,
+    delay: 7,
+    radius: 150,
+    path: true,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        className="w-7 h-7 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vitejs/vitejs-original.svg"
+        alt="Vite"
+      />
+    ),
+    className: 'size-[40px] border-none bg-transparent',
+    duration: 22,
+    delay: 14,
+    radius: 150,
+    path: true,
+    reverse: true,
+  },
+
+  // Ring 3 (Radius 210px)
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg"
-        alt="MongoDB"
+        alt="MongoDB Atlas"
       />
     ),
     className: 'size-[44px] border-none bg-transparent',
     duration: 26,
-    delay: 13,
-    radius: 170,
-    path: true,
-    reverse: true,
-  },
-  {
-    component: () => (
-      <img
-        className="w-7 h-7"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg"
-        alt="Tailwind CSS"
-      />
-    ),
-    className: 'size-[50px] border-none bg-transparent',
-    duration: 30,
     delay: 0,
-    radius: 240,
+    radius: 210,
     path: true,
     reverse: false,
   },
   {
     component: () => (
       <img
-        className="w-7 h-7"
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg"
+        alt="Tailwind CSS"
+      />
+    ),
+    className: 'size-[44px] border-none bg-transparent',
+    duration: 26,
+    delay: 9,
+    radius: 210,
+    path: true,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jest/jest-plain.svg"
+        alt="Jest Testing"
+      />
+    ),
+    className: 'size-[44px] border-none bg-transparent',
+    duration: 26,
+    delay: 17,
+    radius: 210,
+    path: true,
+    reverse: false,
+  },
+
+  // Ring 4 (Radius 270px)
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
         src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg"
         alt="Docker"
       />
     ),
-    className: 'size-[50px] border-none bg-transparent',
+    className: 'size-[48px] border-none bg-transparent',
     duration: 30,
-    delay: 15,
-    radius: 240,
+    delay: 0,
+    radius: 270,
+    path: true,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg"
+        alt="Git Version Control"
+      />
+    ),
+    className: 'size-[48px] border-none bg-transparent',
+    duration: 30,
+    delay: 10,
+    radius: 270,
+    path: true,
+    reverse: true,
+  },
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg"
+        alt="HTML5"
+      />
+    ),
+    className: 'size-[48px] border-none bg-transparent',
+    duration: 30,
+    delay: 20,
+    radius: 270,
+    path: true,
+    reverse: true,
+  },
+
+  // Ring 5 (Radius 330px)
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg"
+        alt="CSS3"
+      />
+    ),
+    className: 'size-[52px] border-none bg-transparent',
+    duration: 34,
+    delay: 0,
+    radius: 330,
+    path: true,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg"
+        alt="JavaScript ES6"
+      />
+    ),
+    className: 'size-[52px] border-none bg-transparent',
+    duration: 34,
+    delay: 11,
+    radius: 330,
+    path: true,
+    reverse: false,
+  },
+  {
+    component: () => (
+      <img
+        className="w-8 h-8 filter drop-shadow-md transition-transform hover:scale-125"
+        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nginx/nginx-original.svg"
+        alt="Nginx Proxy"
+      />
+    ),
+    className: 'size-[52px] border-none bg-transparent',
+    duration: 34,
+    delay: 22,
+    radius: 330,
     path: true,
     reverse: false,
   },
@@ -196,11 +325,11 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
     <section className={`flex min-h-screen w-full relative overflow-hidden transition-colors duration-300 ${
       isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-[#fbfaf7] text-[#191919]'
     }`}>
-      {/* Left Column: Tech Orbit & Animated Ripple Display (Hidden on Mobile) */}
+      {/* Left Column: Multi-Ring Tech Orbit & Animated Ripple Display (Hidden on Mobile) */}
       <div className={`relative hidden lg:flex w-1/2 items-center justify-center border-r backdrop-blur-xl overflow-hidden transition-colors duration-300 ${
         isDark ? 'bg-zinc-950/60 border-zinc-800/60' : 'bg-[#f5f2eb]/90 border-[#e5e2d9]'
       }`}>
-        <Ripple mainCircleSize={120} numCircles={8} />
+        <Ripple mainCircleSize={90} numCircles={12} />
         <TechOrbitDisplay iconsArray={iconsArray} text="EduBase" />
       </div>
 
