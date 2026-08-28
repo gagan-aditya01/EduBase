@@ -184,7 +184,7 @@ const Ripple = memo(function Ripple({
         return (
           <span
             key={i}
-            className="absolute animate-ripple rounded-full bg-foreground/10 border"
+            className="absolute animate-ripple rounded-full border border-black/10 dark:border-white/10"
             style={{
               width: `${size}px`,
               height: `${size}px`,
@@ -192,7 +192,6 @@ const Ripple = memo(function Ripple({
               animationDelay: animationDelay,
               borderStyle: borderStyle,
               borderWidth: '1px',
-              borderColor: `var(--foreground)`,
               top: '50%',
               left: '50%',
               transform: 'translate(-50%, -50%)',

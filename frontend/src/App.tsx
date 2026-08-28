@@ -99,14 +99,18 @@ export default function App() {
     }
   }, []);
 
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    if (nextTheme === 'light') {
+  useEffect(() => {
+    if (theme === 'light') {
       document.documentElement.classList.add('light-theme');
+      document.documentElement.classList.remove('dark');
     } else {
       document.documentElement.classList.remove('light-theme');
+      document.documentElement.classList.add('dark');
     }
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'dark' ? 'light' : 'dark'));
   };
 
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
