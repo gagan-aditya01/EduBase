@@ -1,5 +1,21 @@
 import React, { useState } from 'react';
 import {
+  Atom,
+  FileCode,
+  Server,
+  Zap,
+  Gauge,
+  Database,
+  Palette,
+  ShieldCheck,
+  Boxes,
+  GitBranch,
+  Globe,
+  Code,
+  Terminal,
+  Cpu,
+} from 'lucide-react';
+import {
   Ripple,
   TechOrbitDisplay,
   AnimatedForm,
@@ -14,11 +30,7 @@ const iconsArray = [
   // Ring 1 (Inner - Radius 90px)
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/react/react-original.svg"
-        alt="React"
-      />
+      <Atom className="w-5 h-5 text-cyan-400" />
     ),
     duration: 18,
     radius: 90,
@@ -26,11 +38,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/typescript/typescript-original.svg"
-        alt="TypeScript"
-      />
+      <FileCode className="w-5 h-5 text-blue-400" />
     ),
     duration: 18,
     radius: 90,
@@ -40,11 +48,7 @@ const iconsArray = [
   // Ring 2 (Radius 150px)
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nodejs/nodejs-original.svg"
-        alt="Node.js"
-      />
+      <Server className="w-5 h-5 text-emerald-400" />
     ),
     duration: 22,
     radius: 150,
@@ -52,11 +56,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain bg-zinc-800 p-0.5 rounded-xs"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/express/express-original.svg"
-        alt="Express.js"
-      />
+      <Zap className="w-5 h-5 text-amber-400" />
     ),
     duration: 22,
     radius: 150,
@@ -64,11 +64,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/vitejs/vitejs-original.svg"
-        alt="Vite"
-      />
+      <Gauge className="w-5 h-5 text-purple-400" />
     ),
     duration: 22,
     radius: 150,
@@ -78,11 +74,7 @@ const iconsArray = [
   // Ring 3 (Radius 210px)
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/mongodb/mongodb-original.svg"
-        alt="MongoDB"
-      />
+      <Database className="w-5 h-5 text-green-500" />
     ),
     duration: 26,
     radius: 210,
@@ -90,11 +82,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg"
-        alt="Tailwind CSS"
-      />
+      <Palette className="w-5 h-5 text-teal-400" />
     ),
     duration: 26,
     radius: 210,
@@ -102,11 +90,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/jest/jest-plain.svg"
-        alt="Jest"
-      />
+      <ShieldCheck className="w-5 h-5 text-rose-400" />
     ),
     duration: 26,
     radius: 210,
@@ -116,11 +100,7 @@ const iconsArray = [
   // Ring 4 (Radius 270px)
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/docker/docker-original.svg"
-        alt="Docker"
-      />
+      <Boxes className="w-5 h-5 text-sky-400" />
     ),
     duration: 30,
     radius: 270,
@@ -128,11 +108,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/git/git-original.svg"
-        alt="Git"
-      />
+      <GitBranch className="w-5 h-5 text-orange-500" />
     ),
     duration: 30,
     radius: 270,
@@ -140,11 +116,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg"
-        alt="HTML5"
-      />
+      <Globe className="w-5 h-5 text-orange-400" />
     ),
     duration: 30,
     radius: 270,
@@ -154,11 +126,7 @@ const iconsArray = [
   // Ring 5 (Outer - Radius 330px)
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg"
-        alt="CSS3"
-      />
+      <Code className="w-5 h-5 text-blue-500" />
     ),
     duration: 34,
     radius: 330,
@@ -166,11 +134,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/javascript/javascript-original.svg"
-        alt="JavaScript"
-      />
+      <Terminal className="w-5 h-5 text-yellow-400" />
     ),
     duration: 34,
     radius: 330,
@@ -178,11 +142,7 @@ const iconsArray = [
   },
   {
     component: () => (
-      <img
-        className="w-7 h-7 object-contain"
-        src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/nginx/nginx-original.svg"
-        alt="Nginx"
-      />
+      <Cpu className="w-5 h-5 text-emerald-300" />
     ),
     duration: 34,
     radius: 330,

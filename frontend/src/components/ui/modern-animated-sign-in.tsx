@@ -280,8 +280,10 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
                 position: 'absolute',
                 left: '50%',
                 top: '50%',
-                width: 0,
-                height: 0,
+                width: '42px',
+                height: '42px',
+                marginLeft: '-21px',
+                marginTop: '-21px',
                 zIndex: 10,
               }}
               animate={{
@@ -297,7 +299,9 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
             >
               <div
                 style={{
-                  transform: `translate(-50%, -50%) translateY(-${radius}px)`,
+                  transform: `translateY(-${radius}px)`,
+                  width: '42px',
+                  height: '42px',
                 }}
               >
                 {/* Counter-rotate to keep icon upright */}
@@ -312,7 +316,7 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
                     repeat: Infinity,
                     ease: 'linear',
                   }}
-                  className="flex items-center justify-center p-2 rounded-full bg-white/90 border border-[#e5e2d9] shadow-md dark:bg-zinc-900/90 dark:border-zinc-700/60 transition-transform hover:scale-125 cursor-pointer"
+                  className="w-[42px] h-[42px] rounded-xl border shadow-lg backdrop-blur-md flex items-center justify-center bg-white/95 border-[#e5e2d9] text-[#191919] dark:bg-zinc-900/95 dark:border-zinc-700/80 dark:text-white transition-transform hover:scale-125 cursor-pointer"
                 >
                   {icon.component()}
                 </motion.div>
