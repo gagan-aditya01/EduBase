@@ -22,11 +22,12 @@ A modern, production-grade full-stack web application built with **Node.js, Expr
 
 ## 🚀 Key Features & Concepts Implemented
 
-### 1. 🛡️ Dual-Token Authentication & Role-Based Access Control (RBAC)
+### 1. 🛡️ Dual-Token Authentication, OAuth 2.0 & RBAC
 - **Dual-Token Auth**: Access Tokens + Long-lived Refresh Tokens (`POST /api/v1/auth/refresh`) for silent session renewal.
+- **OAuth 2.0 Social Login**: Integrated **Google** & **GitHub** social single sign-on (`POST /api/v1/auth/social`).
 - **Role Permissions**: `Admin` (full CRUD, password management, soft-delete recovery) vs `Guest` (read-only access).
-- **Welcome Hello Splash**: Post-login Apple-style handwritten stroke vector animation (`apple-hello-effect.tsx`).
-- **Account Manager Deck**: 3D perspective flip deck console for changing passwords & managing users.
+- **Modern Animated Login**: `modern-animated-sign-in.tsx` with **EduBase** branding, orbiting tech icons, and social OAuth buttons.
+- **Welcome Splash & 3D Deck**: Post-login Apple-style stroke animation and 3D account manager deck flip.
 
 ### 2. 🗂️ Relational Data Modeling, Server-Side Pagination & API v2
 - **Mongoose Relational Joins**: Dedicated `Department` collection schema populated dynamically via `departmentRef` (`.populate('departmentRef', 'name code')`).
@@ -38,12 +39,15 @@ A modern, production-grade full-stack web application built with **Node.js, Expr
 - **Soft Delete Protection**: Setting `isDeleted: true` and `deletedAt: Date` prevents accidental database data loss.
 - **Trash Bin Console**: Admin endpoints to list (`GET /trash/list`), restore (`PUT /restore`), or permanently purge (`DELETE /purge`) records.
 
-### 4. ⚡ High-Performance Caching & Background Processing
+### 4. ⚡ High-Performance Caching, Aggregation Pipelines & SSE Stream
+- **MongoDB Aggregation Pipelines**: Multi-faceted analytics engine (`$group`, `$facet`, `$bucket`) powering department breakdown and age demographic metrics (`GET /api/v1/students/analytics/stats`).
+- **Real-Time Server-Sent Events (SSE)**: HTTP event stream (`GET /api/v1/students/stream`) pushing live record mutations directly to client UI.
 - **In-Memory RAM Cache Engine**: Custom TTL cache returning sub-millisecond responses (`X-Cache: HIT` / `MISS`) with automatic invalidation.
 - **Async Background Task Queue**: Non-blocking queue engine offloading audit logging without delaying HTTP controller responses.
 - **Compound Database Indexes**: Optimized Mongoose indexes (`{ department: 1, age: -1 }`) and `.explain('executionStats')` benchmark route.
 
-### 5. 📜 Audit Trail & Security Hardening
+### 5. 📜 Audit Trail, CI/CD Pipeline & Security Hardening
+- **Automated CI/CD Pipeline**: `.github/workflows/ci-cd.yml` running automated MongoDB container integration tests and production build checks on every push.
 - **Immutable Audit Log**: `AuditLog` collection recording `CREATE_STUDENT`, `UPDATE_STUDENT`, and `DELETE_STUDENT` actions.
 - **API Security & DDoS Guard**: `helmet` HTTP headers and `express-rate-limit` (max 100 requests per 15 mins).
 - **Input Validation Middleware**: Sanitizes `studentId`, `name`, `age` (16–90 range), and `department` fields.

@@ -1,0 +1,42 @@
+name: EduBase CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:latest
+        ports:
+          - 27017:27017
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Root Dependencies
+        run: npm ci
+
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm ci
+
+      - name: Run Automated Jest API Tests
+        env:
+          MONGO_URI: mongodb://localhost:27017/edubase_test
+          JWT_SECRET: supersecretci123
+        run: npm test
+
+      - name: Verify Frontend Production Build
+        run: cd frontend && npm run build

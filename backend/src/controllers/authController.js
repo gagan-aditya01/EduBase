@@ -14,6 +14,42 @@ const generateRefreshToken = (id) => {
   });
 };
 
+// @desc    OAuth 2.0 Social Login Handler (Google & GitHub)
+// @route   POST /api/auth/social
+// @access  Public
+const socialLoginHandler = async (req, res) => {
+  try {
+    const { provider, username } = req.body;
+    const authUsername = username || `${provider || 'social'}_user`;
+
+    let user = await User.findOne({ username: authUsername });
+    if (!user) {
+      user = await User.create({
+        username: authUsername,
+        password: `OAuth_${Date.now()}_${Math.random().toString(36).substring(7)}`,
+        role: 'guest',
+      });
+    }
+
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    user.refreshToken = refreshToken;
+    await user.save();
+
+    res.json({
+      _id: user._id,
+      username: user.username,
+      role: user.role,
+      token: accessToken,
+      refreshToken,
+      provider: provider || 'OAuth 2.0',
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
@@ -221,6 +257,7 @@ const updateProfilePassword = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  socialLoginHandler,
   refreshTokenHandler,
   getAllUsers,
   updateUser,

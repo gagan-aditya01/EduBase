@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   registerUser,
   loginUser,
+  socialLoginHandler,
   refreshTokenHandler,
   getAllUsers,
   updateUser,
@@ -13,6 +14,7 @@ const { protect, admin } = require('../middlewares/authMiddleware');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/social', socialLoginHandler);
 router.post('/refresh', refreshTokenHandler);
 
 // Self password updates route

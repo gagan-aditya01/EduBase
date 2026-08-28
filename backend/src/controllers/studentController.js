@@ -323,6 +323,80 @@ const explainStudentQuery = async (req, res) => {
   }
 };
 
+// @desc    Minor Concept 2: MongoDB Aggregation Pipeline ($group, $facet, $project)
+// @route   GET /api/v1/students/analytics/stats
+// @access  Private
+const getAnalyticsStats = async (req, res) => {
+  try {
+    const stats = await Student.aggregate([
+      { $match: { isDeleted: { $ne: true } } },
+      {
+        $facet: {
+          departmentBreakdown: [
+            { $group: { _id: '$department', count: { $sum: 1 }, avgAge: { $avg: '$age' } } },
+            { $sort: { count: -1 } },
+          ],
+          ageDemographics: [
+            {
+              $bucket: {
+                groupBy: '$age',
+                boundaries: [16, 20, 25, 30, 40, 100],
+                default: 'Other',
+                output: { count: { $sum: 1 } },
+              },
+            },
+          ],
+          overall: [
+            {
+              $group: {
+                _id: null,
+                totalStudents: { $sum: 1 },
+                avgAge: { $avg: '$age' },
+                minAge: { $min: '$age' },
+                maxAge: { $max: '$age' },
+              },
+            },
+          ],
+        },
+      },
+    ]);
+
+    res.json(stats[0] || {});
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// SSE Active Clients Array
+let sseClients = [];
+
+// Helper to broadcast real-time events to all SSE clients
+const broadcastSSE = (eventType, data) => {
+  sseClients.forEach((client) => {
+    client.res.write(`event: ${eventType}\ndata: ${JSON.stringify(data)}\n\n`);
+  });
+};
+
+// @desc    Minor Concept 3: Real-Time Server-Sent Events (SSE) Stream
+// @route   GET /api/v1/students/stream
+// @access  Private
+const streamStudentEvents = (req, res) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const clientId = Date.now();
+  const newClient = { id: clientId, res };
+  sseClients.push(newClient);
+
+  res.write(`event: connected\ndata: ${JSON.stringify({ message: 'Connected to EduBase Real-time SSE Stream' })}\n\n`);
+
+  req.on('close', () => {
+    sseClients = sseClients.filter((c) => c.id !== clientId);
+  });
+};
+
 module.exports = {
   createStudent,
   getStudents,
@@ -334,4 +408,6 @@ module.exports = {
   restoreStudent,
   purgeStudent,
   explainStudentQuery,
+  getAnalyticsStats,
+  streamStudentEvents,
 };

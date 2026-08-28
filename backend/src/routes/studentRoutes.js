@@ -10,12 +10,16 @@ const {
   restoreStudent,
   purgeStudent,
   explainStudentQuery,
+  getAnalyticsStats,
+  streamStudentEvents,
 } = require('../controllers/studentController');
 const { protect, admin } = require('../middlewares/authMiddleware');
 const { validateStudentInput } = require('../middlewares/validateMiddleware');
 
-// Performance Benchmark Route
+// Performance & Aggregation Analytics Routes
 router.get('/performance/explain', protect, admin, explainStudentQuery);
+router.get('/analytics/stats', protect, getAnalyticsStats);
+router.get('/stream', protect, streamStudentEvents);
 
 // Concept 2: Admin Trash Bin Recovery Console Routes
 router.get('/trash/list', protect, admin, getTrashStudents);
