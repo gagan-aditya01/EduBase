@@ -39,4 +39,8 @@ const studentSchema = new mongoose.Schema(
   }
 );
 
+// Concept 3: Database Indexing & Query Performance Optimization
+studentSchema.index({ department: 1, age: -1 });
+studentSchema.index({ createdBy: 1, createdAt: -1 });
+
 module.exports = mongoose.model('Student', studentSchema);

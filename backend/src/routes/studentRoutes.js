@@ -6,9 +6,13 @@ const {
   getStudentById,
   updateStudent,
   deleteStudent,
+  explainStudentQuery,
 } = require('../controllers/studentController');
 const { protect, admin } = require('../middlewares/authMiddleware');
 const { validateStudentInput } = require('../middlewares/validateMiddleware');
+
+// Performance Benchmark Route
+router.get('/performance/explain', protect, admin, explainStudentQuery);
 
 // Routes for /api/students
 router.route('/')
