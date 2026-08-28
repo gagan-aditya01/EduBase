@@ -87,8 +87,22 @@ export default function App() {
     };
   }, [showProfileMenu]);
 
-  // Check for stored user on mount
+  // Check for OAuth URL Callback redirect or stored user on mount
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+    const username = params.get('username');
+    const role = params.get('role') as 'admin' | 'guest';
+
+    if (token && username && role) {
+      const newUser = { token, username, role };
+      setUser(newUser);
+      localStorage.setItem('edubase_user', JSON.stringify(newUser));
+      setShowWelcomeSplash(true);
+      window.history.replaceState({}, document.title, window.location.pathname);
+      return;
+    }
+
     const storedUser = localStorage.getItem('edubase_user');
     if (storedUser) {
       try {

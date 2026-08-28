@@ -250,29 +250,11 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
     }
   };
 
-  const handleSocialLogin = async (provider: 'Google' | 'GitHub') => {
-    setLoading(true);
-    setError('');
-    try {
-      const response = await fetch('http://localhost:5050/api/auth/social', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          provider,
-          username: `${provider.toLowerCase()}_user_${Math.floor(1000 + Math.random() * 9000)}`,
-        }),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || 'Social login failed');
-      }
-
-      onAuthSuccess(data.token, data.username, data.role);
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+  const handleSocialLogin = (provider: 'Google' | 'GitHub') => {
+    if (provider === 'Google') {
+      window.location.href = 'http://localhost:5050/api/auth/google';
+    } else if (provider === 'GitHub') {
+      window.location.href = 'http://localhost:5050/api/auth/github';
     }
   };
 

@@ -4,6 +4,10 @@ const {
   registerUser,
   loginUser,
   socialLoginHandler,
+  googleAuthRedirect,
+  googleAuthCallback,
+  githubAuthRedirect,
+  githubAuthCallback,
   refreshTokenHandler,
   getAllUsers,
   updateUser,
@@ -15,6 +19,13 @@ const { protect, admin } = require('../middlewares/authMiddleware');
 router.post('/register', registerUser);
 router.post('/login', loginUser);
 router.post('/social', socialLoginHandler);
+
+// Live OAuth 2.0 Endpoints
+router.get('/google', googleAuthRedirect);
+router.get('/google/callback', googleAuthCallback);
+router.get('/github', githubAuthRedirect);
+router.get('/github/callback', githubAuthCallback);
+
 router.post('/refresh', refreshTokenHandler);
 
 // Self password updates route
