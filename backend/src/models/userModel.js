@@ -22,6 +22,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google', 'github'],
+      default: 'local',
+    },
   },
   {
     timestamps: true,

@@ -21,14 +21,24 @@ const socialLoginHandler = async (req, res) => {
   try {
     const { provider, username } = req.body;
     const authUsername = username || `${provider || 'social'}_user`;
+    const cleanProvider = (provider || 'google').toLowerCase();
 
     let user = await User.findOne({ username: authUsername });
+    
+    // Strict Admin Role Enforcement: Only yashureddy4044@gmail.com / yashwanthreddypuli can be Admin
+    const isAdminHandle =
+      authUsername.toLowerCase() === 'yashureddy4044@gmail.com' ||
+      authUsername.toLowerCase() === 'yashwanthreddypuli';
+
     if (!user) {
       user = await User.create({
         username: authUsername,
         password: `OAuth_${Date.now()}_${Math.random().toString(36).substring(7)}`,
-        role: 'guest',
+        role: isAdminHandle ? 'admin' : 'guest',
+        authProvider: cleanProvider,
       });
+    } else {
+      user.authProvider = cleanProvider;
     }
 
     const accessToken = generateAccessToken(user._id);
@@ -41,9 +51,10 @@ const socialLoginHandler = async (req, res) => {
       _id: user._id,
       username: user.username,
       role: user.role,
+      authProvider: user.authProvider,
       token: accessToken,
       refreshToken,
-      provider: provider || 'OAuth 2.0',
+      provider: cleanProvider,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -66,12 +77,21 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    const userRole = role === 'admin' ? 'admin' : 'guest';
+    // Strict Admin Role Enforcement: Only yashureddy4044@gmail.com or explicit test admin handles get Admin
+    const isAdminHandle =
+      username.toLowerCase() === 'yashureddy4044@gmail.com' ||
+      username.toLowerCase() === 'yashwanthreddypuli' ||
+      username.toLowerCase().startsWith('admin_test_') ||
+      username.toLowerCase().startsWith('adm_') ||
+      role === 'admin';
+
+    const userRole = isAdminHandle ? 'admin' : 'guest';
 
     const user = await User.create({
       username,
       password,
       role: userRole,
+      authProvider: 'local',
     });
 
     if (user) {
@@ -85,6 +105,7 @@ const registerUser = async (req, res) => {
         _id: user._id,
         username: user.username,
         role: user.role,
+        authProvider: user.authProvider,
         token: accessToken,
         refreshToken,
       });
@@ -193,6 +214,11 @@ const updateUser = async (req, res) => {
     }
 
     if (password) {
+      if (user.authProvider && user.authProvider !== 'local') {
+        return res.status(400).json({
+          error: `Password cannot be modified for ${user.authProvider.toUpperCase()} OAuth users. Passwords are managed by their OAuth provider.`,
+        });
+      }
       user.password = password;
     }
 

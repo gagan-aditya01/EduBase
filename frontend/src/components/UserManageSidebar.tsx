@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, ShieldAlert, Key, Search, Calendar, Clock, ChevronRight } from 'lucide-react';
+import { X, User, ShieldAlert, Key, Search, Calendar, ChevronRight } from 'lucide-react';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
 
@@ -8,6 +8,7 @@ interface DBUser {
   _id: string;
   username: string;
   role: 'admin' | 'guest';
+  authProvider?: 'local' | 'google' | 'github';
   createdAt?: string;
   updatedAt?: string;
 }
@@ -274,9 +275,20 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                           <span className="text-sm font-bold truncate max-w-[130px] tracking-tight">
                             {u.username}
                           </span>
-                          <span className="text-[10px] text-zinc-500 truncate font-semibold">
-                            Guest
-                          </span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] text-zinc-500 font-semibold">
+                              Guest
+                            </span>
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase font-bold border ${
+                              u.authProvider === 'google'
+                                ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                                : u.authProvider === 'github'
+                                ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+                                : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                            }`}>
+                              {u.authProvider || 'local'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <ChevronRight size={14} className="text-zinc-500" />
@@ -359,19 +371,24 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                       <span className="text-zinc-500 font-bold">User ID</span>
                       <span className="font-mono text-xs text-zinc-400 select-all">{selectedUser._id}</span>
                     </div>
+                    <div className="flex items-center justify-between border-b pb-3 border-zinc-850/10 dark:border-zinc-850/30">
+                      <span className="text-zinc-500 font-bold">Auth Provider</span>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono uppercase font-bold border ${
+                        selectedUser.authProvider === 'google'
+                          ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                          : selectedUser.authProvider === 'github'
+                          ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+                          : 'bg-zinc-800 border-zinc-700 text-zinc-300'
+                      }`}>
+                        {selectedUser.authProvider ? `${selectedUser.authProvider.toUpperCase()} OAuth` : 'Local Password'}
+                      </span>
+                    </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-zinc-500">
                         <Calendar size={14} />
                         <span className="font-semibold">Created At</span>
                       </div>
                       <span className="font-medium text-xs">{selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-zinc-500">
-                        <Clock size={14} />
-                        <span className="font-semibold">Updated At</span>
-                      </div>
-                      <span className="font-medium text-xs">{selectedUser.updatedAt ? new Date(selectedUser.updatedAt).toLocaleString() : 'N/A'}</span>
                     </div>
                   </div>
 
@@ -380,31 +397,39 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                       Reset Account Password
                     </label>
-                    <div className="flex gap-4 items-center">
-                      <div className="relative flex-1">
-                        <Key size={16} className="absolute left-4 top-4.5 text-zinc-500" />
-                        <input
-                          type="password"
-                          placeholder="Type new password..."
-                          value={passwordInput}
-                          onChange={(e) => setPasswordInput(e.target.value)}
-                          className={`w-full rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none border transition-colors ${
-                            isDark
-                              ? 'bg-zinc-950 border-zinc-850 text-zinc-200 placeholder-zinc-700 focus:border-zinc-750'
-                              : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-450 focus:border-[#cc5a37]/50'
-                          }`}
-                        />
+                    {selectedUser.authProvider && selectedUser.authProvider !== 'local' ? (
+                      <div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 text-xs text-zinc-400 flex items-center gap-3">
+                        <span className="text-lg">🌐</span>
+                        <span>
+                          Password modification is disabled for <b>{selectedUser.authProvider.toUpperCase()}</b> OAuth accounts. Passwords for this user are managed directly by their OAuth provider.
+                        </span>
                       </div>
-                      
-                      {/* Native Liquid Metal Button for resetting password */}
-                      <div className="shrink-0">
-                        <LiquidMetalButton 
-                          label="Save" 
-                          onClick={() => handlePasswordReset(selectedUser._id)} 
-                          theme={theme} 
-                        />
+                    ) : (
+                      <div className="flex gap-4 items-center">
+                        <div className="relative flex-1">
+                          <Key size={16} className="absolute left-4 top-4.5 text-zinc-500" />
+                          <input
+                            type="password"
+                            placeholder="Type new password..."
+                            value={passwordInput}
+                            onChange={(e) => setPasswordInput(e.target.value)}
+                            className={`w-full rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none border transition-colors ${
+                              isDark
+                                ? 'bg-zinc-950 border-zinc-850 text-zinc-200 placeholder-zinc-700 focus:border-zinc-750'
+                                : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-450 focus:border-[#cc5a37]/50'
+                            }`}
+                          />
+                        </div>
+                        
+                        <div className="shrink-0">
+                          <LiquidMetalButton 
+                            label="Save" 
+                            onClick={() => handlePasswordReset(selectedUser._id)} 
+                            theme={theme} 
+                          />
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Account Deletion - Native Liquid Metal Button */}
