@@ -101,9 +101,16 @@ app.get('/', (req, res) => {
   `);
 });
 
-// API routes
+const studentRoutesV2 = require('./routes/studentRoutesV2');
+
+// API Version 1 & Legacy Routes
+app.use('/api/v1/students', studentRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/v1/auth', authRoutes);
 app.use('/api/auth', authRoutes);
+
+// API Version 2 Routes (HATEOAS Envelope Contract)
+app.use('/api/v2/students', studentRoutesV2);
 
 // Catch 404 unhandled routes
 app.use(notFound);

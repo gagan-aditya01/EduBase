@@ -5,7 +5,7 @@ const memoryCache = require('../utils/cacheEngine');
 const backgroundQueue = require('../utils/backgroundQueue');
 
 // @desc    Create a new student
-// @route   POST /api/students
+// @route   POST /api/v1/students
 // @access  Private/Admin
 const createStudent = async (req, res) => {
   try {
@@ -37,10 +37,8 @@ const createStudent = async (req, res) => {
       createdBy,
     });
 
-    // Invalidate Memory Cache after new student creation
     memoryCache.clearPattern('students_');
 
-    // Concept 2: Asynchronous Background Queue - Offload audit logging without blocking HTTP response
     backgroundQueue.enqueue('CREATE_STUDENT_AUDIT', async () => {
       await AuditLog.create({
         action: 'CREATE_STUDENT',
@@ -57,14 +55,13 @@ const createStudent = async (req, res) => {
   }
 };
 
-// @desc    Get all students (with support for RAM Caching, Pagination, Filtering & Relational Populate)
-// @route   GET /api/students
+// @desc    Get active non-deleted students (v1 contract)
+// @route   GET /api/v1/students
 // @access  Private
 const getStudents = async (req, res) => {
   try {
     const { studentId, name, age, minAge, maxAge, department, createdBy, search, page, limit } = req.query;
 
-    // Concept 1: In-Memory Caching Key
     const cacheKey = `students_${JSON.stringify(req.query)}`;
     const cachedData = memoryCache.get(cacheKey);
     if (cachedData) {
@@ -72,7 +69,8 @@ const getStudents = async (req, res) => {
       return res.json(cachedData);
     }
 
-    const filter = {};
+    // Filter out soft-deleted items
+    const filter = { isDeleted: { $ne: true } };
 
     if (search) {
       const searchRegex = new RegExp(search.trim(), 'i');
@@ -83,21 +81,10 @@ const getStudents = async (req, res) => {
       ];
     }
 
-    if (studentId) {
-      filter.studentId = { $regex: new RegExp(studentId.trim(), 'i') };
-    }
-
-    if (name) {
-      filter.name = { $regex: new RegExp(name.trim(), 'i') };
-    }
-
-    if (department) {
-      filter.department = { $regex: new RegExp(department.trim(), 'i') };
-    }
-
-    if (createdBy) {
-      filter.createdBy = { $regex: new RegExp(createdBy.trim(), 'i') };
-    }
+    if (studentId) filter.studentId = { $regex: new RegExp(studentId.trim(), 'i') };
+    if (name) filter.name = { $regex: new RegExp(name.trim(), 'i') };
+    if (department) filter.department = { $regex: new RegExp(department.trim(), 'i') };
+    if (createdBy) filter.createdBy = { $regex: new RegExp(createdBy.trim(), 'i') };
 
     if (age) {
       filter.age = Number(age);
@@ -131,7 +118,6 @@ const getStudents = async (req, res) => {
         }
       : students;
 
-    // Cache the response for 30 seconds
     memoryCache.set(cacheKey, responseData, 30);
     res.setHeader('X-Cache', 'MISS');
     res.json(responseData);
@@ -140,13 +126,47 @@ const getStudents = async (req, res) => {
   }
 };
 
+// @desc    Get active non-deleted students (v2 envelope contract with HATEOAS links)
+// @route   GET /api/v2/students
+// @access  Private
+const getStudentsV2 = async (req, res) => {
+  try {
+    const filter = { isDeleted: { $ne: true } };
+    const pageNum = parseInt(req.query.page, 10) || 1;
+    const limitNum = parseInt(req.query.limit, 10) || 10;
+    const skip = (pageNum - 1) * limitNum;
+
+    const total = await Student.countDocuments(filter);
+    const data = await Student.find(filter).skip(skip).limit(limitNum).sort({ createdAt: -1 });
+
+    res.json({
+      apiVersion: '2.0',
+      success: true,
+      metadata: {
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+        totalRecords: total,
+      },
+      data,
+      _links: {
+        self: `/api/v2/students?page=${pageNum}&limit=${limitNum}`,
+        next: pageNum * limitNum < total ? `/api/v2/students?page=${pageNum + 1}&limit=${limitNum}` : null,
+        prev: pageNum > 1 ? `/api/v2/students?page=${pageNum - 1}&limit=${limitNum}` : null,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 // @desc    Get a single student by studentId
-// @route   GET /api/students/:studentId
+// @route   GET /api/v1/students/:studentId
 // @access  Private
 const getStudentById = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const student = await Student.findOne({ studentId }).populate('departmentRef', 'name code');
+    const student = await Student.findOne({ studentId, isDeleted: { $ne: true } }).populate('departmentRef', 'name code');
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
@@ -159,14 +179,14 @@ const getStudentById = async (req, res) => {
 };
 
 // @desc    Update a student
-// @route   PUT /api/students/:studentId
+// @route   PUT /api/v1/students/:studentId
 // @access  Private/Admin
 const updateStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
     const { name, age, department } = req.body;
 
-    const student = await Student.findOne({ studentId });
+    const student = await Student.findOne({ studentId, isDeleted: { $ne: true } });
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
@@ -194,38 +214,99 @@ const updateStudent = async (req, res) => {
   }
 };
 
-// @desc    Delete a student
-// @route   DELETE /api/students/:studentId
+// @desc    Concept 2: Soft Delete a student (Sets isDeleted=true, deletedAt=Date)
+// @route   DELETE /api/v1/students/:studentId
 // @access  Private/Admin
 const deleteStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const student = await Student.findOne({ studentId });
+    const student = await Student.findOne({ studentId, isDeleted: { $ne: true } });
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    await student.deleteOne();
+    // Soft delete
+    student.isDeleted = true;
+    student.deletedAt = new Date();
+    await student.save();
+
     memoryCache.clearPattern('students_');
 
-    backgroundQueue.enqueue('DELETE_STUDENT_AUDIT', async () => {
+    backgroundQueue.enqueue('SOFT_DELETE_STUDENT_AUDIT', async () => {
       await AuditLog.create({
         action: 'DELETE_STUDENT',
         targetId: studentId,
         performedBy: req.user ? req.user.username : 'Admin',
-        details: `Deleted student ${student.name} (${studentId})`,
+        details: `Soft-deleted student ${student.name} (${studentId})`,
       });
     });
 
-    res.json({ message: 'Student removed successfully' });
+    res.json({ message: 'Student moved to trash console successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
 
-// @desc    Concept 3: Query Execution Performance Benchmark (explain())
-// @route   GET /api/students/performance/explain
+// @desc    Concept 2: Get all soft-deleted students (Admin Trash Bin Console)
+// @route   GET /api/v1/students/trash/list
+// @access  Private/Admin
+const getTrashStudents = async (req, res) => {
+  try {
+    const deletedStudents = await Student.find({ isDeleted: true }).sort({ deletedAt: -1 });
+    res.json(deletedStudents);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc    Concept 2: Restore soft-deleted student
+// @route   PUT /api/v1/students/trash/:studentId/restore
+// @access  Private/Admin
+const restoreStudent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const student = await Student.findOne({ studentId, isDeleted: true });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Soft-deleted student record not found' });
+    }
+
+    student.isDeleted = false;
+    student.deletedAt = null;
+    await student.save();
+
+    memoryCache.clearPattern('students_');
+
+    res.json({ message: 'Student record restored successfully', student });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc    Concept 2: Permanent Hard Purge student
+// @route   DELETE /api/v1/students/trash/:studentId/purge
+// @access  Private/Admin
+const purgeStudent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const student = await Student.findOne({ studentId });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Student record not found' });
+    }
+
+    await student.deleteOne();
+    memoryCache.clearPattern('students_');
+
+    res.json({ message: 'Student permanently purged from database' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc    Query Execution Performance Benchmark (explain())
+// @route   GET /api/v1/students/performance/explain
 // @access  Private/Admin
 const explainStudentQuery = async (req, res) => {
   try {
@@ -245,8 +326,12 @@ const explainStudentQuery = async (req, res) => {
 module.exports = {
   createStudent,
   getStudents,
+  getStudentsV2,
   getStudentById,
   updateStudent,
   deleteStudent,
+  getTrashStudents,
+  restoreStudent,
+  purgeStudent,
   explainStudentQuery,
 };

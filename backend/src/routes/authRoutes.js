@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   registerUser,
   loginUser,
+  refreshTokenHandler,
   getAllUsers,
   updateUser,
   deleteUser,
@@ -12,6 +13,7 @@ const { protect, admin } = require('../middlewares/authMiddleware');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
+router.post('/refresh', refreshTokenHandler);
 
 // Self password updates route
 router.route('/profile/password')

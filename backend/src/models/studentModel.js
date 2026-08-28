@@ -33,14 +33,24 @@ const studentSchema = new mongoose.Schema(
       default: 'Admin',
       trim: true,
     },
+    // Concept 2: Soft Deletes & Recovery Console
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// Concept 3: Database Indexing & Query Performance Optimization
+// Database Compound Indexes for Query Performance Optimization
 studentSchema.index({ department: 1, age: -1 });
-studentSchema.index({ createdBy: 1, createdAt: -1 });
+studentSchema.index({ isDeleted: 1, createdAt: -1 });
 
 module.exports = mongoose.model('Student', studentSchema);

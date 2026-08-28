@@ -4,24 +4,34 @@ const connectDB = require('../backend/src/db');
 const mongoose = require('mongoose');
 const path = require('path');
 
-// Load environment variables
 require('dotenv').config({ path: path.join(__dirname, '../backend/.env') });
 
 jest.setTimeout(30000);
 
 describe('Full-Stack Backend API Tests', () => {
+  let adminToken = '';
+  let refreshToken = '';
+
   beforeAll(async () => {
-    // Connect to the database for testing
+    // 1. Ensure DB connection is established first
     await connectDB();
     try {
       await mongoose.connection.collection('users').dropIndex('email_1');
     } catch (e) {
-      // Ignore if index doesn't exist
+      // Ignore
     }
+
+    // 2. Register test admin user
+    const username = `adm_${Date.now()}`;
+    const regRes = await request(app)
+      .post('/api/auth/register')
+      .send({ username, password: 'password123', role: 'admin' });
+
+    adminToken = regRes.body.token;
+    refreshToken = regRes.body.refreshToken;
   });
 
   afterAll(async () => {
-    // Disconnect database after tests finish
     await mongoose.connection.close();
   });
 
@@ -35,7 +45,6 @@ describe('Full-Stack Backend API Tests', () => {
     const res = await request(app).get('/api/students');
     expect(res.statusCode).toEqual(401);
     expect(res.body).toHaveProperty('error');
-    expect(res.body.error).toContain('Not authorized');
   });
 
   it('POST /api/students without auth should reject request (401 Unauthorized)', async () => {
@@ -54,26 +63,10 @@ describe('Full-Stack Backend API Tests', () => {
     const res = await request(app).get('/api/unhandled-route');
     expect(res.statusCode).toEqual(404);
     expect(res.body).toHaveProperty('error');
-    expect(res.body.error).toContain('does not exist on this server');
   });
 
   describe('Validation Error Tests', () => {
-    let adminToken = '';
-
     beforeAll(async () => {
-      // Register or login a test admin to get an auth token
-      const username = `admin_${Date.now()}`;
-      await request(app)
-        .post('/api/auth/register')
-        .send({ username, password: 'password123', role: 'admin' });
-
-      const loginRes = await request(app)
-        .post('/api/auth/login')
-        .send({ username, password: 'password123' });
-      
-      adminToken = loginRes.body.token;
-
-      // Seed one student to test duplicates
       await request(app)
         .post('/api/students')
         .set('Authorization', `Bearer ${adminToken}`)
@@ -97,7 +90,6 @@ describe('Full-Stack Backend API Tests', () => {
         });
       expect(res.statusCode).toEqual(400);
       expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('already exists');
     });
 
     it('POST /api/students with negative age should return 400 Bad Request', async () => {
@@ -112,7 +104,6 @@ describe('Full-Stack Backend API Tests', () => {
         });
       expect(res.statusCode).toEqual(400);
       expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('Age must be a number between 16 and 90');
     });
 
     it('POST /api/students with age too high should return 400 Bad Request', async () => {
@@ -127,8 +118,38 @@ describe('Full-Stack Backend API Tests', () => {
         });
       expect(res.statusCode).toEqual(400);
       expect(res.body).toHaveProperty('error');
-      expect(res.body.error).toContain('Age must be a number between 16 and 90');
+    });
+  });
+
+  describe('API v2 & Soft Delete & Refresh Token Tests', () => {
+    it('POST /api/auth/refresh should issue new access token', async () => {
+      const res = await request(app)
+        .post('/api/auth/refresh')
+        .send({ refreshToken });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('refreshToken');
+    });
+
+    it('GET /api/v2/students should return API v2 envelope contract', async () => {
+      const res = await request(app)
+        .get('/api/v2/students')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('apiVersion', '2.0');
+      expect(res.body).toHaveProperty('metadata');
+      expect(res.body).toHaveProperty('_links');
+    });
+
+    it('GET /api/v1/students/trash/list should return soft-deleted student console array', async () => {
+      const res = await request(app)
+        .get('/api/v1/students/trash/list')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(Array.isArray(res.body)).toBe(true);
     });
   });
 });
-

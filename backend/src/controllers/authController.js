@@ -1,10 +1,16 @@
 const User = require('../models/userModel');
 const jwt = require('jsonwebtoken');
 
-// Generate JWT Token helper
-const generateToken = (id) => {
+// Concept 1: Dual-Token Architecture (Access & Refresh Tokens)
+const generateAccessToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'supersecretkey123', {
-    expiresIn: '30d',
+    expiresIn: '30d', // 30 days for easy demo testing, upgradable to 15m
+  });
+};
+
+const generateRefreshToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey456', {
+    expiresIn: '7d',
   });
 };
 
@@ -19,13 +25,11 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    // Check if user already exists
     const userExists = await User.findOne({ username });
     if (userExists) {
       return res.status(400).json({ error: 'User already exists' });
     }
 
-    // Determine role (default is guest, unless explicitly setting admin for demo purposes)
     const userRole = role === 'admin' ? 'admin' : 'guest';
 
     const user = await User.create({
@@ -35,21 +39,28 @@ const registerUser = async (req, res) => {
     });
 
     if (user) {
+      const accessToken = generateAccessToken(user._id);
+      const refreshToken = generateRefreshToken(user._id);
+
+      user.refreshToken = refreshToken;
+      await user.save();
+
       res.status(201).json({
         _id: user._id,
         username: user.username,
         role: user.role,
-        token: generateToken(user._id),
+        token: accessToken,
+        refreshToken,
       });
     } else {
       res.status(400).json({ error: 'Invalid user data' });
     }
   } catch (error) {
-    res.status(550).json({ error: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
-// @desc    Authenticate user & get token
+// @desc    Authenticate user & get tokens
 // @route   POST /api/auth/login
 // @access  Public
 const loginUser = async (req, res) => {
@@ -63,17 +74,57 @@ const loginUser = async (req, res) => {
     const user = await User.findOne({ username });
 
     if (user && (await user.matchPassword(password))) {
+      const accessToken = generateAccessToken(user._id);
+      const refreshToken = generateRefreshToken(user._id);
+
+      user.refreshToken = refreshToken;
+      await user.save();
+
       res.json({
         _id: user._id,
         username: user.username,
         role: user.role,
-        token: generateToken(user._id),
+        token: accessToken,
+        refreshToken,
       });
     } else {
       res.status(401).json({ error: 'Invalid username or password' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+};
+
+// @desc    Concept 1: Refresh Access Token
+// @route   POST /api/auth/refresh
+// @access  Public
+const refreshTokenHandler = async (req, res) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(401).json({ error: 'Refresh token is required' });
+    }
+
+    const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || 'supersecretrefreshkey456');
+    const user = await User.findById(decoded.id);
+
+    if (!user || user.refreshToken !== refreshToken) {
+      return res.status(403).json({ error: 'Invalid or expired refresh token' });
+    }
+
+    const newAccessToken = generateAccessToken(user._id);
+    const newRefreshToken = generateRefreshToken(user._id);
+
+    user.refreshToken = newRefreshToken;
+    await user.save();
+
+    res.json({
+      token: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (error) {
+    res.status(403).json({ error: 'Refresh token expired or invalid' });
   }
 };
 
@@ -101,12 +152,10 @@ const updateUser = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Update role if provided
     if (role) {
       user.role = role;
     }
 
-    // Update password if provided (will trigger mongoose pre-save bcrypt hook)
     if (password) {
       user.password = password;
     }
@@ -134,7 +183,6 @@ const deleteUser = async (req, res) => {
       return res.status(404).json({ error: 'User not found' });
     }
 
-    // Prevent self-deletion
     if (user._id.toString() === req.user._id.toString()) {
       return res.status(400).json({ error: 'You cannot delete your own admin account' });
     }
@@ -146,7 +194,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// @desc    Update profile password (Any logged in user)
+// @desc    Update profile password
 // @route   PUT /api/auth/profile/password
 // @access  Private
 const updateProfilePassword = async (req, res) => {
@@ -158,7 +206,7 @@ const updateProfilePassword = async (req, res) => {
 
     const user = await User.findById(req.user._id);
     if (!user) {
-      return res.status(444).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'User not found' });
     }
 
     user.password = password;
@@ -173,6 +221,7 @@ const updateProfilePassword = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  refreshTokenHandler,
   getAllUsers,
   updateUser,
   deleteUser,
