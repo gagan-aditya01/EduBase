@@ -107,7 +107,7 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<'admin' | 'guest'>('guest');
+  const role = 'guest';
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -201,38 +201,6 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
       {/* Right Column: Animated Login Form */}
       <div className="w-full lg:w-1/2 h-[100vh] flex flex-col justify-center items-center px-6 lg:px-12 relative z-10 overflow-y-auto">
         <div className="w-full max-w-md">
-          {!isLogin && (
-            <div className="mb-4 flex flex-col gap-1.5">
-              <label className="text-xs font-semibold text-zinc-400 uppercase tracking-wider">
-                Select Account Role
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setRole('guest')}
-                  className={`py-2 px-3 border text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    role === 'guest'
-                      ? 'bg-zinc-800 border-zinc-600 text-white'
-                      : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  Guest (Read-Only)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRole('admin')}
-                  className={`py-2 px-3 border text-xs font-semibold rounded-lg transition-all cursor-pointer ${
-                    role === 'admin'
-                      ? 'bg-zinc-800 border-zinc-600 text-white'
-                      : 'bg-zinc-900/60 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                  }`}
-                >
-                  Admin (Full Access)
-                </button>
-              </div>
-            </div>
-          )}
-
           <AnimatedForm
             header={isLogin ? 'Welcome Back' : 'Join EduBase'}
             subHeader={
