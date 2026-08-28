@@ -103,13 +103,15 @@ const iconsArray = [
   },
 ];
 
-export function AuthPage({ onAuthSuccess }: AuthPageProps) {
+export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const role = 'guest';
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const isDark = theme === 'dark';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,9 +193,13 @@ export function AuthPage({ onAuthSuccess }: AuthPageProps) {
   ];
 
   return (
-    <section className="flex min-h-screen w-full relative overflow-hidden bg-background text-foreground">
+    <section className={`flex min-h-screen w-full relative overflow-hidden transition-colors duration-300 ${
+      isDark ? 'bg-zinc-950 text-zinc-100' : 'bg-[#fbfaf7] text-[#191919]'
+    }`}>
       {/* Left Column: Tech Orbit & Animated Ripple Display (Hidden on Mobile) */}
-      <div className="relative hidden lg:flex w-1/2 items-center justify-center border-r border-border/40 bg-zinc-950/60 backdrop-blur-xl overflow-hidden">
+      <div className={`relative hidden lg:flex w-1/2 items-center justify-center border-r backdrop-blur-xl overflow-hidden transition-colors duration-300 ${
+        isDark ? 'bg-zinc-950/60 border-zinc-800/60' : 'bg-[#f5f2eb]/90 border-[#e5e2d9]'
+      }`}>
         <Ripple mainCircleSize={120} numCircles={8} />
         <TechOrbitDisplay iconsArray={iconsArray} text="EduBase" />
       </div>

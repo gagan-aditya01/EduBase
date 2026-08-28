@@ -59,7 +59,7 @@ const Input = memo(
         <input
           type={type}
           className={cn(
-            `shadow-input dark:placeholder-text-neutral-600 flex h-10 w-full rounded-md border-none bg-gray-50 px-3 py-2 text-sm text-black transition duration-400 group-hover/input:shadow-none file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-neutral-400 focus-visible:ring-[2px] focus-visible:ring-neutral-400 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:bg-zinc-800 dark:text-white dark:shadow-[0px_0px_1px_1px_#404040] dark:focus-visible:ring-neutral-600`,
+            `shadow-input flex h-10 w-full rounded-md border px-3 py-2 text-sm transition duration-300 file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 bg-white border-[#e5e2d9] text-[#191919] placeholder:text-zinc-400 focus-visible:ring-2 focus-visible:ring-[#cc5a37]/50 dark:bg-zinc-900 dark:border-zinc-800 dark:text-white dark:placeholder:text-zinc-600 dark:focus-visible:ring-zinc-600`,
             className
           )}
           ref={ref}
@@ -146,7 +146,7 @@ const BoxReveal = memo(function BoxReveal({
           left: 0,
           right: 0,
           zIndex: 20,
-          background: boxColor ?? '#5046e6',
+          background: boxColor ?? '#e05a47',
           borderRadius: 4,
         }}
       />
@@ -172,7 +172,6 @@ const Ripple = memo(function Ripple({
   return (
     <section
       className={`max-w-[50%] absolute inset-0 flex items-center justify-center
-        dark:bg-white/5 bg-neutral-50
         [mask-image:linear-gradient(to_bottom,black,transparent)]
         dark:[mask-image:linear-gradient(to_bottom,white,transparent)] ${className}`}
     >
@@ -185,7 +184,7 @@ const Ripple = memo(function Ripple({
         return (
           <span
             key={i}
-            className="absolute animate-ripple rounded-full bg-foreground/15 border"
+            className="absolute animate-ripple rounded-full bg-foreground/10 border"
             style={{
               width: `${size}px`,
               height: `${size}px`,
@@ -235,7 +234,7 @@ const OrbitingCircles = memo(function OrbitingCircles({
           className="pointer-events-none absolute inset-0 size-full"
         >
           <circle
-            className="stroke-black/10 stroke-1 dark:stroke-white/10"
+            className="stroke-black/15 stroke-1 dark:stroke-white/10"
             cx="50%"
             cy="50%"
             r={radius}
@@ -252,7 +251,7 @@ const OrbitingCircles = memo(function OrbitingCircles({
           } as React.CSSProperties
         }
         className={cn(
-          'absolute flex size-full transform-gpu animate-orbit items-center justify-center rounded-full border bg-black/10 [animation-delay:calc(var(--delay)*1000ms)] dark:bg-white/10',
+          'absolute flex size-full transform-gpu animate-orbit items-center justify-center rounded-full border bg-black/5 [animation-delay:calc(var(--delay)*1000ms)] dark:bg-white/10',
           { '[animation-direction:reverse]': reverse },
           className
         )}
@@ -286,7 +285,7 @@ const TechOrbitDisplay = memo(function TechOrbitDisplay({
 }: TechnologyOrbitDisplayProps) {
   return (
     <section className="relative flex h-full w-full flex-col items-center justify-center overflow-hidden rounded-lg">
-      <span className="pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-black to-gray-400 bg-clip-text text-center text-7xl font-bold tracking-tight leading-none text-transparent dark:from-white dark:to-zinc-600">
+      <span className="pointer-events-none whitespace-pre-wrap bg-gradient-to-b from-[#e05a47] to-[#cc5a37] dark:from-white dark:to-zinc-600 bg-clip-text text-center text-7xl font-bold tracking-tight leading-none text-transparent">
         {text}
       </span>
 
@@ -383,24 +382,24 @@ const AnimatedForm = memo(function AnimatedForm({
   return (
     <section className="max-md:w-full flex flex-col gap-4 w-96 mx-auto">
       <BoxReveal boxColor="var(--skeleton)" duration={0.3}>
-        <h2 className="font-bold text-3xl text-neutral-800 dark:text-neutral-200">
+        <h2 className="font-bold text-3xl text-zinc-900 dark:text-zinc-100">
           {header}
         </h2>
       </BoxReveal>
 
       {subHeader && (
         <BoxReveal boxColor="var(--skeleton)" duration={0.3} className="pb-2">
-          <p className="text-neutral-600 text-sm max-w-sm dark:text-neutral-300">
+          <p className="text-zinc-500 dark:text-zinc-400 text-sm max-w-sm">
             {subHeader}
           </p>
         </BoxReveal>
       )}
 
-      {/* Social Login Buttons Matching App Aesthetic */}
+      {/* Social Login Buttons Matching Theme System */}
       <div className="grid grid-cols-2 gap-3">
         <BoxReveal boxColor="var(--skeleton)" duration={0.3} overflow="visible" width="100%">
           <button
-            className="g-button group/btn bg-zinc-900/40 hover:bg-zinc-800/80 dark:bg-zinc-900/60 dark:hover:bg-zinc-800 border border-zinc-700/60 w-full rounded-lg h-10 font-medium outline-hidden hover:cursor-pointer transition-all flex items-center justify-center gap-2.5 text-xs text-zinc-200"
+            className="g-button group/btn bg-white hover:bg-[#f5f2eb] border border-[#e5e2d9] text-[#191919] dark:bg-zinc-900/60 dark:hover:bg-zinc-800 dark:border-zinc-700/60 dark:text-zinc-200 w-full rounded-lg h-10 font-medium outline-hidden hover:cursor-pointer transition-all flex items-center justify-center gap-2.5 text-xs shadow-xs"
             type="button"
             onClick={onGoogleClick}
           >
@@ -416,11 +415,11 @@ const AnimatedForm = memo(function AnimatedForm({
 
         <BoxReveal boxColor="var(--skeleton)" duration={0.3} overflow="visible" width="100%">
           <button
-            className="g-button group/btn bg-zinc-900/40 hover:bg-zinc-800/80 dark:bg-zinc-900/60 dark:hover:bg-zinc-800 border border-zinc-700/60 w-full rounded-lg h-10 font-medium outline-hidden hover:cursor-pointer transition-all flex items-center justify-center gap-2.5 text-xs text-zinc-200"
+            className="g-button group/btn bg-white hover:bg-[#f5f2eb] border border-[#e5e2d9] text-[#191919] dark:bg-zinc-900/60 dark:hover:bg-zinc-800 dark:border-zinc-700/60 dark:text-zinc-200 w-full rounded-lg h-10 font-medium outline-hidden hover:cursor-pointer transition-all flex items-center justify-center gap-2.5 text-xs shadow-xs"
             type="button"
             onClick={onGithubClick}
           >
-            <svg className="w-4 h-4 fill-current text-zinc-200" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 fill-current text-[#191919] dark:text-zinc-200" viewBox="0 0 24 24">
               <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
             </svg>
             <span>GitHub</span>
@@ -431,11 +430,11 @@ const AnimatedForm = memo(function AnimatedForm({
 
       <BoxReveal boxColor="var(--skeleton)" duration={0.3} width="100%">
         <section className="flex items-center gap-4 py-1">
-          <hr className="flex-1 border-1 border-dashed border-neutral-300 dark:border-neutral-700" />
-          <p className="text-neutral-700 text-xs dark:text-neutral-400 uppercase tracking-widest">
+          <hr className="flex-1 border-1 border-dashed border-zinc-200 dark:border-zinc-800" />
+          <p className="text-zinc-500 dark:text-zinc-400 text-[11px] uppercase tracking-widest font-semibold">
             or continue with
           </p>
-          <hr className="flex-1 border-1 border-dashed border-neutral-300 dark:border-neutral-700" />
+          <hr className="flex-1 border-1 border-dashed border-zinc-200 dark:border-zinc-800" />
         </section>
       </BoxReveal>
 
@@ -444,7 +443,7 @@ const AnimatedForm = memo(function AnimatedForm({
           {fields.map((field) => (
             <section key={field.label} className="flex flex-col gap-1.5">
               <BoxReveal boxColor="var(--skeleton)" duration={0.3}>
-                <Label htmlFor={field.label}>
+                <Label htmlFor={field.label} className="text-zinc-800 dark:text-zinc-200 font-semibold">
                   {field.label} {field.required && <span className="text-red-500">*</span>}
                 </Label>
               </BoxReveal>
@@ -473,7 +472,7 @@ const AnimatedForm = memo(function AnimatedForm({
                     <button
                       type="button"
                       onClick={toggleVisibility}
-                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer"
                     >
                       {visible ? (
                         <Eye className="h-4 w-4" />
@@ -507,10 +506,7 @@ const AnimatedForm = memo(function AnimatedForm({
           overflow="visible"
         >
           <button
-            className="bg-gradient-to-br relative group/btn from-zinc-200 dark:from-zinc-900
-            dark:to-zinc-900 to-zinc-200 block dark:bg-zinc-800 w-full text-black
-            dark:text-white rounded-md h-10 font-medium shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] 
-              dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset] outline-hidden hover:cursor-pointer"
+            className="relative group/btn bg-[#cc5a37] hover:bg-[#b84d2e] text-white dark:bg-zinc-800 dark:hover:bg-zinc-750 dark:text-white w-full rounded-md h-10 font-semibold shadow-md transition-all outline-hidden hover:cursor-pointer"
             type="submit"
           >
             {submitButton} &rarr;
@@ -522,7 +518,7 @@ const AnimatedForm = memo(function AnimatedForm({
           <BoxReveal boxColor="var(--skeleton)" duration={0.3}>
             <section className="mt-4 text-center hover:cursor-pointer">
               <button
-                className="text-sm text-blue-500 hover:cursor-pointer outline-hidden"
+                className="text-sm font-semibold text-[#cc5a37] hover:text-[#b84d2e] dark:text-blue-400 dark:hover:text-blue-300 hover:underline cursor-pointer outline-hidden transition-colors"
                 onClick={goTo}
               >
                 {textVariantButton}
