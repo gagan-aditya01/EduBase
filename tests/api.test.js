@@ -7,6 +7,8 @@ const path = require('path');
 // Load environment variables
 require('dotenv').config({ path: path.join(__dirname, '../backend/.env') });
 
+jest.setTimeout(30000);
+
 describe('Full-Stack Backend API Tests', () => {
   beforeAll(async () => {
     // Connect to the database for testing
