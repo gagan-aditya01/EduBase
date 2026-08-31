@@ -110,17 +110,20 @@ function SelectItem({
         <SelectPrimitive.Item
             data-slot="select-item"
             className={cn(
-                "focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-disabled:pointer-events-none data-disabled:cursor-not-allowed data-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+                "relative flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg px-3 py-2 text-xs font-semibold outline-none select-none transition-colors",
+                "focus:bg-[#f0ede6] focus:text-[#191919] dark:focus:bg-zinc-800 dark:focus:text-zinc-100",
+                "data-[state=checked]:bg-[#f0ede6] data-[state=checked]:text-[#cc5a37] dark:data-[state=checked]:text-zinc-100 dark:data-[state=checked]:bg-zinc-800/90 data-[state=checked]:font-bold",
+                "data-disabled:pointer-events-none data-disabled:opacity-50",
                 className
             )}
             {...props}
         >
-            <span className="absolute right-2 flex size-3.5 items-center justify-center">
+            <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+            <span className="flex size-4 items-center justify-center shrink-0">
                 <SelectPrimitive.ItemIndicator>
-                    <Check className="size-4" />
+                    <Check className="size-3.5 text-[#cc5a37] dark:text-zinc-200" />
                 </SelectPrimitive.ItemIndicator>
             </span>
-            <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
         </SelectPrimitive.Item>
     )
 }

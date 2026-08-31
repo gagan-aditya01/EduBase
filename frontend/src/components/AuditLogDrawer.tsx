@@ -63,6 +63,27 @@ export function AuditLogDrawer({ currentUser, onClose, theme = 'dark' }: AuditLo
     return actionMatch && textMatch;
   });
 
+  const formatActionName = (action: string) => {
+    switch (action) {
+      case 'CREATE_STUDENT':
+        return 'Student Created';
+      case 'UPDATE_STUDENT':
+        return 'Student Updated';
+      case 'DELETE_STUDENT':
+        return 'Student Soft-Deleted';
+      case 'RESTORE_STUDENT':
+        return 'Student Restored';
+      case 'PURGE_STUDENT':
+        return 'Student Hard Purged';
+      case 'USER_LOGIN':
+        return 'User Login';
+      case 'CHANGE_PASSWORD':
+        return 'Password Change';
+      default:
+        return action.replace(/_/g, ' ');
+    }
+  };
+
   const getActionBadgeColor = (action: string) => {
     switch (action) {
       case 'CREATE_STUDENT':
@@ -169,12 +190,13 @@ export function AuditLogDrawer({ currentUser, onClose, theme = 'dark' }: AuditLo
               }`}
             >
               <option value="ALL">All Event Types</option>
-              <option value="CREATE_STUDENT">CREATE_STUDENT</option>
-              <option value="UPDATE_STUDENT">UPDATE_STUDENT</option>
-              <option value="DELETE_STUDENT">DELETE_STUDENT</option>
-              <option value="RESTORE_STUDENT">RESTORE_STUDENT</option>
-              <option value="PURGE_STUDENT">PURGE_STUDENT</option>
-              <option value="USER_LOGIN">USER_LOGIN</option>
+              <option value="CREATE_STUDENT">Student Created</option>
+              <option value="UPDATE_STUDENT">Student Updated</option>
+              <option value="DELETE_STUDENT">Student Soft-Deleted</option>
+              <option value="RESTORE_STUDENT">Student Restored</option>
+              <option value="PURGE_STUDENT">Student Hard Purged</option>
+              <option value="USER_LOGIN">User Login</option>
+              <option value="CHANGE_PASSWORD">Password Change</option>
             </select>
           </div>
         </div>
@@ -211,8 +233,8 @@ export function AuditLogDrawer({ currentUser, onClose, theme = 'dark' }: AuditLo
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] px-2 py-0.5 rounded-md font-mono uppercase font-bold border ${getActionBadgeColor(item.action)}`}>
-                      {item.action}
+                    <span className={`text-[10px] px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider border ${getActionBadgeColor(item.action)}`}>
+                      {formatActionName(item.action)}
                     </span>
                     {item.targetId && (
                       <span className="text-[11px] font-mono text-zinc-500">
