@@ -254,11 +254,11 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
           </div>
 
           {/* Left Column: User Stack List */}
-          <div className={`md:col-span-2 border-b md:border-b-0 md:border-r flex flex-col pr-6 md:pb-0 pb-6 z-10 relative overflow-hidden ${
+          <div className={`md:col-span-2 border-b md:border-b-0 md:border-r flex flex-col pr-6 md:pb-0 pb-6 z-10 relative overflow-hidden h-full min-h-0 ${
             isDark ? 'border-zinc-850/85' : 'border-[#e5e2d9]'
           }`}>
             {/* Header Title */}
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-850/10 dark:border-zinc-850/40">
+            <div className="flex items-center justify-between pb-4 border-b border-zinc-850/10 dark:border-zinc-850/40 shrink-0">
               <div className="flex items-center gap-2">
                 <ShieldAlert className={isDark ? 'text-zinc-400' : 'text-[#cc5a37]'} size={20} />
                 <h4 className="font-bold tracking-tight text-base">User Directory</h4>
@@ -271,7 +271,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
             </div>
 
             {/* Search inputs */}
-            <div className="my-5">
+            <div className="my-5 shrink-0">
               <div className="relative">
                 <Search size={14} className="absolute left-3.5 top-3.5 text-zinc-500" />
                 <input
@@ -289,7 +289,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
             </div>
 
             {/* Scrollable list */}
-            <div className="flex-1 overflow-y-auto space-y-3.5 max-h-[300px] md:max-h-none pr-1">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-3.5 pr-1.5 custom-scrollbar">
               {loading ? (
                 <div className="text-center p-12 text-zinc-500 text-xs">
                   <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-500 inline-block mr-2 align-middle" />
