@@ -46,7 +46,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | '404'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'analytics' | 'audit-logs' | 'users' | '404'>('dashboard');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [user, setUser] = useState<User | null>(null);
@@ -461,7 +461,7 @@ export default function App() {
                   link={{
                     label: 'Analytics Engine',
                     icon: <BarChart3 size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                    onClick: () => setShowAnalyticsModal(true),
+                    onClick: () => setCurrentPage('analytics'),
                   }}
                 />
 
@@ -471,14 +471,14 @@ export default function App() {
                       link={{
                         label: 'Audit Log Trail',
                         icon: <ShieldAlert size={18} className={theme === 'dark' ? 'text-amber-500' : 'text-[#cc5a37]'} />,
-                        onClick: () => setShowAuditLogs(true),
+                        onClick: () => setCurrentPage('audit-logs'),
                       }}
                     />
                     <SidebarLink
                       link={{
                         label: 'Manage Users',
                         icon: <Users size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                        onClick: () => setShowUserSidebar(true),
+                        onClick: () => setCurrentPage('users'),
                       }}
                     />
                   </>
@@ -603,134 +603,174 @@ export default function App() {
             transition={{ type: 'spring', stiffness: 260, damping: 30 }}
             style={{ transformOrigin: 'top center', transformStyle: 'preserve-3d' }}
           >
-        {/* Main dashboard content */}
-        <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
-        {/* Banner area */}
-        <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b transition-colors duration-300 ${
-          theme === 'dark' ? 'border-zinc-900' : 'border-[#e5e2d9]'
-        }`}>
-          <div>
-            <h1 className={`text-3xl font-bold tracking-tight flex items-center gap-2 ${
-              theme === 'dark' ? 'text-zinc-100' : 'text-[#191919]'
-            }`}>
-              {user.role === 'faculty' ? `${user.assignedDepartment || 'Faculty'} Department Portal` : 'Student & Faculty Directory'}
-              <Sparkles size={20} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
-            </h1>
-            <p className={theme === 'dark' ? 'text-zinc-500 text-sm mt-1' : 'text-zinc-500 text-sm mt-1'}>
-              {user.role === 'faculty'
-                ? `Department Scoped Workspace • Managing enrolled ${user.assignedDepartment || 'Department'} students`
-                : 'Manage academic database records, query departments, and inspect staff profiles.'}
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Show admin actions conditionally */}
-            {(user.role === 'admin' || user.role === 'faculty') && (
-              <>
-                {user.role === 'admin' && (
-                  <button
-                    onClick={handleSeedData}
-                    className={`text-xs border px-4 py-2 rounded-full transition-all cursor-pointer font-semibold ${
-                      theme === 'dark'
-                        ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800'
-                        : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
-                    }`}
-                  >
-                    Seed Realistic Data
-                  </button>
-                )}
-                {!showForm && !editingStudent && (
-                  <LiquidMetalButton
-                    label="Add Student"
-                    theme={theme}
-                    onClick={() => setShowForm(true)}
-                  />
-                )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Directory View Tabs */}
-        <div className="flex items-center gap-2 mt-6">
-          <button
-            onClick={() => setActiveDirectoryTab('students')}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
-              activeDirectoryTab === 'students'
-                ? theme === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
-                  : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
-                : theme === 'dark'
-                ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
-                : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
-            }`}
-          >
-            Student Directory ({students.length})
-          </button>
-
-          <button
-            onClick={() => setActiveDirectoryTab('faculty')}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
-              activeDirectoryTab === 'faculty'
-                ? theme === 'dark'
-                  ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
-                  : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
-                : theme === 'dark'
-                ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
-                : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
-            }`}
-          >
-            Faculty Directory
-          </button>
-        </div>
-
-        {/* Tab 1: Student Directory Content */}
-        {activeDirectoryTab === 'students' ? (
-          <>
-            {/* Dashboard Analytics Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
-              <div className="lg:col-span-2">
-                <StatsPanel students={students} theme={theme} />
-              </div>
-              <div>
-                <DepartmentChart students={students} theme={theme} />
-              </div>
+        {/* Main workspace content routing */}
+        <main className="max-w-7xl mx-auto px-6 py-10 relative z-10">
+          {currentPage === 'analytics' ? (
+            <div className="space-y-6">
+              <button
+                onClick={() => setCurrentPage('dashboard')}
+                className={`text-xs font-semibold px-4 py-2 rounded-2xl border transition-all cursor-pointer flex items-center gap-2 ${
+                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-[#191919] hover:text-[#cc5a37]'
+                }`}
+              >
+                &larr; Back to Dashboard
+              </button>
+              <AnalyticsModal currentUser={user} onClose={() => setCurrentPage('dashboard')} theme={theme} />
             </div>
-
-            {error && (
-              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm mt-8">
-                {error}
-              </div>
-            )}
-
-            <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
-              {/* Main List */}
-              <div className="flex-1 w-full order-2 lg:order-1">
-                <StudentList
-                  students={students}
-                  isLoading={loading}
-                  theme={theme}
-                  isAdmin={user.role === 'admin' || user.role === 'faculty'}
-                  onEdit={(student) => {
-                    setEditingStudent(student);
-                    setShowForm(true);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  onDelete={handleDelete}
-                  onBulkDelete={handleBulkDelete}
-                  filters={filters}
-                  setFilters={setFilters}
-                  onClearFilters={handleClearFilters}
-                />
-              </div>
+          ) : currentPage === 'audit-logs' ? (
+            <div className="space-y-6">
+              <button
+                onClick={() => setCurrentPage('dashboard')}
+                className={`text-xs font-semibold px-4 py-2 rounded-2xl border transition-all cursor-pointer flex items-center gap-2 ${
+                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-[#191919] hover:text-[#cc5a37]'
+                }`}
+              >
+                &larr; Back to Dashboard
+              </button>
+              <AuditLogDrawer currentUser={user} onClose={() => setCurrentPage('dashboard')} theme={theme} />
             </div>
-          </>
-        ) : (
-          /* Tab 2: Faculty Directory Content */
-          <div className="mt-6">
-            <FacultyDirectory currentUser={user} theme={theme} />
-          </div>
-        )}
+          ) : currentPage === 'users' ? (
+            <div className="space-y-6">
+              <button
+                onClick={() => setCurrentPage('dashboard')}
+                className={`text-xs font-semibold px-4 py-2 rounded-2xl border transition-all cursor-pointer flex items-center gap-2 ${
+                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-[#191919] hover:text-[#cc5a37]'
+                }`}
+              >
+                &larr; Back to Dashboard
+              </button>
+              <UserManageSidebar currentUser={user} onClose={() => setCurrentPage('dashboard')} theme={theme} addToast={addToast} />
+            </div>
+          ) : (
+            <>
+              {/* Banner area */}
+              <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b transition-colors duration-300 ${
+                theme === 'dark' ? 'border-zinc-900' : 'border-[#e5e2d9]'
+              }`}>
+                <div>
+                  <h1 className={`text-3xl font-bold tracking-tight flex items-center gap-2 ${
+                    theme === 'dark' ? 'text-zinc-100' : 'text-[#191919]'
+                  }`}>
+                    {user.role === 'faculty' ? `${user.assignedDepartment || 'Faculty'} Department Portal` : 'Student & Faculty Directory'}
+                    <Sparkles size={20} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
+                  </h1>
+                  <p className={theme === 'dark' ? 'text-zinc-500 text-sm mt-1' : 'text-zinc-500 text-sm mt-1'}>
+                    {user.role === 'faculty'
+                      ? `Department Scoped Workspace • Managing enrolled ${user.assignedDepartment || 'Department'} students`
+                      : 'Manage academic database records, query departments, and inspect staff profiles.'}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  {/* Show admin actions conditionally */}
+                  {(user.role === 'admin' || user.role === 'faculty') && (
+                    <>
+                      {user.role === 'admin' && (
+                        <button
+                          onClick={handleSeedData}
+                          className={`text-xs border px-4 py-2 rounded-full transition-all cursor-pointer font-semibold ${
+                            theme === 'dark'
+                              ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800'
+                              : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
+                          }`}
+                        >
+                          Seed Realistic Data
+                        </button>
+                      )}
+                      {!showForm && !editingStudent && (
+                        <LiquidMetalButton
+                          label="Add Student"
+                          theme={theme}
+                          onClick={() => setShowForm(true)}
+                        />
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Directory View Tabs */}
+              <div className="flex items-center gap-2 mt-6">
+                <button
+                  onClick={() => setActiveDirectoryTab('students')}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                    activeDirectoryTab === 'students'
+                      ? theme === 'dark'
+                        ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
+                        : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
+                      : theme === 'dark'
+                      ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
+                      : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
+                  }`}
+                >
+                  Student Directory ({students.length})
+                </button>
+
+                <button
+                  onClick={() => setActiveDirectoryTab('faculty')}
+                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+                    activeDirectoryTab === 'faculty'
+                      ? theme === 'dark'
+                        ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
+                        : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
+                      : theme === 'dark'
+                      ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
+                      : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
+                  }`}
+                >
+                  Faculty Directory
+                </button>
+              </div>
+
+              {/* Tab 1: Student Directory Content */}
+              {activeDirectoryTab === 'students' ? (
+                <>
+                  {/* Dashboard Analytics Section */}
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+                    <div className="lg:col-span-2">
+                      <StatsPanel students={students} theme={theme} />
+                    </div>
+                    <div>
+                      <DepartmentChart students={students} theme={theme} />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm mt-8">
+                      {error}
+                    </div>
+                  )}
+
+                  <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
+                    {/* Main List */}
+                    <div className="flex-1 w-full order-2 lg:order-1">
+                      <StudentList
+                        students={students}
+                        isLoading={loading}
+                        theme={theme}
+                        isAdmin={user.role === 'admin' || user.role === 'faculty'}
+                        onEdit={(student) => {
+                          setEditingStudent(student);
+                          setShowForm(true);
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        onDelete={handleDelete}
+                        onBulkDelete={handleBulkDelete}
+                        filters={filters}
+                        setFilters={setFilters}
+                        onClearFilters={handleClearFilters}
+                      />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                /* Tab 2: Faculty Directory Content */
+                <div className="mt-6">
+                  <FacultyDirectory currentUser={user} theme={theme} />
+                </div>
+              )}
+            </>
+          )}
           {/* Form Side-Sheet with backdrop */}
           <AnimatePresence>
             {showForm && (
