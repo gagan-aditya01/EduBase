@@ -2,6 +2,13 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, ShieldAlert, Key, Search, ChevronRight, Shield, Building, Globe, Clock } from 'lucide-react';
 import { ConfirmDialog } from './ui/ConfirmDialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/interfaces-select';
 
 interface DBUser {
   _id: string;
@@ -69,7 +76,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
         throw new Error(data.error || 'Failed to fetch users');
       }
       setUsers(data);
-      
+
       // Auto-select first non-super user if none selected
       const nonSuper = data.filter((u: DBUser) => u.username !== 'yashureddy4044@gmail.com');
       if (nonSuper.length > 0) {
@@ -218,13 +225,24 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
   });
 
   const getRoleBadgeStyle = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'bg-rose-500/10 border-rose-500/30 text-rose-400';
-      case 'faculty':
-        return 'bg-[#cc5a37]/10 border-[#cc5a37]/30 text-[#cc5a37] dark:text-[#e05a47]';
-      default:
-        return 'bg-zinc-800 border-zinc-700 text-zinc-400';
+    if (isDark) {
+      switch (role) {
+        case 'admin':
+          return 'bg-rose-500/10 border-rose-500/30 text-rose-400';
+        case 'faculty':
+          return 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400';
+        default:
+          return 'bg-zinc-800 border-zinc-700 text-zinc-400';
+      }
+    } else {
+      switch (role) {
+        case 'admin':
+          return 'bg-rose-50 border-rose-200 text-rose-600';
+        case 'faculty':
+          return 'bg-blue-50 border-blue-200 text-blue-600';
+        default:
+          return 'bg-[#f0ede6] border-[#e5e2d9] text-zinc-650';
+      }
     }
   };
 
@@ -240,7 +258,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
           onClick={onClose}
         />
 
-        {/* Centered 3D Console Card Overlay */}
+        {/* Centered Console Card Overlay */}
         <motion.div
           initial={{ scale: 0.9, y: 30, opacity: 0 }}
           animate={{ scale: 1, y: 0, opacity: 1 }}
@@ -248,8 +266,8 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
           transition={{ type: 'spring', stiffness: 300, damping: 26 }}
           className={`w-full max-w-5xl h-[85vh] max-h-[720px] min-h-[520px] p-6 md:p-8 rounded-[36px] border shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-6 z-10 relative ${
             isDark
-              ? 'bg-zinc-950/85 border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)] text-zinc-100 backdrop-blur-3xl'
-              : 'bg-[#fbfaf7]/90 border-[#e5e2d9]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)] text-[#191919] backdrop-blur-3xl'
+              ? 'bg-zinc-950/90 border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)] text-zinc-100 backdrop-blur-3xl'
+              : 'bg-[#fbfaf7] border-[#e5e2d9] shadow-[inset_0_1px_1px_rgba(255,255,255,0.6)] text-[#191919] backdrop-blur-3xl'
           }`}
           onClick={(e) => e.stopPropagation()}
         >
@@ -258,13 +276,15 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
             isDark ? 'border-zinc-850/80' : 'border-[#e5e2d9]'
           }`}>
             {/* Title Bar */}
-            <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800/40 shrink-0">
+            <div className={`flex items-center justify-between pb-3.5 border-b shrink-0 ${
+              isDark ? 'border-zinc-800/40' : 'border-[#e5e2d9]'
+            }`}>
               <div className="flex items-center gap-2">
-                <ShieldAlert className={isDark ? 'text-zinc-400' : 'text-[#cc5a37]'} size={20} />
+                <ShieldAlert className={isDark ? 'text-indigo-400' : 'text-[#cc5a37]'} size={20} />
                 <h4 className="font-bold tracking-tight text-base">User Directory</h4>
               </div>
               <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full border ${
-                isDark ? 'bg-zinc-900 border-zinc-850 text-zinc-400' : 'bg-[#f5f2eb] border-[#e5e2d9] text-zinc-650'
+                isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-400' : 'bg-[#f0ede6] border-[#e5e2d9] text-zinc-700'
               }`}>
                 {nonSuperUsers.length} Users
               </span>
@@ -281,7 +301,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={`w-full rounded-2xl pl-9 pr-4 py-2.5 text-xs focus:outline-none border transition-colors ${
                     isDark
-                      ? 'bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder-zinc-600 focus:border-zinc-700'
+                      ? 'bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder-zinc-600 focus:border-indigo-500/50'
                       : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400 focus:border-[#cc5a37]/50'
                   }`}
                 />
@@ -309,16 +329,22 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                       className={`flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all border select-none ${
                         isSelected
                           ? isDark
-                            ? 'bg-zinc-900 border-zinc-700 shadow-md text-white'
-                            : 'bg-[#f5f2eb] border-[#cc5a37] text-[#cc5a37]'
+                            ? 'bg-indigo-950/60 border-indigo-500/40 text-indigo-200 shadow-md'
+                            : 'bg-[#f0ede6] border-[#cc5a37] text-[#cc5a37]'
                           : isDark
-                          ? 'bg-zinc-900/30 border-zinc-800/60 hover:bg-zinc-900/60'
-                          : 'bg-white border-[#e5e2d9] hover:bg-[#fbfaf7]'
+                          ? 'bg-zinc-900/30 border-zinc-800/60 hover:bg-zinc-900/60 text-zinc-300'
+                          : 'bg-white border-[#e5e2d9] hover:bg-[#f5f2eb] text-[#191919]'
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold text-xs shrink-0 ${
-                          isDark ? 'bg-zinc-800 border-zinc-700 text-zinc-300' : 'bg-[#f5f2eb] border-[#e5e2d9] text-[#cc5a37]'
+                          isSelected
+                            ? isDark
+                              ? 'bg-indigo-600 border-indigo-500 text-white'
+                              : 'bg-[#cc5a37] border-[#cc5a37] text-white'
+                            : isDark
+                            ? 'bg-zinc-800 border-zinc-700 text-zinc-300'
+                            : 'bg-[#f0ede6] border-[#e5e2d9] text-[#cc5a37]'
                         }`}>
                           {u.username.charAt(0).toUpperCase()}
                         </div>
@@ -332,7 +358,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                               {u.role}
                             </span>
                             {u.role === 'faculty' && u.assignedDepartment && (
-                              <span className="text-[9px] text-zinc-400 font-medium truncate max-w-[100px]">
+                              <span className={`text-[9px] font-medium truncate max-w-[100px] ${isDark ? 'text-cyan-400/80' : 'text-blue-600/80'}`}>
                                 {u.assignedDepartment}
                               </span>
                             )}
@@ -340,7 +366,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                         </div>
                       </div>
 
-                      <ChevronRight size={14} className={isSelected ? 'text-zinc-200' : 'text-zinc-600'} />
+                      <ChevronRight size={14} className={isSelected ? (isDark ? 'text-indigo-400' : 'text-[#cc5a37]') : 'text-zinc-500'} />
                     </div>
                   );
                 })
@@ -351,7 +377,9 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
           {/* Right Column: User details console (7 cols) */}
           <div className="md:col-span-7 flex flex-col h-full min-h-0 pl-0 md:pl-2 overflow-y-auto">
             {/* Top Close Button */}
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/40 shrink-0 mb-4">
+            <div className={`flex items-center justify-between pb-3 border-b shrink-0 mb-4 ${
+              isDark ? 'border-zinc-800/40' : 'border-[#e5e2d9]'
+            }`}>
               <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Account Inspector</span>
               <button
                 onClick={onClose}
@@ -366,7 +394,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
             <AnimatePresence mode="wait">
               {!selectedUser ? (
                 <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3">
-                  <div className={`p-4 rounded-2xl border ${isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-[#f5f2eb] border-[#e5e2d9] text-zinc-400'}`}>
+                  <div className={`p-4 rounded-2xl border ${isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-[#f0ede6] border-[#e5e2d9] text-zinc-400'}`}>
                     <User size={32} />
                   </div>
                   <span className="text-sm font-bold">No User Selected</span>
@@ -383,7 +411,9 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                   {/* Account Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-2xl border bg-gradient-to-tr from-[#cc5a37] to-[#e05a47] text-white flex items-center justify-center font-bold text-lg shadow-md">
+                      <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center font-bold text-lg shadow-md ${
+                        isDark ? 'bg-indigo-600 border-indigo-500 text-white' : 'bg-[#cc5a37] border-[#cc5a37] text-white'
+                      }`}>
                         {selectedUser.username.charAt(0).toUpperCase()}
                       </div>
                       <div>
@@ -407,21 +437,21 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                   <div className={`p-4 rounded-2xl border space-y-3 text-xs ${
                     isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
                   }`}>
-                    <div className="flex items-center justify-between pb-2 border-b border-zinc-800/30">
+                    <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-800/30' : 'border-[#e5e2d9]/50'}`}>
                       <span className="text-zinc-500 font-semibold flex items-center gap-1.5">
                         <Globe size={13} /> Authentication Method
                       </span>
-                      <span className="font-mono text-zinc-300 font-medium">
+                      <span className="font-mono text-zinc-400 font-medium">
                         {selectedUser.authProvider ? `${selectedUser.authProvider.toUpperCase()} OAuth` : 'Local Password'}
                       </span>
                     </div>
 
                     {selectedUser.assignedDepartment && (
-                      <div className="flex items-center justify-between pb-2 border-b border-zinc-800/30">
+                      <div className={`flex items-center justify-between pb-2 border-b ${isDark ? 'border-zinc-800/30' : 'border-[#e5e2d9]/50'}`}>
                         <span className="text-zinc-500 font-semibold flex items-center gap-1.5">
                           <Building size={13} /> Assigned Department
                         </span>
-                        <span className="font-bold text-[#cc5a37] dark:text-[#e05a47]">
+                        <span className={`font-bold ${isDark ? 'text-cyan-400' : 'text-blue-600'}`}>
                           {selectedUser.assignedDepartment}
                         </span>
                       </div>
@@ -438,14 +468,16 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                   </div>
 
                   {/* Role & Department Editor Panel */}
-                  <div className={`p-4 rounded-2xl border space-y-3 ${
-                    isDark ? 'bg-zinc-900/30 border-zinc-800' : 'bg-[#f5f2eb]/60 border-[#e5e2d9]'
+                  <div className={`p-4 rounded-2xl border space-y-4 ${
+                    isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-[#f5f2eb] border-[#e5e2d9]'
                   }`}>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between flex-wrap gap-2">
                       <span className="text-xs font-bold text-zinc-400 flex items-center gap-1.5">
                         <Shield size={14} /> Change Role
                       </span>
-                      <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+                      <div className={`flex items-center gap-1 p-1 rounded-xl border ${
+                        isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-[#e5e2d9]'
+                      }`}>
                         {(['guest', 'faculty', 'admin'] as const).map((r) => (
                           <button
                             key={r}
@@ -453,7 +485,9 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                             onClick={() => setRoleInput(r)}
                             className={`px-3 py-1 rounded-lg font-bold text-[10px] uppercase transition-all cursor-pointer ${
                               roleInput === r
-                                ? 'bg-[#cc5a37] text-white shadow-md'
+                                ? isDark
+                                  ? 'bg-indigo-600 text-white shadow-md'
+                                  : 'bg-[#cc5a37] text-white shadow-md'
                                 : 'text-zinc-500 hover:text-zinc-300'
                             }`}
                           >
@@ -463,26 +497,31 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                       </div>
                     </div>
 
+                    {/* Radix UI Interfaces Select for Target Department */}
                     {roleInput === 'faculty' && (
-                      <div className="flex items-center justify-between pt-2 border-t border-zinc-800/30">
+                      <div className={`flex items-center justify-between pt-3 border-t flex-wrap gap-3 ${
+                        isDark ? 'border-zinc-800/40' : 'border-[#e5e2d9]'
+                      }`}>
                         <span className="text-xs font-bold text-zinc-400 flex items-center gap-1.5">
                           <Building size={14} /> Target Department
                         </span>
-                        <select
-                          value={deptInput}
-                          onChange={(e) => setDeptInput(e.target.value)}
-                          className={`rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none border transition-colors cursor-pointer ${
+
+                        <Select value={deptInput} onValueChange={(val) => setDeptInput(val)}>
+                          <SelectTrigger className={`w-52 rounded-xl text-xs font-semibold ${
                             isDark
-                              ? 'bg-zinc-950 border-zinc-800 text-zinc-200'
-                              : 'bg-white border-[#e5e2d9] text-[#191919]'
-                          }`}
-                        >
-                          {COMMON_DEPARTMENTS.map((dept) => (
-                            <option key={dept} value={dept}>
-                              {dept}
-                            </option>
-                          ))}
-                        </select>
+                              ? 'bg-zinc-950 border-zinc-800 text-zinc-200 hover:bg-zinc-900'
+                              : 'bg-white border-[#e5e2d9] text-[#191919] hover:bg-[#f0ede6]'
+                          }`}>
+                            <SelectValue placeholder="Select Department" />
+                          </SelectTrigger>
+                          <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+                            {COMMON_DEPARTMENTS.map((dept) => (
+                              <SelectItem key={dept} value={dept} className="text-xs font-medium cursor-pointer">
+                                {dept}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
                     )}
 
@@ -491,7 +530,11 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                         type="button"
                         onClick={handleRoleDeptUpdate}
                         disabled={updatingRole}
-                        className="bg-[#cc5a37] hover:bg-[#e05a47] text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
+                        className={`font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50 ${
+                          isDark
+                            ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                            : 'bg-[#cc5a37] hover:bg-[#e05a47] text-white'
+                        }`}
                       >
                         {updatingRole ? 'Saving...' : 'Update Role & Dept'}
                       </button>
@@ -504,7 +547,9 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                       Reset Password
                     </label>
                     {selectedUser.authProvider && selectedUser.authProvider !== 'local' ? (
-                      <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 text-xs text-zinc-400">
+                      <div className={`p-3 rounded-2xl border text-xs text-zinc-400 ${
+                        isDark ? 'border-zinc-800 bg-zinc-900/40' : 'border-[#e5e2d9] bg-white'
+                      }`}>
                         Password reset is disabled for OAuth accounts ({selectedUser.authProvider.toUpperCase()}).
                       </div>
                     ) : (
@@ -527,7 +572,11 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                           <button
                             type="button"
                             onClick={() => handlePasswordReset(selectedUser._id)}
-                            className="bg-[#cc5a37] hover:bg-[#e05a47] text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                            className={`font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer ${
+                              isDark
+                                ? 'bg-indigo-600 hover:bg-indigo-500 text-white'
+                                : 'bg-[#cc5a37] hover:bg-[#e05a47] text-white'
+                            }`}
                           >
                             Save Password
                           </button>
@@ -537,7 +586,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                   </div>
 
                   {/* Delete Account Footer */}
-                  <div className="border-t pt-4 border-zinc-800/40 flex justify-end">
+                  <div className={`border-t pt-4 flex justify-end ${isDark ? 'border-zinc-800/40' : 'border-[#e5e2d9]'}`}>
                     <button
                       type="button"
                       onClick={() => setConfirmDeleteUser(selectedUser)}
