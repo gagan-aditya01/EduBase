@@ -15,8 +15,13 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'guest'],
+      enum: ['admin', 'guest', 'faculty'],
       default: 'guest',
+    },
+    assignedDepartment: {
+      type: String,
+      trim: true,
+      default: null,
     },
     refreshToken: {
       type: String,

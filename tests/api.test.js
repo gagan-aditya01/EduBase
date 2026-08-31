@@ -167,4 +167,56 @@ describe('Full-Stack Backend API Tests', () => {
       expect(Array.isArray(res.body.data)).toBe(true);
     });
   });
+
+  describe('Phase 2: Fine-Grained RBAC & Faculty Department Scoping Tests', () => {
+    let facultyToken = '';
+    const facultyUsername = `fac_${Date.now()}`;
+
+    beforeAll(async () => {
+      // 1. Register a faculty user via admin
+      const regRes = await request(app)
+        .post('/api/auth/register')
+        .send({ username: facultyUsername, password: 'password123', role: 'faculty' });
+
+      const facUserObj = regRes.body;
+      facultyToken = facUserObj.token;
+
+      // 2. Admin assigns department 'Computer Science' to faculty user
+      await request(app)
+        .put(`/api/auth/users/${facUserObj._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'faculty', assignedDepartment: 'Computer Science' });
+    });
+
+    it('Faculty should successfully create student in assigned department (Computer Science)', async () => {
+      const res = await request(app)
+        .post('/api/v1/students')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({
+          studentId: `FAC_CS_${Date.now()}`,
+          name: 'CS Faculty Student',
+          age: 21,
+          department: 'Computer Science',
+        });
+
+      expect(res.statusCode).toEqual(201);
+      expect(res.body).toHaveProperty('department', 'Computer Science');
+    });
+
+    it('Faculty should be rejected when creating student outside assigned department (403 Forbidden)', async () => {
+      const res = await request(app)
+        .post('/api/v1/students')
+        .set('Authorization', `Bearer ${facultyToken}`)
+        .send({
+          studentId: `FAC_OTHER_${Date.now()}`,
+          name: 'Non-CS Student',
+          age: 22,
+          department: 'Philosophy',
+        });
+
+      expect(res.statusCode).toEqual(403);
+      expect(res.body).toHaveProperty('error');
+      expect(res.body.error).toContain('Access denied');
+    });
+  });
 });

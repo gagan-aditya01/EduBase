@@ -29,7 +29,8 @@ interface Student {
 interface User {
   token: string;
   username: string;
-  role: 'admin' | 'guest';
+  role: 'admin' | 'guest' | 'faculty';
+  assignedDepartment?: string;
 }
 
 interface NotificationItem {
@@ -500,9 +501,22 @@ export default function App() {
                         <span className="text-sm font-bold truncate">
                           {user.username}
                         </span>
-                        <span className="text-[10px] text-zinc-500 font-medium truncate">
-                          {user.username.toLowerCase()}@nucleus-ui.com
-                        </span>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase font-bold border ${
+                            user.role === 'admin'
+                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                              : user.role === 'faculty'
+                              ? 'bg-[#cc5a37]/10 border-[#cc5a37]/30 text-[#cc5a37]'
+                              : 'bg-zinc-800 border-zinc-700 text-zinc-400'
+                          }`}>
+                            {user.role}
+                          </span>
+                          {user.role === 'faculty' && user.assignedDepartment && (
+                            <span className="text-[9px] text-zinc-400 font-semibold truncate max-w-[110px]">
+                              {user.assignedDepartment}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
 

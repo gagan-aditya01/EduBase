@@ -353,6 +353,7 @@ const registerUser = async (req, res) => {
         _id: user._id,
         username: user.username,
         role: user.role,
+        assignedDepartment: user.assignedDepartment,
         authProvider: user.authProvider,
         token: accessToken,
         refreshToken,
@@ -398,6 +399,7 @@ const loginUser = async (req, res) => {
         _id: user._id,
         username: user.username,
         role: user.role,
+        assignedDepartment: user.assignedDepartment,
         authProvider: user.authProvider,
         token: accessToken,
         refreshToken,
@@ -470,6 +472,10 @@ const updateUser = async (req, res) => {
       user.role = req.body.role;
     }
 
+    if (req.body.assignedDepartment !== undefined) {
+      user.assignedDepartment = req.body.assignedDepartment;
+    }
+
     if (req.body.password) {
       if (user.authProvider && user.authProvider !== 'local') {
         return res.status(400).json({ error: 'Cannot modify password for OAuth accounts (Google/GitHub).' });
@@ -482,6 +488,7 @@ const updateUser = async (req, res) => {
       _id: updatedUser._id,
       username: updatedUser.username,
       role: updatedUser.role,
+      assignedDepartment: updatedUser.assignedDepartment,
       authProvider: updatedUser.authProvider,
     });
   } catch (error) {

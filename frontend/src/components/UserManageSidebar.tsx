@@ -1,25 +1,38 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, ShieldAlert, Key, Search, Calendar, ChevronRight } from 'lucide-react';
+import { X, User, ShieldAlert, Key, Search, ChevronRight, Shield, Building } from 'lucide-react';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
 
 interface DBUser {
   _id: string;
   username: string;
-  role: 'admin' | 'guest';
+  role: 'admin' | 'guest' | 'faculty';
+  assignedDepartment?: string;
   authProvider?: 'local' | 'google' | 'github';
   createdAt?: string;
   updatedAt?: string;
 }
 
 interface UserManageSidebarProps {
-  currentUser: { token: string; username: string; role: 'admin' | 'guest' };
+  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' };
   onClose: () => void;
   theme?: 'light' | 'dark';
   onAddNotification?: (type: 'info' | 'success' | 'warning', message: string) => void;
   addToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
+
+const COMMON_DEPARTMENTS = [
+  'Computer Science',
+  'Electrical Engineering',
+  'Mechanical Engineering',
+  'ADSE',
+  'Astrophysics',
+  'Mathematics',
+  'Political Science',
+  'Robotics',
+  'Social Work',
+];
 
 export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddNotification, addToast }: UserManageSidebarProps) {
   const [users, setUsers] = useState<DBUser[]>([]);
@@ -28,6 +41,9 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedUser, setSelectedUser] = useState<DBUser | null>(null);
   const [passwordInput, setPasswordInput] = useState('');
+  const [roleInput, setRoleInput] = useState<'guest' | 'faculty' | 'admin'>('guest');
+  const [deptInput, setDeptInput] = useState('Computer Science');
+  const [updatingRole, setUpdatingRole] = useState(false);
   const [confirmDeleteUser, setConfirmDeleteUser] = useState<DBUser | null>(null);
 
   const isDark = theme === 'dark';
@@ -56,6 +72,54 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  const handleUserSelect = (u: DBUser) => {
+    setSelectedUser(u);
+    setPasswordInput('');
+    setRoleInput(u.role || 'guest');
+    setDeptInput(u.assignedDepartment || 'Computer Science');
+  };
+
+  const handleRoleDeptUpdate = async () => {
+    if (!selectedUser) return;
+    try {
+      setUpdatingRole(true);
+      setError('');
+      const res = await fetch(`http://localhost:5050/api/auth/users/${selectedUser._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentUser.token}`,
+        },
+        body: JSON.stringify({
+          role: roleInput,
+          assignedDepartment: roleInput === 'faculty' ? deptInput : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to update user role');
+      }
+
+      setUsers((prev) =>
+        prev.map((u) => (u._id === selectedUser._id ? { ...u, role: data.role, assignedDepartment: data.assignedDepartment } : u))
+      );
+      setSelectedUser((prev) => (prev ? { ...prev, role: data.role, assignedDepartment: data.assignedDepartment } : null));
+
+      onAddNotification?.('info', `Updated user ${selectedUser.username} to ${data.role.toUpperCase()}`);
+      if (addToast) {
+        addToast('success', `User role updated to ${data.role.toUpperCase()}!`);
+      }
+    } catch (err: any) {
+      setError(err.message);
+      if (addToast) {
+        addToast('error', err.message);
+      }
+    } finally {
+      setUpdatingRole(false);
+    }
+  };
 
   const handlePasswordReset = async (userId: string) => {
     if (!passwordInput || passwordInput.trim().length < 4) {
@@ -120,16 +184,29 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
     }
   };
 
-  // Filter ONLY Guest accounts
-  const guestUsers = users.filter((u) => u.role === 'guest');
+  // Filter accounts for display
+  const nonSuperUsers = users.filter((u) => u.username !== 'yashureddy4044@gmail.com');
 
-  // Search safely matching both ID and username
-  const filteredUsers = guestUsers.filter((u) => {
+  // Search safely matching username, ID, role, or department
+  const filteredUsers = nonSuperUsers.filter((u) => {
     const usernameMatch = u.username ? u.username.toLowerCase() : '';
     const idMatch = u._id ? u._id.toString().toLowerCase() : '';
+    const roleMatch = u.role ? u.role.toLowerCase() : '';
+    const deptMatch = u.assignedDepartment ? u.assignedDepartment.toLowerCase() : '';
     const query = searchQuery.toLowerCase();
-    return usernameMatch.includes(query) || idMatch.includes(query);
+    return usernameMatch.includes(query) || idMatch.includes(query) || roleMatch.includes(query) || deptMatch.includes(query);
   });
+
+  const getRoleBadgeStyle = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return 'bg-rose-500/10 border-rose-500/30 text-rose-400';
+      case 'faculty':
+        return 'bg-[#cc5a37]/10 border-[#cc5a37]/30 text-[#cc5a37] dark:text-[#e05a47]';
+      default:
+        return 'bg-zinc-800 border-zinc-700 text-zinc-400';
+    }
+  };
 
   return (
     <>
@@ -143,16 +220,16 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
           onClick={onClose}
         />
 
-        {/* Centered 3D Console Card Overlay - Overhauled for Liquid Glass & Metal */}
+        {/* Centered 3D Console Card Overlay */}
         <motion.div
           initial={{ scale: 0.85, rotateX: -15, y: 50, opacity: 0 }}
           animate={{ scale: 1, rotateX: 0, y: 0, opacity: 1 }}
           exit={{ scale: 0.85, rotateX: -15, y: 50, opacity: 0 }}
           transition={{ type: 'spring', stiffness: 280, damping: 26 }}
           style={{ transformStyle: 'preserve-3d', perspective: 1200 }}
-          className={`pointer-events-auto w-full max-w-4xl p-10 rounded-[44px] border shadow-2xl overflow-hidden flex flex-col md:grid md:grid-cols-5 min-h-[640px] max-h-[85vh] relative ${
-            isDark 
-              ? 'bg-zinc-950/70 border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)] text-zinc-100 backdrop-blur-3xl' 
+          className={`pointer-events-auto w-full max-w-4xl p-10 rounded-[44px] border shadow-2xl overflow-hidden flex flex-col md:grid md:grid-cols-5 min-h-[660px] max-h-[88vh] relative ${
+            isDark
+              ? 'bg-zinc-950/70 border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)] text-zinc-100 backdrop-blur-3xl'
               : 'bg-[#fbfaf7]/85 border-[#e5e2d9]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)] text-[#191919] backdrop-blur-3xl'
           }`}
           onClick={(e) => e.stopPropagation()}
@@ -174,24 +251,9 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                 ease: 'easeInOut',
               }}
             />
-            <motion.div
-              className={`absolute -bottom-24 -right-24 w-80 h-80 rounded-full filter blur-[95px] opacity-15 ${
-                isDark ? 'bg-zinc-900' : 'bg-amber-500/15'
-              }`}
-              animate={{
-                x: [0, -30, 40, 0],
-                y: [0, 30, -30, 0],
-                rotate: [360, 180, 0],
-              }}
-              transition={{
-                duration: 18,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
           </div>
 
-          {/* Left Column: Astryx Avatar Stack List */}
+          {/* Left Column: User Stack List */}
           <div className={`md:col-span-2 border-b md:border-b-0 md:border-r flex flex-col pr-6 md:pb-0 pb-6 z-10 relative overflow-hidden ${
             isDark ? 'border-zinc-850/85' : 'border-[#e5e2d9]'
           }`}>
@@ -199,12 +261,12 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
             <div className="flex items-center justify-between pb-4 border-b border-zinc-850/10 dark:border-zinc-850/40">
               <div className="flex items-center gap-2">
                 <ShieldAlert className={isDark ? 'text-zinc-400' : 'text-[#cc5a37]'} size={20} />
-                <h4 className="font-bold tracking-tight text-base">Guest Accounts</h4>
+                <h4 className="font-bold tracking-tight text-base">User Directory</h4>
               </div>
               <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
                 isDark ? 'bg-zinc-900 border-zinc-850 text-zinc-400' : 'bg-[#f5f2eb] border-[#e5e2d9] text-zinc-650'
               }`}>
-                {guestUsers.length} Users
+                {nonSuperUsers.length} Users
               </span>
             </div>
 
@@ -214,7 +276,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                 <Search size={14} className="absolute left-3.5 top-3.5 text-zinc-500" />
                 <input
                   type="text"
-                  placeholder="Filter Guest ID or Name..."
+                  placeholder="Filter User, Role, or Department..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className={`w-full rounded-2xl pl-9.5 pr-4 py-3 text-xs focus:outline-none border transition-colors ${
@@ -226,16 +288,16 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
               </div>
             </div>
 
-            {/* Scrollable list - Made bigger and more spacious */}
+            {/* Scrollable list */}
             <div className="flex-1 overflow-y-auto space-y-3.5 max-h-[300px] md:max-h-none pr-1">
               {loading ? (
                 <div className="text-center p-12 text-zinc-500 text-xs">
-                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-500 inline-block mr-2 align-middle"></span>
-                  Loading...
+                  <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-500 inline-block mr-2 align-middle" />
+                  Loading users...
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center p-12 text-zinc-500 text-xs font-mono">
-                  No matching guests.
+                  No matching user accounts.
                 </div>
               ) : (
                 filteredUsers.map((u, index) => {
@@ -246,11 +308,8 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ type: 'spring', stiffness: 280, damping: 25, delay: index * 0.035 }}
-                      onClick={() => {
-                        setSelectedUser(u);
-                        setPasswordInput('');
-                      }}
-                      className={`flex items-center justify-between p-4.5 rounded-[24px] cursor-pointer transition-all duration-150 border select-none ${
+                      onClick={() => handleUserSelect(u)}
+                      className={`flex items-center justify-between p-4 rounded-[24px] cursor-pointer transition-all duration-150 border select-none ${
                         isSelected
                           ? isDark
                             ? 'bg-zinc-900 border-zinc-800 shadow-md text-white'
@@ -260,9 +319,9 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                           : 'bg-white border-[#e5e2d9]/60 hover:bg-[#fbfaf7]'
                       }`}
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="relative">
-                          <div className={`w-11 h-11 rounded-full border flex items-center justify-center shadow-md bg-gradient-to-tr ${
+                      <div className="flex items-center gap-3.5 min-w-0">
+                        <div className="relative shrink-0">
+                          <div className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-md bg-gradient-to-tr ${
                             isDark
                               ? 'from-zinc-800 to-zinc-700 border-zinc-850 text-zinc-300'
                               : 'from-[#f5f2eb] to-[#e5e2d9] border-[#e5e2d9] text-[#cc5a37]'
@@ -272,26 +331,22 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                           <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-zinc-950 bg-[#3fa267]" />
                         </div>
                         <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-bold truncate max-w-[130px] tracking-tight">
+                          <span className="text-sm font-bold truncate tracking-tight">
                             {u.username}
                           </span>
-                          <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] text-zinc-500 font-semibold">
-                              Guest
+                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase font-bold border ${getRoleBadgeStyle(u.role)}`}>
+                              {u.role}
                             </span>
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase font-bold border ${
-                              u.authProvider === 'google'
-                                ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
-                                : u.authProvider === 'github'
-                                ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
-                                : 'bg-zinc-800 border-zinc-700 text-zinc-400'
-                            }`}>
-                              {u.authProvider || 'local'}
-                            </span>
+                            {u.role === 'faculty' && u.assignedDepartment && (
+                              <span className="text-[9px] text-zinc-400 font-semibold truncate max-w-[100px]">
+                                {u.assignedDepartment}
+                              </span>
+                            )}
                           </div>
                         </div>
                       </div>
-                      <ChevronRight size={14} className="text-zinc-500" />
+                      <ChevronRight size={14} className="text-zinc-500 shrink-0" />
                     </motion.div>
                   );
                 })
@@ -300,7 +355,7 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
           </div>
 
           {/* Right Column: User details workspace */}
-          <div className="md:col-span-3 flex flex-col pl-6 md:pt-0 pt-6 z-10 relative justify-between">
+          <div className="md:col-span-3 flex flex-col pl-6 md:pt-0 pt-6 z-10 relative justify-between overflow-y-auto">
             <button
               onClick={onClose}
               className={`absolute top-0 right-0 p-2 rounded-full border cursor-pointer transition-colors focus:outline-none z-20 ${
@@ -326,118 +381,144 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                     <User size={40} />
                   </div>
                   <div className="flex flex-col gap-1">
-                    <span className="text-base font-bold tracking-tight">No Guest Selected</span>
-                    <span className="text-xs text-zinc-500 max-w-[240px]">Select a guest record from the left stack to review details or update passwords.</span>
+                    <span className="text-base font-bold tracking-tight">No User Selected</span>
+                    <span className="text-xs text-zinc-500 max-w-[240px]">Select a user from the directory to configure roles, assigned departments, or passwords.</span>
                   </div>
                 </motion.div>
               ) : (
-                /* Detailed active guest profile console - Overhauled for spacious inputs and Liquid Glass */
+                /* Detailed active user profile console */
                 <motion.div
                   key={selectedUser._id}
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
                   transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  className="flex-1 flex flex-col justify-between space-y-8"
+                  className="flex-1 flex flex-col justify-between space-y-6"
                 >
                   {/* Header info */}
-                  <div className="flex items-center gap-4 border-b pb-5 border-zinc-850/10 dark:border-zinc-850/40">
-                    <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-lg ${
+                  <div className="flex items-center gap-4 border-b pb-4 border-zinc-850/10 dark:border-zinc-850/40">
+                    <div className={`w-13 h-13 rounded-2xl border flex items-center justify-center shadow-lg ${
                       isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-[#cc5a37]/5 border-[#cc5a37]/20 text-[#cc5a37]'
                     }`}>
-                      <User size={24} />
+                      <User size={22} />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-lg font-bold truncate max-w-[250px]">
                         {selectedUser.username}
                       </span>
-                      <span className="text-xs text-zinc-500 font-medium font-semibold">Guest Account Workspace</span>
+                      <span className="text-xs text-zinc-500 font-medium font-semibold">User Role & Permission Console</span>
                     </div>
                   </div>
 
                   {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3.5 rounded-2xl text-xs text-center">
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-2xl text-xs text-center">
                       {error}
                     </div>
                   )}
 
-                  {/* Metadata fields - Liquid Glass Effect */}
-                  <div className={`p-6 border rounded-[24px] space-y-4 text-xs transition-colors ${
-                    isDark 
-                      ? 'bg-zinc-900/15 border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]' 
-                      : 'bg-[#f5f2eb]/60 border-[#e5e2d9] shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)]'
+                  {/* Role & Department Scoping Configuration Panel */}
+                  <div className={`p-5 border rounded-[24px] space-y-4 text-xs ${
+                    isDark
+                      ? 'bg-zinc-900/20 border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]'
+                      : 'bg-[#f5f2eb]/60 border-[#e5e2d9]'
                   }`}>
-                    <div className="flex items-center justify-between border-b pb-3 border-zinc-850/10 dark:border-zinc-850/30">
-                      <span className="text-zinc-500 font-bold">User ID</span>
-                      <span className="font-mono text-xs text-zinc-400 select-all">{selectedUser._id}</span>
-                    </div>
-                    <div className="flex items-center justify-between border-b pb-3 border-zinc-850/10 dark:border-zinc-850/30">
-                      <span className="text-zinc-500 font-bold">Auth Provider</span>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono uppercase font-bold border ${
-                        selectedUser.authProvider === 'google'
-                          ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
-                          : selectedUser.authProvider === 'github'
-                          ? 'bg-purple-500/10 border-purple-500/30 text-purple-400'
-                          : 'bg-zinc-800 border-zinc-700 text-zinc-300'
-                      }`}>
-                        {selectedUser.authProvider ? `${selectedUser.authProvider.toUpperCase()} OAuth` : 'Local Password'}
-                      </span>
-                    </div>
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5 text-zinc-500">
-                        <Calendar size={14} />
-                        <span className="font-semibold">Created At</span>
+                      <span className="font-bold flex items-center gap-1.5 text-zinc-400">
+                        <Shield size={14} /> Assign Role
+                      </span>
+                      <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
+                        {(['guest', 'faculty', 'admin'] as const).map((r) => (
+                          <button
+                            key={r}
+                            type="button"
+                            onClick={() => setRoleInput(r)}
+                            className={`px-3 py-1 rounded-lg font-bold text-[10px] uppercase transition-all cursor-pointer ${
+                              roleInput === r
+                                ? 'bg-[#cc5a37] text-white shadow-md'
+                                : 'text-zinc-500 hover:text-zinc-300'
+                            }`}
+                          >
+                            {r}
+                          </button>
+                        ))}
                       </div>
-                      <span className="font-medium text-xs">{selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : 'N/A'}</span>
+                    </div>
+
+                    {roleInput === 'faculty' && (
+                      <div className="flex items-center justify-between pt-2 border-t border-zinc-800/30">
+                        <span className="font-bold flex items-center gap-1.5 text-zinc-400">
+                          <Building size={14} /> Faculty Department
+                        </span>
+                        <select
+                          value={deptInput}
+                          onChange={(e) => setDeptInput(e.target.value)}
+                          className={`rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none border transition-colors cursor-pointer ${
+                            isDark
+                              ? 'bg-zinc-950 border-zinc-800 text-zinc-200'
+                              : 'bg-white border-[#e5e2d9] text-[#191919]'
+                          }`}
+                        >
+                          {COMMON_DEPARTMENTS.map((dept) => (
+                            <option key={dept} value={dept}>
+                              {dept}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+
+                    <div className="flex justify-end pt-2">
+                      <LiquidMetalButton
+                        label={updatingRole ? 'Updating...' : 'Save Role & Dept'}
+                        onClick={handleRoleDeptUpdate}
+                        theme={theme}
+                      />
                     </div>
                   </div>
 
-                  {/* Password Reset form - Spacious input with Liquid Metal Button component */}
-                  <div className="space-y-2.5">
+                  {/* Password Reset form */}
+                  <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
-                      Reset Account Password
+                      Reset Password
                     </label>
                     {selectedUser.authProvider && selectedUser.authProvider !== 'local' ? (
-                      <div className="p-4 rounded-2xl border border-zinc-800 bg-zinc-900/40 text-xs text-zinc-400 flex items-center gap-3">
-                        <span className="text-lg">🌐</span>
-                        <span>
-                          Password modification is disabled for <b>{selectedUser.authProvider.toUpperCase()}</b> OAuth accounts. Passwords for this user are managed directly by their OAuth provider.
-                        </span>
+                      <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 text-xs text-zinc-400 flex items-center gap-3">
+                        <span className="text-base">🌐</span>
+                        <span>OAuth account ({selectedUser.authProvider.toUpperCase()}). Password managed externally.</span>
                       </div>
                     ) : (
-                      <div className="flex gap-4 items-center">
+                      <div className="flex gap-3 items-center">
                         <div className="relative flex-1">
-                          <Key size={16} className="absolute left-4 top-4.5 text-zinc-500" />
+                          <Key size={14} className="absolute left-3.5 top-3.5 text-zinc-500" />
                           <input
                             type="password"
                             placeholder="Type new password..."
                             value={passwordInput}
                             onChange={(e) => setPasswordInput(e.target.value)}
-                            className={`w-full rounded-2xl pl-12 pr-4 py-4 text-sm focus:outline-none border transition-colors ${
+                            className={`w-full rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none border transition-colors ${
                               isDark
-                                ? 'bg-zinc-950 border-zinc-850 text-zinc-200 placeholder-zinc-700 focus:border-zinc-750'
-                                : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-450 focus:border-[#cc5a37]/50'
+                                ? 'bg-zinc-950 border-zinc-850 text-zinc-200 placeholder-zinc-700'
+                                : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-450'
                             }`}
                           />
                         </div>
-                        
                         <div className="shrink-0">
-                          <LiquidMetalButton 
-                            label="Save" 
-                            onClick={() => handlePasswordReset(selectedUser._id)} 
-                            theme={theme} 
+                          <LiquidMetalButton
+                            label="Save Password"
+                            onClick={() => handlePasswordReset(selectedUser._id)}
+                            theme={theme}
                           />
                         </div>
                       </div>
                     )}
                   </div>
 
-                  {/* Account Deletion - Native Liquid Metal Button */}
-                  <div className="border-t pt-5 border-zinc-850/10 dark:border-zinc-850/50 flex justify-end">
-                    <LiquidMetalButton 
-                      label="Delete" 
-                      onClick={() => setConfirmDeleteUser(selectedUser)} 
-                      theme={theme} 
+                  {/* Account Deletion */}
+                  <div className="border-t pt-4 border-zinc-850/10 dark:border-zinc-850/50 flex justify-end">
+                    <LiquidMetalButton
+                      label="Delete User"
+                      onClick={() => setConfirmDeleteUser(selectedUser)}
+                      theme={theme}
                     />
                   </div>
                 </motion.div>
@@ -450,8 +531,8 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
       {confirmDeleteUser && (
         <ConfirmDialog
           isOpen={true}
-          title="Delete Guest Account?"
-          message={`Are you sure you want to permanently delete the guest account "${confirmDeleteUser.username}"? They will lose all directory login permissions.`}
+          title="Delete User Account?"
+          message={`Are you sure you want to permanently delete user "${confirmDeleteUser.username}"?`}
           confirmLabel="Delete User"
           onConfirm={handleDeleteUser}
           onCancel={() => setConfirmDeleteUser(null)}

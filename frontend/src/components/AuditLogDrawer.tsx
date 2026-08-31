@@ -12,7 +12,7 @@ interface AuditLogItem {
 }
 
 interface AuditLogDrawerProps {
-  currentUser: { token: string; username: string; role: 'admin' | 'guest' };
+  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' };
   onClose: () => void;
   theme?: 'light' | 'dark';
 }

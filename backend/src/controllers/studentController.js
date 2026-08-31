@@ -15,6 +15,16 @@ const createStudent = async (req, res) => {
       return res.status(400).json({ error: 'All fields (studentId, name, age, department) are required' });
     }
 
+    // Faculty Department Isolation Guard
+    if (req.user && req.user.role === 'faculty') {
+      if (!req.user.assignedDepartment) {
+        return res.status(403).json({ error: 'Access denied: Faculty account has no assigned department' });
+      }
+      if (department.trim().toLowerCase() !== req.user.assignedDepartment.trim().toLowerCase()) {
+        return res.status(403).json({ error: `Access denied: Faculty members can only create records for their assigned department (${req.user.assignedDepartment})` });
+      }
+    }
+
     const studentExists = await Student.findOne({ studentId });
     if (studentExists) {
       return res.status(400).json({ error: 'A student with this ID already exists in the database' });
@@ -71,6 +81,13 @@ const getStudents = async (req, res) => {
 
     // Filter out soft-deleted items
     const filter = { isDeleted: { $ne: true } };
+
+    // Faculty Department Scoping Guard
+    if (req.user && req.user.role === 'faculty') {
+      if (req.user.assignedDepartment) {
+        filter.department = new RegExp(`^${req.user.assignedDepartment.trim()}$`, 'i');
+      }
+    }
 
     if (search) {
       const searchRegex = new RegExp(search.trim(), 'i');
@@ -190,6 +207,16 @@ const updateStudent = async (req, res) => {
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Faculty Department Isolation Guard
+    if (req.user && req.user.role === 'faculty') {
+      if (!req.user.assignedDepartment || student.department.trim().toLowerCase() !== req.user.assignedDepartment.trim().toLowerCase()) {
+        return res.status(403).json({ error: `Access denied: Faculty members can only update records within their assigned department (${req.user.assignedDepartment || 'None'})` });
+      }
+      if (department && department.trim().toLowerCase() !== req.user.assignedDepartment.trim().toLowerCase()) {
+        return res.status(403).json({ error: `Access denied: Cannot reassign student to another department outside your assigned department (${req.user.assignedDepartment})` });
+      }
     }
 
     if (name) student.name = name;

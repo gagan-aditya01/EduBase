@@ -41,4 +41,12 @@ const admin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, admin };
+const facultyOrAdmin = (req, res, next) => {
+  if (req.user && (req.user.role === 'admin' || req.user.role === 'faculty')) {
+    next();
+  } else {
+    res.status(403).json({ error: 'Access denied: Admin or Faculty role required' });
+  }
+};
+
+module.exports = { protect, admin, facultyOrAdmin };

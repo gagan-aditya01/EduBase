@@ -4,7 +4,7 @@ import { AppleHelloEnglishEffect } from './apple-hello-effect';
 
 interface WelcomeSplashProps {
   username: string;
-  role: 'admin' | 'guest';
+  role: 'admin' | 'guest' | 'faculty';
   onComplete: () => void;
   theme?: 'dark' | 'light';
 }

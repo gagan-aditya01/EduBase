@@ -13,7 +13,7 @@ const {
   getAnalyticsStats,
   streamStudentEvents,
 } = require('../controllers/studentController');
-const { protect, admin } = require('../middlewares/authMiddleware');
+const { protect, admin, facultyOrAdmin } = require('../middlewares/authMiddleware');
 const { validateStudentInput } = require('../middlewares/validateMiddleware');
 
 // Performance & Aggregation Analytics Routes
@@ -28,13 +28,13 @@ router.delete('/trash/:studentId/purge', protect, admin, purgeStudent);
 
 // Routes for /api/v1/students & /api/students
 router.route('/')
-  .post(protect, admin, validateStudentInput, createStudent)
+  .post(protect, facultyOrAdmin, validateStudentInput, createStudent)
   .get(protect, getStudents);
 
 // Routes for /api/v1/students/:studentId
 router.route('/:studentId')
   .get(protect, getStudentById)
-  .put(protect, admin, validateStudentInput, updateStudent)
+  .put(protect, facultyOrAdmin, validateStudentInput, updateStudent)
   .delete(protect, admin, deleteStudent);
 
 module.exports = router;
