@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, User, ShieldAlert, Key, Search, ChevronRight, Shield, Building, Globe, Clock } from 'lucide-react';
 import { ConfirmDialog } from './ui/ConfirmDialog';
-import { LiquidMetalButton } from './ui/liquid-metal-button';
 
 interface DBUser {
   _id: string;
@@ -488,11 +487,14 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                     )}
 
                     <div className="flex justify-end pt-1">
-                      <LiquidMetalButton
-                        label={updatingRole ? 'Saving...' : 'Update Role & Dept'}
+                      <button
+                        type="button"
                         onClick={handleRoleDeptUpdate}
-                        theme={theme}
-                      />
+                        disabled={updatingRole}
+                        className="bg-[#cc5a37] hover:bg-[#e05a47] text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50"
+                      >
+                        {updatingRole ? 'Saving...' : 'Update Role & Dept'}
+                      </button>
                     </div>
                   </div>
 
@@ -522,11 +524,13 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                           />
                         </div>
                         <div className="shrink-0">
-                          <LiquidMetalButton
-                            label="Save Password"
+                          <button
+                            type="button"
                             onClick={() => handlePasswordReset(selectedUser._id)}
-                            theme={theme}
-                          />
+                            className="bg-[#cc5a37] hover:bg-[#e05a47] text-white font-bold text-xs px-4 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                          >
+                            Save Password
+                          </button>
                         </div>
                       </div>
                     )}
@@ -534,11 +538,17 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
 
                   {/* Delete Account Footer */}
                   <div className="border-t pt-4 border-zinc-800/40 flex justify-end">
-                    <LiquidMetalButton
-                      label="Delete User"
+                    <button
+                      type="button"
                       onClick={() => setConfirmDeleteUser(selectedUser)}
-                      theme={theme}
-                    />
+                      className={`font-bold text-xs px-4 py-2 rounded-xl transition-all active:scale-95 cursor-pointer border ${
+                        isDark
+                          ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border-rose-500/30'
+                          : 'bg-rose-50 hover:bg-rose-100 text-rose-600 border-rose-200'
+                      }`}
+                    >
+                      Delete User
+                    </button>
                   </div>
                 </motion.div>
               )}
