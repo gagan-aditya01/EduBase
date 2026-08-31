@@ -13,6 +13,7 @@ import { DepartmentChart } from './components/DepartmentChart';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { AuthPage } from './components/AuthPage';
 import { UserManageSidebar } from './components/UserManageSidebar';
+import { AuditLogDrawer } from './components/AuditLogDrawer';
 import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
 import TeamSection from './components/ui/team';
@@ -61,6 +62,7 @@ export default function App() {
   } | null>(null);
 
   const [showUserSidebar, setShowUserSidebar] = useState(false);
+  const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [newProfilePassword, setNewProfilePassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
@@ -556,23 +558,41 @@ export default function App() {
                         </AnimatePresence>
                       </div>
 
-                      {/* Row 2: Manage Users (Admins only) */}
+                      {/* Row 2: Manage Users & Audit Logs (Admins only) */}
                       {user.role === 'admin' && (
-                        <button
-                          onClick={() => {
-                            setShowProfileMenu(false);
-                            setShowUserSidebar(true);
-                          }}
-                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors text-xs font-semibold select-none cursor-pointer focus:outline-none focus:ring-0 ${
-                            theme === 'dark' ? 'hover:bg-zinc-900/55 text-zinc-200' : 'hover:bg-[#f5f2eb]/60 text-[#191919]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Shield size={14} className="text-zinc-500" />
-                            <span>Manage Users</span>
-                          </div>
-                          <ChevronRight size={12} className="text-zinc-500" />
-                        </button>
+                        <>
+                          <button
+                            onClick={() => {
+                              setShowProfileMenu(false);
+                              setShowUserSidebar(true);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors text-xs font-semibold select-none cursor-pointer focus:outline-none focus:ring-0 ${
+                              theme === 'dark' ? 'hover:bg-zinc-900/55 text-zinc-200' : 'hover:bg-[#f5f2eb]/60 text-[#191919]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Shield size={14} className="text-zinc-500" />
+                              <span>Manage Users</span>
+                            </div>
+                            <ChevronRight size={12} className="text-zinc-500" />
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              setShowProfileMenu(false);
+                              setShowAuditLogs(true);
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors text-xs font-semibold select-none cursor-pointer focus:outline-none focus:ring-0 ${
+                              theme === 'dark' ? 'hover:bg-zinc-900/55 text-zinc-200' : 'hover:bg-[#f5f2eb]/60 text-[#191919]'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <Shield size={14} className="text-amber-500" />
+                              <span>Audit Log Trail</span>
+                            </div>
+                            <ChevronRight size={12} className="text-zinc-500" />
+                          </button>
+                        </>
                       )}
 
                       {/* Row 2.5: Activity Log */}
@@ -852,6 +872,15 @@ export default function App() {
             theme={theme}
             onAddNotification={addNotification}
             addToast={addToast}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showAuditLogs && user && user.role === 'admin' && (
+          <AuditLogDrawer
+            currentUser={user}
+            onClose={() => setShowAuditLogs(false)}
+            theme={theme}
           />
         )}
       </AnimatePresence>

@@ -151,5 +151,20 @@ describe('Full-Stack Backend API Tests', () => {
       expect(res.statusCode).toEqual(200);
       expect(Array.isArray(res.body)).toBe(true);
     });
+
+    it('GET /api/v1/audit-logs without token should return 401 Unauthorized', async () => {
+      const res = await request(app).get('/api/v1/audit-logs');
+      expect(res.statusCode).toEqual(401);
+    });
+
+    it('GET /api/v1/audit-logs with admin token should return audit trail logs', async () => {
+      const res = await request(app)
+        .get('/api/v1/audit-logs')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('data');
+      expect(Array.isArray(res.body.data)).toBe(true);
+    });
   });
 });

@@ -1,4 +1,6 @@
 const User = require('../models/userModel');
+const AuditLog = require('../models/auditLogModel');
+const backgroundQueue = require('../utils/backgroundQueue');
 const jwt = require('jsonwebtoken');
 
 // Concept 1: Dual-Token Architecture (Access & Refresh Tokens)
@@ -382,6 +384,15 @@ const loginUser = async (req, res) => {
 
       user.refreshToken = refreshToken;
       await user.save();
+
+      backgroundQueue.enqueue('USER_LOGIN_AUDIT', async () => {
+        await AuditLog.create({
+          action: 'USER_LOGIN',
+          targetId: user._id.toString(),
+          performedBy: user.username,
+          details: `User ${user.username} logged in via local auth`,
+        });
+      });
 
       res.json({
         _id: user._id,

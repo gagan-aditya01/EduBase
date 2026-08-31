@@ -207,6 +207,15 @@ const updateStudent = async (req, res) => {
     await student.save();
     memoryCache.clearPattern('students_');
 
+    backgroundQueue.enqueue('UPDATE_STUDENT_AUDIT', async () => {
+      await AuditLog.create({
+        action: 'UPDATE_STUDENT',
+        targetId: studentId,
+        performedBy: req.user ? req.user.username : 'Admin',
+        details: `Updated student ${student.name} (${studentId})`,
+      });
+    });
+
     const updatedStudent = await Student.findById(student._id).populate('departmentRef', 'name code');
     res.json(updatedStudent);
   } catch (error) {
@@ -278,6 +287,15 @@ const restoreStudent = async (req, res) => {
 
     memoryCache.clearPattern('students_');
 
+    backgroundQueue.enqueue('RESTORE_STUDENT_AUDIT', async () => {
+      await AuditLog.create({
+        action: 'RESTORE_STUDENT',
+        targetId: studentId,
+        performedBy: req.user ? req.user.username : 'Admin',
+        details: `Restored student ${student.name} (${studentId})`,
+      });
+    });
+
     res.json({ message: 'Student record restored successfully', student });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -298,6 +316,15 @@ const purgeStudent = async (req, res) => {
 
     await student.deleteOne();
     memoryCache.clearPattern('students_');
+
+    backgroundQueue.enqueue('PURGE_STUDENT_AUDIT', async () => {
+      await AuditLog.create({
+        action: 'PURGE_STUDENT',
+        targetId: studentId,
+        performedBy: req.user ? req.user.username : 'Admin',
+        details: `Permanently purged student ${student.name} (${studentId})`,
+      });
+    });
 
     res.json({ message: 'Student permanently purged from database' });
   } catch (error) {

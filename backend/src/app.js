@@ -102,12 +102,15 @@ app.get('/', (req, res) => {
 });
 
 const studentRoutesV2 = require('./routes/studentRoutesV2');
+const auditLogRoutes = require('./routes/auditLogRoutes');
 
 // API Version 1 & Legacy Routes
 app.use('/api/v1/students', studentRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/v1/audit-logs', auditLogRoutes);
+app.use('/api/audit-logs', auditLogRoutes);
 
 // API Version 2 Routes (HATEOAS Envelope Contract)
 app.use('/api/v2/students', studentRoutesV2);

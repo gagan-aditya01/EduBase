@@ -5,7 +5,7 @@ const auditLogSchema = new mongoose.Schema(
     action: {
       type: String,
       required: true,
-      enum: ['CREATE_STUDENT', 'UPDATE_STUDENT', 'DELETE_STUDENT', 'USER_LOGIN', 'CHANGE_PASSWORD'],
+      enum: ['CREATE_STUDENT', 'UPDATE_STUDENT', 'DELETE_STUDENT', 'RESTORE_STUDENT', 'PURGE_STUDENT', 'USER_LOGIN', 'CHANGE_PASSWORD'],
     },
     targetId: {
       type: String,
