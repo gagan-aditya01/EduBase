@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { StudentForm } from './components/StudentForm';
 import { StudentList } from './components/StudentList';
-import { Sparkles, Database, GraduationCap, LogOut, Key, ChevronDown, Shield, ChevronRight, Bell } from 'lucide-react';
+import { Sparkles, Database, GraduationCap, LogOut, Key, LayoutDashboard, BarChart3, ShieldAlert, Users } from 'lucide-react';
+import { Sidebar, SidebarBody, SidebarLink } from './components/ui/sidebar';
 import { LiquidMetalButton } from './components/ui/liquid-metal-button';
 import { FloatingPathsBackground } from './components/ui/floating-paths';
 import { NotFound } from './components/NotFound';
@@ -34,12 +35,7 @@ interface User {
   assignedDepartment?: string;
 }
 
-interface NotificationItem {
-  id: string;
-  message: string;
-  timestamp: Date;
-  type: 'info' | 'success' | 'warning';
-}
+
 
 const API_BASE_URL = 'http://localhost:5050/api/students';
 
@@ -53,7 +49,6 @@ export default function App() {
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [user, setUser] = useState<User | null>(null);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -66,31 +61,15 @@ export default function App() {
   const [showUserSidebar, setShowUserSidebar] = useState(false);
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [newProfilePassword, setNewProfilePassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showWelcomeSplash, setShowWelcomeSplash] = useState(false);
 
-  const addNotification = (type: 'info' | 'success' | 'warning', message: string) => {
-    const id = Date.now().toString();
-    setNotifications((prev) => [{ id, message, timestamp: new Date(), type }, ...prev]);
+  const addNotification = (_type: 'info' | 'success' | 'warning', _message: string) => {
+    // Audit logs track all system actions
   };
-
-  // Click outside listener for profile menu dropdown
-  useEffect(() => {
-    if (!showProfileMenu) return;
-    const handleOutsideClick = () => {
-      setShowProfileMenu(false);
-      setShowChangePasswordForm(false);
-      setNewProfilePassword('');
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => {
-      document.removeEventListener('click', handleOutsideClick);
-    };
-  }, [showProfileMenu]);
 
   // Check for OAuth URL Callback redirect or stored user on mount
   useEffect(() => {
@@ -200,7 +179,6 @@ export default function App() {
     setUser(null);
     localStorage.removeItem('edubase_user');
     setStudents([]);
-    setShowProfileMenu(false);
     setShowChangePasswordForm(false);
     setNewProfilePassword('');
     addToast('info', 'Logged out successfully');
@@ -437,289 +415,173 @@ export default function App() {
 
   return (
     <FloatingPathsBackground position={1}>
-      {/* Header bar */}
-      <header className={`border-b sticky top-0 z-50 transition-colors duration-300 ${
-        theme === 'dark' ? 'border-zinc-900 bg-zinc-950/80 backdrop-blur-md' : 'border-[#e5e2d9] bg-[#fbfaf7]/85 backdrop-blur-md'
-      }`}>
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <GraduationCap className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-700'} size={24} />
-            <span className="font-semibold tracking-tight text-lg gradient-text">
-              EduBase Portal
-            </span>
-          </div>
-          <div className="flex items-center gap-3">
-            <ThemeToggle theme={theme} onToggle={toggleTheme} />
-            <button
-              onClick={() => setShowAnalyticsModal(true)}
-              className={`text-xs font-semibold border px-3 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
-                theme === 'dark'
-                  ? 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700'
-                  : 'bg-white border-[#e5e2d9] text-[#191919] hover:border-[#cc5a37] hover:text-[#cc5a37]'
-              }`}
-            >
-              <span>Analytics Engine</span>
-            </button>
-            <button
-              onClick={() => setCurrentPage('404')}
-              className={`text-xs border px-3 py-1.5 rounded-full transition-all cursor-pointer ${
-                theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800' : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
-              }`}
-            >
-              Test 404 Page
-            </button>
-            <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors duration-300 ${
-              theme === 'dark' ? 'text-[#3fa267] bg-[#102a18]/30 border-[#1b4324]/50' : 'text-[#2a593e] bg-[#eef6f0] border-[#d2e7d7]'
-            }`}>
-              <Database size={12} className="text-[#3fa267]" />
-              <span>MongoDB Connected</span>
-            </div>
+      <div className="flex min-h-screen w-full relative z-10">
+        {/* Animated Left Sidebar */}
+        <Sidebar open={sidebarOpen} setOpen={setSidebarOpen}>
+          <SidebarBody className={`justify-between gap-6 ${
+            theme === 'dark' ? 'bg-zinc-950/90 border-zinc-850/80' : 'bg-[#fbfaf7]/90 border-[#e5e2d9]'
+          }`}>
+            <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+              {/* Brand Header */}
+              <div className="flex items-center gap-3 py-2 px-1">
+                <GraduationCap className={theme === 'dark' ? 'text-zinc-300' : 'text-[#cc5a37]'} size={24} />
+                <AnimatePresence>
+                  {sidebarOpen && (
+                    <motion.span
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="font-bold tracking-tight text-base gradient-text whitespace-nowrap"
+                    >
+                      EduBase Portal
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </div>
 
-            <div className="relative">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowProfileMenu(!showProfileMenu);
-                }}
-                className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm select-none transition-all cursor-pointer border shadow-md relative overflow-hidden focus:outline-none focus:ring-0 ${
-                  theme === 'dark'
-                    ? 'bg-zinc-900 border-zinc-800 text-zinc-200 hover:border-zinc-700'
-                    : 'bg-[#f5f2eb] border-[#e5e2d9] text-[#cc5a37] hover:border-[#cc5a37]'
-                }`}
-              >
-                {user.username.charAt(0).toUpperCase()}
-              </button>
+              {/* Navigation Links */}
+              <div className="mt-6 flex flex-col gap-1.5">
+                <SidebarLink
+                  link={{
+                    label: 'Dashboard',
+                    icon: <LayoutDashboard size={18} className="text-zinc-400" />,
+                    onClick: () => setCurrentPage('dashboard'),
+                  }}
+                />
 
+                <SidebarLink
+                  link={{
+                    label: 'Analytics Engine',
+                    icon: <BarChart3 size={18} className="text-zinc-400" />,
+                    onClick: () => setShowAnalyticsModal(true),
+                  }}
+                />
+
+                {user.role === 'admin' && (
+                  <>
+                    <SidebarLink
+                      link={{
+                        label: 'Audit Log Trail',
+                        icon: <ShieldAlert size={18} className="text-amber-500" />,
+                        onClick: () => setShowAuditLogs(true),
+                      }}
+                    />
+                    <SidebarLink
+                      link={{
+                        label: 'Manage Users',
+                        icon: <Users size={18} className="text-zinc-400" />,
+                        onClick: () => setShowUserSidebar(true),
+                      }}
+                    />
+                  </>
+                )}
+
+                <SidebarLink
+                  link={{
+                    label: 'Change Password',
+                    icon: <Key size={18} className="text-zinc-400" />,
+                    onClick: () => setShowChangePasswordForm(!showChangePasswordForm),
+                  }}
+                />
+
+                <SidebarLink
+                  link={{
+                    label: 'Logout',
+                    icon: <LogOut size={18} className="text-red-400" />,
+                    danger: true,
+                    onClick: handleLogout,
+                  }}
+                />
+              </div>
+
+              {/* Password Change Subform in Sidebar */}
               <AnimatePresence>
-                {showProfileMenu && (
-                  <motion.div
-                    onClick={(e) => e.stopPropagation()}
-                    initial={{ opacity: 0, scale: 0.95, y: -8 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.95, y: -8 }}
-                    transition={{ type: 'spring', stiffness: 380, damping: 25 }}
-                    className={`absolute right-0 mt-2.5 w-64 p-3 rounded-[28px] border shadow-2xl z-50 flex flex-col gap-2 backdrop-blur-xl transition-colors duration-300 ${
-                      theme === 'dark'
-                        ? 'bg-zinc-950/90 border-zinc-850/80 text-zinc-200'
-                        : 'bg-white/95 border-[#e5e2d9]/60 text-[#191919]'
-                    }`}
+                {showChangePasswordForm && sidebarOpen && (
+                  <motion.form
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    onSubmit={handleChangeProfilePassword}
+                    className="flex flex-col gap-2 p-3 mt-2 rounded-2xl border border-zinc-800 bg-zinc-900/40"
                   >
-                    {/* Header Row (iOS Style) */}
-                    <div className="flex items-center gap-3 px-2 py-2 border-b border-zinc-800/10 dark:border-zinc-850/50">
-                      <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-base select-none bg-gradient-to-tr from-[#cc5a37] to-[#e05a47] text-white shadow-md">
-                        {user.username.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-bold truncate">
-                          {user.username}
-                        </span>
-                        <div className="flex items-center gap-1 mt-0.5">
-                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase font-bold border ${
-                            user.role === 'admin'
-                              ? 'bg-rose-500/10 border-rose-500/30 text-rose-400'
-                              : user.role === 'faculty'
-                              ? 'bg-[#cc5a37]/10 border-[#cc5a37]/30 text-[#cc5a37]'
-                              : 'bg-zinc-800 border-zinc-700 text-zinc-400'
-                          }`}>
-                            {user.role}
-                          </span>
-                          {user.role === 'faculty' && user.assignedDepartment && (
-                            <span className="text-[9px] text-zinc-400 font-semibold truncate max-w-[110px]">
-                              {user.assignedDepartment}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Menu Items (iOS List style) */}
-                    <div className="flex flex-col gap-1">
-                      {/* Row 1: Change Password */}
-                      <div className="flex flex-col">
-                        <button
-                          onClick={() => setShowChangePasswordForm(!showChangePasswordForm)}
-                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors text-xs font-semibold select-none cursor-pointer focus:outline-none focus:ring-0 ${
-                            theme === 'dark' ? 'hover:bg-zinc-900/55 text-zinc-200' : 'hover:bg-[#f5f2eb]/60 text-[#191919]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Key size={14} className="text-zinc-500" />
-                            <span>Change Password</span>
-                          </div>
-                          <ChevronDown size={12} className={`text-zinc-500 transition-transform ${showChangePasswordForm ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        <AnimatePresence>
-                          {showChangePasswordForm && (
-                            <motion.form
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ type: 'spring', stiffness: 350, damping: 24 }}
-                              onSubmit={handleChangeProfilePassword}
-                              className="flex flex-col gap-2 px-3 pb-3 pt-1.5 overflow-hidden"
-                            >
-                              <input
-                                type="password"
-                                placeholder="New password..."
-                                value={newProfilePassword}
-                                onChange={(e) => setNewProfilePassword(e.target.value)}
-                                className={`w-full rounded-xl px-2.5 py-1.5 text-xs focus:outline-none border transition-colors ${
-                                  theme === 'dark'
-                                    ? 'bg-zinc-950 border-zinc-850 text-zinc-200 placeholder-zinc-750'
-                                    : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400'
-                                }`}
-                              />
-                              <button
-                                type="submit"
-                                disabled={updatingPassword}
-                                className={`w-full py-1.5 rounded-xl font-bold text-[10px] text-white flex items-center justify-center gap-1 cursor-pointer transition-colors focus:outline-none ${
-                                  theme === 'dark' ? 'bg-zinc-850 hover:bg-zinc-800 border border-zinc-750' : 'bg-[#cc5a37] hover:bg-[#e05a47]'
-                                }`}
-                              >
-                                {updatingPassword ? 'Saving...' : 'Save Password'}
-                              </button>
-                            </motion.form>
-                          )}
-                        </AnimatePresence>
-                      </div>
-
-                      {/* Row 2: Manage Users & Audit Logs (Admins only) */}
-                      {user.role === 'admin' && (
-                        <>
-                          <button
-                            onClick={() => {
-                              setShowProfileMenu(false);
-                              setShowUserSidebar(true);
-                            }}
-                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors text-xs font-semibold select-none cursor-pointer focus:outline-none focus:ring-0 ${
-                              theme === 'dark' ? 'hover:bg-zinc-900/55 text-zinc-200' : 'hover:bg-[#f5f2eb]/60 text-[#191919]'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Shield size={14} className="text-zinc-500" />
-                              <span>Manage Users</span>
-                            </div>
-                            <ChevronRight size={12} className="text-zinc-500" />
-                          </button>
-
-                          <button
-                            onClick={() => {
-                              setShowProfileMenu(false);
-                              setShowAuditLogs(true);
-                            }}
-                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors text-xs font-semibold select-none cursor-pointer focus:outline-none focus:ring-0 ${
-                              theme === 'dark' ? 'hover:bg-zinc-900/55 text-zinc-200' : 'hover:bg-[#f5f2eb]/60 text-[#191919]'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Shield size={14} className="text-amber-500" />
-                              <span>Audit Log Trail</span>
-                            </div>
-                            <ChevronRight size={12} className="text-zinc-500" />
-                          </button>
-                        </>
-                      )}
-
-                      {/* Row 2.5: Activity Log */}
-                      <div className="flex flex-col">
-                        <button
-                          onClick={() => setShowNotifications(!showNotifications)}
-                          className={`w-full flex items-center justify-between px-3 py-2.5 rounded-2xl transition-colors text-xs font-semibold select-none cursor-pointer focus:outline-none focus:ring-0 ${
-                            theme === 'dark' ? 'hover:bg-zinc-900/55 text-zinc-200' : 'hover:bg-[#f5f2eb]/60 text-[#191919]'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <Bell size={14} className="text-zinc-500" />
-                            <span>Activity Log</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            {notifications.length > 0 && (
-                              <span className="w-4.5 h-4.5 rounded-full bg-red-500 text-white flex items-center justify-center text-[9px] font-bold">
-                                {notifications.length}
-                              </span>
-                            )}
-                            <ChevronDown size={12} className={`text-zinc-500 transition-transform ${showNotifications ? 'rotate-180' : ''}`} />
-                          </div>
-                        </button>
-
-                        <AnimatePresence>
-                          {showNotifications && (
-                            <motion.div
-                              initial={{ height: 0, opacity: 0 }}
-                              animate={{ height: 'auto', opacity: 1 }}
-                              exit={{ height: 0, opacity: 0 }}
-                              transition={{ type: 'spring', stiffness: 350, damping: 24 }}
-                              className="flex flex-col gap-2.5 px-3 pb-3 pt-1.5 max-h-40 overflow-y-auto"
-                            >
-                              {notifications.length === 0 ? (
-                                <span className="text-[10px] text-zinc-500 text-center font-mono py-2">No recent database actions.</span>
-                              ) : (
-                                <>
-                                  <div className="flex flex-col gap-2">
-                                    {notifications.map((n) => (
-                                      <div key={n.id} className="flex items-start gap-2 text-[10px]">
-                                        <div className={`w-1.5 h-1.5 rounded-full mt-1.5 shrink-0 ${
-                                          n.type === 'success' ? 'bg-green-500' : n.type === 'warning' ? 'bg-red-500' : 'bg-blue-500'
-                                        }`} />
-                                        <div className="flex flex-col min-w-0">
-                                          <span className={`leading-snug break-words ${theme === 'dark' ? 'text-zinc-300' : 'text-zinc-700'}`}>{n.message}</span>
-                                          <span className="text-[8px] text-zinc-500 mt-0.5">{new Date(n.timestamp).toLocaleTimeString()}</span>
-                                        </div>
-                                      </div>
-                                    ))}
-                                  </div>
-                                  <button
-                                    onClick={() => setNotifications([])}
-                                    className={`w-full py-1 rounded-xl text-[9px] font-bold cursor-pointer transition-colors border mt-1 ${
-                                      theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200' : 'bg-white border-[#e5e2d9] text-zinc-650 hover:text-[#cc5a37]'
-                                    }`}
-                                  >
-                                    Clear Logs
-                                  </button>
-                                </>
-                              )}
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="border-t my-1 border-zinc-800/10 dark:border-zinc-850/50" />
-
-                      {/* Row 3: Logout */}
-                      <button
-                        onClick={() => {
-                          setShowProfileMenu(false);
-                          handleLogout();
-                        }}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-2xl transition-colors text-xs font-bold select-none cursor-pointer focus:outline-none focus:ring-0 text-red-500 ${
-                          theme === 'dark' ? 'hover:bg-red-500/10' : 'hover:bg-red-500/5'
-                        }`}
-                      >
-                        <LogOut size={14} />
-                        <span>Log out</span>
-                      </button>
-                    </div>
-                  </motion.div>
+                    <input
+                      type="password"
+                      placeholder="New password..."
+                      value={newProfilePassword}
+                      onChange={(e) => setNewProfilePassword(e.target.value)}
+                      className={`w-full rounded-xl px-2.5 py-1.5 text-xs focus:outline-none border ${
+                        theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+                      }`}
+                    />
+                    <button
+                      type="submit"
+                      disabled={updatingPassword}
+                      className="w-full py-1.5 rounded-xl font-bold text-[10px] bg-[#cc5a37] text-white hover:bg-[#e05a47]"
+                    >
+                      {updatingPassword ? 'Saving...' : 'Save Password'}
+                    </button>
+                  </motion.form>
                 )}
               </AnimatePresence>
             </div>
-          </div>
-        </div>
-      </header>
 
-      {/* 3D Workspace Scaling Deck Flip Wrapper */}
-      <motion.div
-        animate={{
-          scale: showUserSidebar ? 0.94 : 1,
-          rotateX: showUserSidebar ? 8 : 0,
-          y: showUserSidebar ? -10 : 0,
-          opacity: showUserSidebar ? 0.35 : 1,
-        }}
-        transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-        style={{ transformOrigin: 'top center', transformStyle: 'preserve-3d' }}
-      >
+            {/* Sidebar User Profile Footer */}
+            <div className="pt-4 border-t border-zinc-800/40 flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-full border bg-gradient-to-tr from-[#cc5a37] to-[#e05a47] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md">
+                  {user.username.charAt(0).toUpperCase()}
+                </div>
+                {sidebarOpen && (
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-xs font-bold truncate text-zinc-200">{user.username}</span>
+                    <span className="text-[9px] font-mono text-zinc-400 uppercase truncate">
+                      {user.role} {user.assignedDepartment ? `(${user.assignedDepartment})` : ''}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {sidebarOpen && <ThemeToggle theme={theme} onToggle={toggleTheme} />}
+            </div>
+          </SidebarBody>
+        </Sidebar>
+
+        {/* Main Workspace Area */}
+        <div className="flex-1 min-w-0 overflow-y-auto">
+          {/* Main top bar */}
+          <header className={`border-b sticky top-0 z-30 transition-colors duration-300 ${
+            theme === 'dark' ? 'border-zinc-900 bg-zinc-950/80 backdrop-blur-md' : 'border-[#e5e2d9] bg-[#fbfaf7]/85 backdrop-blur-md'
+          }`}>
+            <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+              <div className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-full border transition-colors duration-300 ${
+                theme === 'dark' ? 'text-[#3fa267] bg-[#102a18]/30 border-[#1b4324]/50' : 'text-[#2a593e] bg-[#eef6f0] border-[#d2e7d7]'
+              }`}>
+                <Database size={12} className="text-[#3fa267]" />
+                <span>MongoDB Connected</span>
+              </div>
+
+              <button
+                onClick={() => setCurrentPage('404')}
+                className={`text-xs border px-3 py-1 rounded-full transition-all cursor-pointer ${
+                  theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800' : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
+                }`}
+              >
+                Test 404 Page
+              </button>
+            </div>
+          </header>
+
+          {/* 3D Workspace Scaling Deck Flip Wrapper */}
+          <motion.div
+            animate={{
+              scale: showUserSidebar ? 0.94 : 1,
+              rotateX: showUserSidebar ? 8 : 0,
+              y: showUserSidebar ? -10 : 0,
+              opacity: showUserSidebar ? 0.35 : 1,
+            }}
+            transition={{ type: 'spring', stiffness: 260, damping: 30 }}
+            style={{ transformOrigin: 'top center', transformStyle: 'preserve-3d' }}
+          >
         {/* Main dashboard content */}
         <main className="max-w-7xl mx-auto px-6 py-12 relative z-10">
         {/* Banner area */}
@@ -929,6 +791,8 @@ export default function App() {
           />
         )}
       </AnimatePresence>
+        </div>
+      </div>
     </FloatingPathsBackground>
   );
 }
