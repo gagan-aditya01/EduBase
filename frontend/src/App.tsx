@@ -16,6 +16,7 @@ import { AuthPage } from './components/AuthPage';
 import { UserManageSidebar } from './components/UserManageSidebar';
 import { AuditLogDrawer } from './components/AuditLogDrawer';
 import { AnalyticsModal } from './components/AnalyticsModal';
+import { FacultyDirectory } from './components/FacultyDirectory';
 import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
 import TeamSection from './components/ui/team';
@@ -61,6 +62,7 @@ export default function App() {
   const [showUserSidebar, setShowUserSidebar] = useState(false);
   const [showAuditLogs, setShowAuditLogs] = useState(false);
   const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
+  const [activeDirectoryTab, setActiveDirectoryTab] = useState<'students' | 'faculty'>('students');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [newProfilePassword, setNewProfilePassword] = useState('');
@@ -330,14 +332,16 @@ export default function App() {
   const handleSeedData = async () => {
     if (!user) return;
     const mockStudents = [
-      { studentId: '2462128', name: 'Arthur Dent', age: 30, department: 'Philosophy' },
-      { studentId: '2463140', name: 'Ford Prefect', age: 28, department: 'Astrophysics' },
-      { studentId: '2464195', name: 'Tricia McMillan', age: 26, department: 'Mathematics' },
-      { studentId: '2465220', name: 'Zaphod Beeblebrox', age: 34, department: 'Political Science' },
-      { studentId: '2466085', name: 'Marvin Android', age: 90, department: 'Robotics' },
-      { studentId: '2561102', name: 'Fiona Gallagher', age: 22, department: 'Social Work' },
-      { studentId: '2562130', name: 'Lip Gallagher', age: 23, department: 'Engineering' },
-      { studentId: '2563145', name: 'Ian Gallagher', age: 21, department: 'Military Science' },
+      { studentId: 'CS-2024-001', name: 'Eleanor Vance', age: 20, department: 'Computer Science' },
+      { studentId: 'CS-2024-014', name: 'Marcus Sterling', age: 22, department: 'Computer Science' },
+      { studentId: 'CS-2024-032', name: 'Sophia Chen', age: 21, department: 'Computer Science' },
+      { studentId: 'EE-2024-005', name: 'Alexander Hayes', age: 23, department: 'Electrical Engineering' },
+      { studentId: 'EE-2024-019', name: 'Maya Lin', age: 20, department: 'Electrical Engineering' },
+      { studentId: 'ME-2024-008', name: 'Liam Gallagher', age: 22, department: 'Mechanical Engineering' },
+      { studentId: 'ADSE-2024-012', name: 'Amara Okafor', age: 24, department: 'ADSE' },
+      { studentId: 'ADSE-2024-045', name: 'Devin Sterling', age: 21, department: 'ADSE' },
+      { studentId: 'MATH-2024-003', name: 'Tricia McMillan', age: 25, department: 'Mathematics' },
+      { studentId: 'ROB-2024-007', name: 'Julian Thorne', age: 26, department: 'Robotics' },
     ];
 
     try {
@@ -609,28 +613,32 @@ export default function App() {
             <h1 className={`text-3xl font-bold tracking-tight flex items-center gap-2 ${
               theme === 'dark' ? 'text-zinc-100' : 'text-[#191919]'
             }`}>
-              Student Directory
+              {user.role === 'faculty' ? `${user.assignedDepartment || 'Faculty'} Department Portal` : 'Student & Faculty Directory'}
               <Sparkles size={20} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
             </h1>
             <p className={theme === 'dark' ? 'text-zinc-500 text-sm mt-1' : 'text-zinc-500 text-sm mt-1'}>
-              Manage database records, query departments, and update student profiles.
+              {user.role === 'faculty'
+                ? `Department Scoped Workspace • Managing enrolled ${user.assignedDepartment || 'Department'} students`
+                : 'Manage academic database records, query departments, and inspect staff profiles.'}
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             {/* Show admin actions conditionally */}
-            {user.role === 'admin' && (
+            {(user.role === 'admin' || user.role === 'faculty') && (
               <>
-                <button
-                  onClick={handleSeedData}
-                  className={`text-xs border px-4 py-2 rounded-full transition-all cursor-pointer font-semibold ${
-                    theme === 'dark'
-                      ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800'
-                      : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
-                  }`}
-                >
-                  Seed Mock Data
-                </button>
+                {user.role === 'admin' && (
+                  <button
+                    onClick={handleSeedData}
+                    className={`text-xs border px-4 py-2 rounded-full transition-all cursor-pointer font-semibold ${
+                      theme === 'dark'
+                        ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800'
+                        : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
+                    }`}
+                  >
+                    Seed Realistic Data
+                  </button>
+                )}
                 {!showForm && !editingStudent && (
                   <LiquidMetalButton
                     label="Add Student"
@@ -643,43 +651,86 @@ export default function App() {
           </div>
         </div>
 
-        {/* Dashboard Analytics Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">
-          <div className="lg:col-span-2">
-            <StatsPanel students={students} theme={theme} />
-          </div>
-          <div>
-            <DepartmentChart students={students} theme={theme} />
-          </div>
+        {/* Directory View Tabs */}
+        <div className="flex items-center gap-2 mt-6">
+          <button
+            onClick={() => setActiveDirectoryTab('students')}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+              activeDirectoryTab === 'students'
+                ? theme === 'dark'
+                  ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
+                  : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
+                : theme === 'dark'
+                ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
+                : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
+            }`}
+          >
+            Student Directory ({students.length})
+          </button>
+
+          <button
+            onClick={() => setActiveDirectoryTab('faculty')}
+            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
+              activeDirectoryTab === 'faculty'
+                ? theme === 'dark'
+                  ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
+                  : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
+                : theme === 'dark'
+                ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
+                : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
+            }`}
+          >
+            Faculty Directory
+          </button>
         </div>
 
-        {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm mt-8">
-            {error}
+        {/* Tab 1: Student Directory Content */}
+        {activeDirectoryTab === 'students' ? (
+          <>
+            {/* Dashboard Analytics Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+              <div className="lg:col-span-2">
+                <StatsPanel students={students} theme={theme} />
+              </div>
+              <div>
+                <DepartmentChart students={students} theme={theme} />
+              </div>
+            </div>
+
+            {error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm mt-8">
+                {error}
+              </div>
+            )}
+
+            <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
+              {/* Main List */}
+              <div className="flex-1 w-full order-2 lg:order-1">
+                <StudentList
+                  students={students}
+                  isLoading={loading}
+                  theme={theme}
+                  isAdmin={user.role === 'admin' || user.role === 'faculty'}
+                  onEdit={(student) => {
+                    setEditingStudent(student);
+                    setShowForm(true);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  onDelete={handleDelete}
+                  onBulkDelete={handleBulkDelete}
+                  filters={filters}
+                  setFilters={setFilters}
+                  onClearFilters={handleClearFilters}
+                />
+              </div>
+            </div>
+          </>
+        ) : (
+          /* Tab 2: Faculty Directory Content */
+          <div className="mt-6">
+            <FacultyDirectory currentUser={user} theme={theme} />
           </div>
         )}
-
-        <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
-          {/* Main List */}
-          <div className="flex-1 w-full order-2 lg:order-1">
-            <StudentList
-              students={students}
-              isLoading={loading}
-              theme={theme}
-              isAdmin={user.role === 'admin'}
-              onEdit={(student) => {
-                setEditingStudent(student);
-                setShowForm(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}
-              onDelete={handleDelete}
-              onBulkDelete={handleBulkDelete}
-              filters={filters}
-              setFilters={setFilters}
-              onClearFilters={handleClearFilters}
-            />
-          </div>
-
           {/* Form Side-Sheet with backdrop */}
           <AnimatePresence>
             {showForm && (
@@ -738,10 +789,9 @@ export default function App() {
               </>
             )}
           </AnimatePresence>
-        </div>
 
-        {/* Tech Stack Marquee Section */}
-        <Logos3 heading="Powered by Modern Tech Stack" theme={theme} />
+          {/* Tech Stack Marquee Section */}
+          <Logos3 heading="Powered by Modern Tech Stack" theme={theme} />
 
         {/* Team Section */}
         <TeamSection theme={theme} />

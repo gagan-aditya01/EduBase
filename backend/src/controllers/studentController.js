@@ -466,6 +466,47 @@ const streamStudentEvents = (req, res) => {
   });
 };
 
+// @desc    Seed realistic academic data and purge auto-generated test IDs
+// @route   POST /api/v1/students/seed-realistic
+// @access  Private/Admin
+const seedRealisticData = async (req, res) => {
+  try {
+    // Purge test IDs starting with FAC_ or numbers longer than 8 digits
+    await Student.deleteMany({
+      $or: [
+        { studentId: { $regex: /^FAC_/i } },
+        { name: { $regex: /FACULTY|TEST|MOCK/i } },
+      ],
+    });
+
+    const realisticStudents = [
+      { studentId: 'CS-2024-001', name: 'Eleanor Vance', age: 20, department: 'Computer Science', createdBy: 'dr.sarah.jenkins@edubase.edu' },
+      { studentId: 'CS-2024-014', name: 'Marcus Sterling', age: 22, department: 'Computer Science', createdBy: 'dr.sarah.jenkins@edubase.edu' },
+      { studentId: 'CS-2024-032', name: 'Sophia Chen', age: 21, department: 'Computer Science', createdBy: 'dr.sarah.jenkins@edubase.edu' },
+      { studentId: 'EE-2024-005', name: 'Alexander Hayes', age: 23, department: 'Electrical Engineering', createdBy: 'prof.michael.chen@edubase.edu' },
+      { studentId: 'EE-2024-019', name: 'Maya Lin', age: 20, department: 'Electrical Engineering', createdBy: 'prof.michael.chen@edubase.edu' },
+      { studentId: 'ME-2024-008', name: 'Liam Gallagher', age: 22, department: 'Mechanical Engineering', createdBy: 'dr.elena.rostova@edubase.edu' },
+      { studentId: 'ADSE-2024-012', name: 'Amara Okafor', age: 24, department: 'ADSE', createdBy: 'prof.marcus.vance@edubase.edu' },
+      { studentId: 'ADSE-2024-045', name: 'Devin Sterling', age: 21, department: 'ADSE', createdBy: 'prof.marcus.vance@edubase.edu' },
+      { studentId: 'MATH-2024-003', name: 'Tricia McMillan', age: 25, department: 'Mathematics', createdBy: 'yashureddy4044@gmail.com' },
+      { studentId: 'ROB-2024-007', name: 'Julian Thorne', age: 26, department: 'Robotics', createdBy: 'yashureddy4044@gmail.com' },
+    ];
+
+    for (const student of realisticStudents) {
+      await Student.findOneAndUpdate(
+        { studentId: student.studentId },
+        { ...student, isDeleted: false },
+        { upsert: true, new: true }
+      );
+    }
+
+    memoryCache.clearPattern('students_');
+    res.json({ message: 'Realistic academic student directory seeded successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createStudent,
   getStudents,
@@ -479,4 +520,5 @@ module.exports = {
   explainStudentQuery,
   getAnalyticsStats,
   streamStudentEvents,
+  seedRealisticData,
 };
