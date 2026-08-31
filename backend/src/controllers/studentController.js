@@ -382,8 +382,13 @@ const explainStudentQuery = async (req, res) => {
 // @access  Private
 const getAnalyticsStats = async (req, res) => {
   try {
+    const matchStage = { isDeleted: { $ne: true } };
+    if (req.user && req.user.role === 'faculty' && req.user.assignedDepartment) {
+      matchStage.department = new RegExp(`^${req.user.assignedDepartment.trim()}$`, 'i');
+    }
+
     const stats = await Student.aggregate([
-      { $match: { isDeleted: { $ne: true } } },
+      { $match: matchStage },
       {
         $facet: {
           departmentBreakdown: [
@@ -394,7 +399,7 @@ const getAnalyticsStats = async (req, res) => {
             {
               $bucket: {
                 groupBy: '$age',
-                boundaries: [16, 20, 25, 30, 40, 100],
+                boundaries: [16, 21, 26, 31, 41, 100],
                 default: 'Other',
                 output: { count: { $sum: 1 } },
               },
@@ -415,7 +420,17 @@ const getAnalyticsStats = async (req, res) => {
       },
     ]);
 
-    res.json(stats[0] || {});
+    const User = require('../models/userModel');
+    const totalTrash = await Student.countDocuments({ isDeleted: true });
+    const userRoleCounts = await User.aggregate([
+      { $group: { _id: '$role', count: { $sum: 1 } } }
+    ]);
+
+    const result = stats[0] || {};
+    result.totalTrash = totalTrash;
+    result.userRoleCounts = userRoleCounts;
+
+    res.json(result);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

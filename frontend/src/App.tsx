@@ -14,6 +14,7 @@ import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { AuthPage } from './components/AuthPage';
 import { UserManageSidebar } from './components/UserManageSidebar';
 import { AuditLogDrawer } from './components/AuditLogDrawer';
+import { AnalyticsModal } from './components/AnalyticsModal';
 import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
 import TeamSection from './components/ui/team';
@@ -64,6 +65,7 @@ export default function App() {
 
   const [showUserSidebar, setShowUserSidebar] = useState(false);
   const [showAuditLogs, setShowAuditLogs] = useState(false);
+  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [newProfilePassword, setNewProfilePassword] = useState('');
   const [updatingPassword, setUpdatingPassword] = useState(false);
@@ -446,11 +448,21 @@ export default function App() {
               EduBase Portal
             </span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
             <button
+              onClick={() => setShowAnalyticsModal(true)}
+              className={`text-xs font-semibold border px-3 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1.5 ${
+                theme === 'dark'
+                  ? 'bg-zinc-900/60 border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-700'
+                  : 'bg-white border-[#e5e2d9] text-[#191919] hover:border-[#cc5a37] hover:text-[#cc5a37]'
+              }`}
+            >
+              <span>Analytics Engine</span>
+            </button>
+            <button
               onClick={() => setCurrentPage('404')}
-              className={`text-xs border px-3 py-1 rounded-full transition-all cursor-pointer ${
+              className={`text-xs border px-3 py-1.5 rounded-full transition-all cursor-pointer ${
                 theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800' : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
               }`}
             >
@@ -894,6 +906,15 @@ export default function App() {
           <AuditLogDrawer
             currentUser={user}
             onClose={() => setShowAuditLogs(false)}
+            theme={theme}
+          />
+        )}
+      </AnimatePresence>
+      <AnimatePresence>
+        {showAnalyticsModal && user && (
+          <AnalyticsModal
+            currentUser={user}
+            onClose={() => setShowAnalyticsModal(false)}
             theme={theme}
           />
         )}

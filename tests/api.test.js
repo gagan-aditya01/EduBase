@@ -219,4 +219,21 @@ describe('Full-Stack Backend API Tests', () => {
       expect(res.body.error).toContain('Access denied');
     });
   });
+
+  describe('Phase 3: Advanced Analytics Engine & Demographic Metrics Tests', () => {
+    it('GET /api/v1/students/analytics/stats should return MongoDB aggregation stats ($facet, $bucket, overall)', async () => {
+      const res = await request(app)
+        .get('/api/v1/students/analytics/stats')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('departmentBreakdown');
+      expect(res.body).toHaveProperty('ageDemographics');
+      expect(res.body).toHaveProperty('overall');
+      expect(res.body).toHaveProperty('totalTrash');
+      expect(res.body).toHaveProperty('userRoleCounts');
+      expect(Array.isArray(res.body.departmentBreakdown)).toBe(true);
+      expect(Array.isArray(res.body.ageDemographics)).toBe(true);
+    });
+  });
 });
