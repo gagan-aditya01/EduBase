@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, User, ShieldAlert, Key, Search, ChevronRight, Shield, Building } from 'lucide-react';
+import { X, User, ShieldAlert, Key, Search, ChevronRight, Shield, Building, Globe, Clock } from 'lucide-react';
 import { ConfirmDialog } from './ui/ConfirmDialog';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
 
@@ -48,6 +48,14 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
 
   const isDark = theme === 'dark';
 
+  // Prevent background page body scroll while modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const fetchUsers = async () => {
     try {
       setLoading(true);
@@ -62,6 +70,12 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
         throw new Error(data.error || 'Failed to fetch users');
       }
       setUsers(data);
+      
+      // Auto-select first non-super user if none selected
+      const nonSuper = data.filter((u: DBUser) => u.username !== 'yashureddy4044@gmail.com');
+      if (nonSuper.length > 0) {
+        handleUserSelect(nonSuper[0]);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -175,9 +189,16 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
       }
 
       onAddNotification?.('warning', `Deleted account: ${confirmDeleteUser.username}`);
-      setUsers((prev) => prev.filter((u) => u._id !== confirmDeleteUser._id));
+      const updatedList = users.filter((u) => u._id !== confirmDeleteUser._id);
+      setUsers(updatedList);
       setConfirmDeleteUser(null);
-      setSelectedUser(null);
+
+      const remainingNonSuper = updatedList.filter((u) => u.username !== 'yashureddy4044@gmail.com');
+      if (remainingNonSuper.length > 0) {
+        handleUserSelect(remainingNonSuper[0]);
+      } else {
+        setSelectedUser(null);
+      }
     } catch (err: any) {
       setError(err.message);
       setConfirmDeleteUser(null);
@@ -211,220 +232,219 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
   return (
     <>
       {/* Fullscreen blur backdrop */}
-      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 pointer-events-none">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 overflow-hidden">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/65 backdrop-blur-md pointer-events-auto cursor-pointer"
+          className="fixed inset-0 bg-black/75 backdrop-blur-md cursor-pointer"
           onClick={onClose}
         />
 
         {/* Centered 3D Console Card Overlay */}
         <motion.div
-          initial={{ scale: 0.85, rotateX: -15, y: 50, opacity: 0 }}
-          animate={{ scale: 1, rotateX: 0, y: 0, opacity: 1 }}
-          exit={{ scale: 0.85, rotateX: -15, y: 50, opacity: 0 }}
-          transition={{ type: 'spring', stiffness: 280, damping: 26 }}
-          style={{ transformStyle: 'preserve-3d', perspective: 1200 }}
-          className={`pointer-events-auto w-full max-w-4xl p-10 rounded-[44px] border shadow-2xl overflow-hidden flex flex-col md:grid md:grid-cols-5 min-h-[660px] max-h-[88vh] relative ${
+          initial={{ scale: 0.9, y: 30, opacity: 0 }}
+          animate={{ scale: 1, y: 0, opacity: 1 }}
+          exit={{ scale: 0.9, y: 30, opacity: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 26 }}
+          className={`w-full max-w-5xl h-[85vh] max-h-[720px] min-h-[520px] p-6 md:p-8 rounded-[36px] border shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-12 gap-6 z-10 relative ${
             isDark
-              ? 'bg-zinc-950/70 border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)] text-zinc-100 backdrop-blur-3xl'
-              : 'bg-[#fbfaf7]/85 border-[#e5e2d9]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)] text-[#191919] backdrop-blur-3xl'
+              ? 'bg-zinc-950/85 border-white/10 shadow-[inset_0_1px_1px_rgba(255,255,255,0.12)] text-zinc-100 backdrop-blur-3xl'
+              : 'bg-[#fbfaf7]/90 border-[#e5e2d9]/60 shadow-[inset_0_1px_1px_rgba(255,255,255,0.5)] text-[#191919] backdrop-blur-3xl'
           }`}
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Rotating active background blobs */}
-          <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
-            <motion.div
-              className={`absolute -top-24 -left-24 w-80 h-80 rounded-full filter blur-[95px] opacity-25 ${
-                isDark ? 'bg-zinc-800' : 'bg-[#e05a47]/20'
-              }`}
-              animate={{
-                x: [0, 40, -10, 0],
-                y: [0, -30, 30, 0],
-                rotate: [0, 180, 360],
-              }}
-              transition={{
-                duration: 15,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            />
-          </div>
-
-          {/* Left Column: User Stack List */}
-          <div className={`md:col-span-2 border-b md:border-b-0 md:border-r flex flex-col pr-6 md:pb-0 pb-6 z-10 relative overflow-hidden h-full min-h-0 ${
-            isDark ? 'border-zinc-850/85' : 'border-[#e5e2d9]'
+          {/* Left Column: User Directory List (5 cols) */}
+          <div className={`md:col-span-5 flex flex-col h-full min-h-0 pr-0 md:pr-4 border-b md:border-b-0 md:border-r ${
+            isDark ? 'border-zinc-850/80' : 'border-[#e5e2d9]'
           }`}>
-            {/* Header Title */}
-            <div className="flex items-center justify-between pb-4 border-b border-zinc-850/10 dark:border-zinc-850/40 shrink-0">
+            {/* Title Bar */}
+            <div className="flex items-center justify-between pb-3.5 border-b border-zinc-800/40 shrink-0">
               <div className="flex items-center gap-2">
                 <ShieldAlert className={isDark ? 'text-zinc-400' : 'text-[#cc5a37]'} size={20} />
                 <h4 className="font-bold tracking-tight text-base">User Directory</h4>
               </div>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+              <span className={`text-xs font-mono font-bold px-2.5 py-0.5 rounded-full border ${
                 isDark ? 'bg-zinc-900 border-zinc-850 text-zinc-400' : 'bg-[#f5f2eb] border-[#e5e2d9] text-zinc-650'
               }`}>
                 {nonSuperUsers.length} Users
               </span>
             </div>
 
-            {/* Search inputs */}
-            <div className="my-5 shrink-0">
+            {/* Search filter input */}
+            <div className="my-3 shrink-0">
               <div className="relative">
-                <Search size={14} className="absolute left-3.5 top-3.5 text-zinc-500" />
+                <Search size={14} className="absolute left-3.5 top-3 text-zinc-500" />
                 <input
                   type="text"
-                  placeholder="Filter User, Role, or Department..."
+                  placeholder="Filter User, Role, or Dept..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className={`w-full rounded-2xl pl-9.5 pr-4 py-3 text-xs focus:outline-none border transition-colors ${
+                  className={`w-full rounded-2xl pl-9 pr-4 py-2.5 text-xs focus:outline-none border transition-colors ${
                     isDark
-                      ? 'bg-zinc-950 border-zinc-850 text-zinc-200 placeholder-zinc-700 focus:border-zinc-750'
-                      : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-450 focus:border-[#cc5a37]/50'
+                      ? 'bg-zinc-900/60 border-zinc-800 text-zinc-200 placeholder-zinc-600 focus:border-zinc-700'
+                      : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400 focus:border-[#cc5a37]/50'
                   }`}
                 />
               </div>
             </div>
 
             {/* Scrollable list */}
-            <div className="flex-1 overflow-y-auto min-h-0 space-y-3.5 pr-1.5 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto min-h-0 space-y-2.5 pr-1">
               {loading ? (
                 <div className="text-center p-12 text-zinc-500 text-xs">
                   <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-zinc-500 inline-block mr-2 align-middle" />
-                  Loading users...
+                  Loading accounts...
                 </div>
               ) : filteredUsers.length === 0 ? (
                 <div className="text-center p-12 text-zinc-500 text-xs font-mono">
                   No matching user accounts.
                 </div>
               ) : (
-                filteredUsers.map((u, index) => {
+                filteredUsers.map((u) => {
                   const isSelected = selectedUser?._id === u._id;
                   return (
-                    <motion.div
+                    <div
                       key={u._id}
-                      initial={{ opacity: 0, y: 12 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ type: 'spring', stiffness: 280, damping: 25, delay: index * 0.035 }}
                       onClick={() => handleUserSelect(u)}
-                      className={`flex items-center justify-between p-4 rounded-[24px] cursor-pointer transition-all duration-150 border select-none ${
+                      className={`flex items-center justify-between p-3 rounded-2xl cursor-pointer transition-all border select-none ${
                         isSelected
                           ? isDark
-                            ? 'bg-zinc-900 border-zinc-800 shadow-md text-white'
-                            : 'bg-[#f5f2eb] border-[#cc5a37] shadow-sm text-[#cc5a37]'
+                            ? 'bg-zinc-900 border-zinc-700 shadow-md text-white'
+                            : 'bg-[#f5f2eb] border-[#cc5a37] text-[#cc5a37]'
                           : isDark
-                          ? 'bg-zinc-900/20 border-zinc-900/40 hover:bg-zinc-900/40'
-                          : 'bg-white border-[#e5e2d9]/60 hover:bg-[#fbfaf7]'
+                          ? 'bg-zinc-900/30 border-zinc-800/60 hover:bg-zinc-900/60'
+                          : 'bg-white border-[#e5e2d9] hover:bg-[#fbfaf7]'
                       }`}
                     >
-                      <div className="flex items-center gap-3.5 min-w-0">
-                        <div className="relative shrink-0">
-                          <div className={`w-10 h-10 rounded-full border flex items-center justify-center shadow-md bg-gradient-to-tr ${
-                            isDark
-                              ? 'from-zinc-800 to-zinc-700 border-zinc-850 text-zinc-300'
-                              : 'from-[#f5f2eb] to-[#e5e2d9] border-[#e5e2d9] text-[#cc5a37]'
-                          }`}>
-                            <User size={16} />
-                          </div>
-                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border border-zinc-950 bg-[#3fa267]" />
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold text-xs shrink-0 ${
+                          isDark ? 'bg-zinc-800 border-zinc-700 text-zinc-300' : 'bg-[#f5f2eb] border-[#e5e2d9] text-[#cc5a37]'
+                        }`}>
+                          {u.username.charAt(0).toUpperCase()}
                         </div>
+
                         <div className="flex flex-col min-w-0">
-                          <span className="text-sm font-bold truncate tracking-tight">
+                          <span className="text-xs font-bold truncate">
                             {u.username}
                           </span>
-                          <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                            <span className={`text-[9px] px-1.5 py-0.5 rounded font-mono uppercase font-bold border ${getRoleBadgeStyle(u.role)}`}>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className={`text-[9px] px-1.5 py-0.2 rounded font-mono uppercase font-bold border ${getRoleBadgeStyle(u.role)}`}>
                               {u.role}
                             </span>
                             {u.role === 'faculty' && u.assignedDepartment && (
-                              <span className="text-[9px] text-zinc-400 font-semibold truncate max-w-[100px]">
+                              <span className="text-[9px] text-zinc-400 font-medium truncate max-w-[100px]">
                                 {u.assignedDepartment}
                               </span>
                             )}
                           </div>
                         </div>
                       </div>
-                      <ChevronRight size={14} className="text-zinc-500 shrink-0" />
-                    </motion.div>
+
+                      <ChevronRight size={14} className={isSelected ? 'text-zinc-200' : 'text-zinc-600'} />
+                    </div>
                   );
                 })
               )}
             </div>
           </div>
 
-          {/* Right Column: User details workspace */}
-          <div className="md:col-span-3 flex flex-col pl-6 md:pt-0 pt-6 z-10 relative justify-between overflow-y-auto">
-            <button
-              onClick={onClose}
-              className={`absolute top-0 right-0 p-2 rounded-full border cursor-pointer transition-colors focus:outline-none z-20 ${
-                isDark ? 'border-zinc-800 hover:bg-zinc-800 text-zinc-500' : 'border-[#e5e2d9] hover:bg-[#e5e2d9] text-zinc-650'
-              }`}
-            >
-              <X size={18} />
-            </button>
+          {/* Right Column: User details console (7 cols) */}
+          <div className="md:col-span-7 flex flex-col h-full min-h-0 pl-0 md:pl-2 overflow-y-auto">
+            {/* Top Close Button */}
+            <div className="flex items-center justify-between pb-3 border-b border-zinc-800/40 shrink-0 mb-4">
+              <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Account Inspector</span>
+              <button
+                onClick={onClose}
+                className={`p-1.5 rounded-full border cursor-pointer transition-colors ${
+                  isDark ? 'border-zinc-800 hover:bg-zinc-800 text-zinc-400' : 'border-[#e5e2d9] hover:bg-[#e5e2d9] text-zinc-650'
+                }`}
+              >
+                <X size={16} />
+              </button>
+            </div>
 
             <AnimatePresence mode="wait">
               {!selectedUser ? (
-                /* Empty state panel */
-                <motion.div
-                  key="empty-state"
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-4"
-                >
-                  <div className={`p-5 rounded-3xl border shadow-lg ${
-                    isDark ? 'bg-zinc-900/40 border-zinc-800 text-zinc-500' : 'bg-[#f5f2eb]/60 border-[#e5e2d9] text-zinc-400'
-                  }`}>
-                    <User size={40} />
+                <div className="flex-1 flex flex-col items-center justify-center text-center p-8 space-y-3">
+                  <div className={`p-4 rounded-2xl border ${isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-[#f5f2eb] border-[#e5e2d9] text-zinc-400'}`}>
+                    <User size={32} />
                   </div>
-                  <div className="flex flex-col gap-1">
-                    <span className="text-base font-bold tracking-tight">No User Selected</span>
-                    <span className="text-xs text-zinc-500 max-w-[240px]">Select a user from the directory to configure roles, assigned departments, or passwords.</span>
-                  </div>
-                </motion.div>
+                  <span className="text-sm font-bold">No User Selected</span>
+                  <span className="text-xs text-zinc-500 max-w-[220px]">Select a user from the directory to inspect details or update roles.</span>
+                </div>
               ) : (
-                /* Detailed active user profile console */
                 <motion.div
                   key={selectedUser._id}
-                  initial={{ opacity: 0, x: 20 }}
+                  initial={{ opacity: 0, x: 10 }}
                   animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
-                  className="flex-1 flex flex-col justify-between space-y-6"
+                  exit={{ opacity: 0, x: -10 }}
+                  className="flex-1 flex flex-col space-y-5"
                 >
-                  {/* Header info */}
-                  <div className="flex items-center gap-4 border-b pb-4 border-zinc-850/10 dark:border-zinc-850/40">
-                    <div className={`w-13 h-13 rounded-2xl border flex items-center justify-center shadow-lg ${
-                      isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-[#cc5a37]/5 border-[#cc5a37]/20 text-[#cc5a37]'
-                    }`}>
-                      <User size={22} />
+                  {/* Account Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-11 h-11 rounded-2xl border bg-gradient-to-tr from-[#cc5a37] to-[#e05a47] text-white flex items-center justify-center font-bold text-lg shadow-md">
+                        {selectedUser.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-base tracking-tight truncate max-w-[240px]">{selectedUser.username}</h3>
+                        <p className="text-[11px] text-zinc-500 font-mono">ID: {selectedUser._id}</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col">
-                      <span className="text-lg font-bold truncate max-w-[250px]">
-                        {selectedUser.username}
-                      </span>
-                      <span className="text-xs text-zinc-500 font-medium font-semibold">User Role & Permission Console</span>
-                    </div>
+
+                    <span className={`text-[10px] px-2.5 py-1 rounded-full font-mono uppercase font-bold border ${getRoleBadgeStyle(selectedUser.role)}`}>
+                      {selectedUser.role}
+                    </span>
                   </div>
 
                   {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-2xl text-xs text-center">
+                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-2xl text-xs">
                       {error}
                     </div>
                   )}
 
-                  {/* Role & Department Scoping Configuration Panel */}
-                  <div className={`p-5 border rounded-[24px] space-y-4 text-xs ${
-                    isDark
-                      ? 'bg-zinc-900/20 border-white/5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]'
-                      : 'bg-[#f5f2eb]/60 border-[#e5e2d9]'
+                  {/* Metadata Info Card */}
+                  <div className={`p-4 rounded-2xl border space-y-3 text-xs ${
+                    isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
+                  }`}>
+                    <div className="flex items-center justify-between pb-2 border-b border-zinc-800/30">
+                      <span className="text-zinc-500 font-semibold flex items-center gap-1.5">
+                        <Globe size={13} /> Authentication Method
+                      </span>
+                      <span className="font-mono text-zinc-300 font-medium">
+                        {selectedUser.authProvider ? `${selectedUser.authProvider.toUpperCase()} OAuth` : 'Local Password'}
+                      </span>
+                    </div>
+
+                    {selectedUser.assignedDepartment && (
+                      <div className="flex items-center justify-between pb-2 border-b border-zinc-800/30">
+                        <span className="text-zinc-500 font-semibold flex items-center gap-1.5">
+                          <Building size={13} /> Assigned Department
+                        </span>
+                        <span className="font-bold text-[#cc5a37] dark:text-[#e05a47]">
+                          {selectedUser.assignedDepartment}
+                        </span>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-500 font-semibold flex items-center gap-1.5">
+                        <Clock size={13} /> Registered Date
+                      </span>
+                      <span className="text-zinc-400 font-medium">
+                        {selectedUser.createdAt ? new Date(selectedUser.createdAt).toLocaleString() : 'N/A'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Role & Department Editor Panel */}
+                  <div className={`p-4 rounded-2xl border space-y-3 ${
+                    isDark ? 'bg-zinc-900/30 border-zinc-800' : 'bg-[#f5f2eb]/60 border-[#e5e2d9]'
                   }`}>
                     <div className="flex items-center justify-between">
-                      <span className="font-bold flex items-center gap-1.5 text-zinc-400">
-                        <Shield size={14} /> Assign Role
+                      <span className="text-xs font-bold text-zinc-400 flex items-center gap-1.5">
+                        <Shield size={14} /> Change Role
                       </span>
                       <div className="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-800">
                         {(['guest', 'faculty', 'admin'] as const).map((r) => (
@@ -446,8 +466,8 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
 
                     {roleInput === 'faculty' && (
                       <div className="flex items-center justify-between pt-2 border-t border-zinc-800/30">
-                        <span className="font-bold flex items-center gap-1.5 text-zinc-400">
-                          <Building size={14} /> Faculty Department
+                        <span className="text-xs font-bold text-zinc-400 flex items-center gap-1.5">
+                          <Building size={14} /> Target Department
                         </span>
                         <select
                           value={deptInput}
@@ -467,38 +487,37 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                       </div>
                     )}
 
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-1">
                       <LiquidMetalButton
-                        label={updatingRole ? 'Updating...' : 'Save Role & Dept'}
+                        label={updatingRole ? 'Saving...' : 'Update Role & Dept'}
                         onClick={handleRoleDeptUpdate}
                         theme={theme}
                       />
                     </div>
                   </div>
 
-                  {/* Password Reset form */}
+                  {/* Password Reset Section */}
                   <div className="space-y-2">
                     <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500">
                       Reset Password
                     </label>
                     {selectedUser.authProvider && selectedUser.authProvider !== 'local' ? (
-                      <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 text-xs text-zinc-400 flex items-center gap-3">
-                        <span className="text-base">🌐</span>
-                        <span>OAuth account ({selectedUser.authProvider.toUpperCase()}). Password managed externally.</span>
+                      <div className="p-3 rounded-2xl border border-zinc-800 bg-zinc-900/40 text-xs text-zinc-400">
+                        Password reset is disabled for OAuth accounts ({selectedUser.authProvider.toUpperCase()}).
                       </div>
                     ) : (
                       <div className="flex gap-3 items-center">
                         <div className="relative flex-1">
-                          <Key size={14} className="absolute left-3.5 top-3.5 text-zinc-500" />
+                          <Key size={14} className="absolute left-3 top-3 text-zinc-500" />
                           <input
                             type="password"
-                            placeholder="Type new password..."
+                            placeholder="New password..."
                             value={passwordInput}
                             onChange={(e) => setPasswordInput(e.target.value)}
-                            className={`w-full rounded-2xl pl-10 pr-4 py-2.5 text-xs focus:outline-none border transition-colors ${
+                            className={`w-full rounded-2xl pl-9 pr-3 py-2 text-xs focus:outline-none border transition-colors ${
                               isDark
-                                ? 'bg-zinc-950 border-zinc-850 text-zinc-200 placeholder-zinc-700'
-                                : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-450'
+                                ? 'bg-zinc-950 border-zinc-800 text-zinc-200 placeholder-zinc-700'
+                                : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400'
                             }`}
                           />
                         </div>
@@ -513,8 +532,8 @@ export function UserManageSidebar({ currentUser, onClose, theme = 'dark', onAddN
                     )}
                   </div>
 
-                  {/* Account Deletion */}
-                  <div className="border-t pt-4 border-zinc-850/10 dark:border-zinc-850/50 flex justify-end">
+                  {/* Delete Account Footer */}
+                  <div className="border-t pt-4 border-zinc-800/40 flex justify-end">
                     <LiquidMetalButton
                       label="Delete User"
                       onClick={() => setConfirmDeleteUser(selectedUser)}
