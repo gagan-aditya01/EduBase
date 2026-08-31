@@ -90,7 +90,7 @@ export const DesktopSidebar = ({
   return (
     <motion.div
       className={cn(
-        "h-screen sticky top-0 px-4 py-4 hidden md:flex md:flex-col border-r transition-colors duration-300 w-[260px] flex-shrink-0 z-40",
+        "h-screen sticky top-0 px-3 py-4 hidden md:flex md:flex-col transition-colors duration-300 w-[260px] flex-shrink-0 z-40 border-r-0 shadow-[1px_0_12px_rgba(0,0,0,0.03)]",
         className
       )}
       animate={{
@@ -122,7 +122,7 @@ export const MobileSidebar = ({
         <div className="flex justify-between items-center w-full">
           <span className="font-bold text-sm tracking-tight gradient-text">EduBase Portal</span>
           <Menu
-            className="cursor-pointer"
+            className="cursor-pointer text-zinc-400"
             onClick={() => setOpen(!open)}
           />
         </div>
@@ -169,14 +169,14 @@ export const SidebarLink = ({
       type="button"
       onClick={link.onClick}
       className={cn(
-        "flex items-center justify-start gap-3 group/sidebar py-2.5 px-3 rounded-2xl transition-all duration-150 cursor-pointer w-full text-left font-medium text-xs select-none",
+        "flex items-center justify-start gap-3 group/sidebar py-2.5 px-3 rounded-2xl transition-all duration-150 cursor-pointer w-full text-left font-semibold text-xs select-none",
         link.danger
           ? "text-red-500 hover:bg-red-500/10"
-          : "hover:bg-zinc-800/40 dark:hover:bg-zinc-800/60 text-zinc-300 hover:text-white",
+          : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200/60 dark:hover:bg-zinc-800/60 hover:text-[#cc5a37] dark:hover:text-white",
         className
       )}
     >
-      <div className="shrink-0">{link.icon}</div>
+      <div className="shrink-0 flex items-center justify-center">{link.icon}</div>
       <motion.span
         animate={{
           display: animate ? (open ? "inline-block" : "none") : "inline-block",
@@ -190,7 +190,7 @@ export const SidebarLink = ({
       {link.badge && open && (
         <motion.span
           animate={{ opacity: open ? 1 : 0 }}
-          className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-zinc-800 text-zinc-300"
+          className="ml-auto px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
         >
           {link.badge}
         </motion.span>

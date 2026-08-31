@@ -423,8 +423,12 @@ export default function App() {
           }`}>
             <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
               {/* Brand Header */}
-              <div className="flex items-center gap-3 py-2 px-1">
-                <GraduationCap className={theme === 'dark' ? 'text-zinc-300' : 'text-[#cc5a37]'} size={24} />
+              <div className="flex items-center gap-3 py-1 px-0.5 shrink-0 min-h-[40px]">
+                <div className={`w-9 h-9 rounded-xl border flex items-center justify-center shrink-0 shadow-xs ${
+                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
+                }`}>
+                  <GraduationCap size={20} />
+                </div>
                 <AnimatePresence>
                   {sidebarOpen && (
                     <motion.span
@@ -444,7 +448,7 @@ export default function App() {
                 <SidebarLink
                   link={{
                     label: 'Dashboard',
-                    icon: <LayoutDashboard size={18} className="text-zinc-400" />,
+                    icon: <LayoutDashboard size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                     onClick: () => setCurrentPage('dashboard'),
                   }}
                 />
@@ -452,7 +456,7 @@ export default function App() {
                 <SidebarLink
                   link={{
                     label: 'Analytics Engine',
-                    icon: <BarChart3 size={18} className="text-zinc-400" />,
+                    icon: <BarChart3 size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                     onClick: () => setShowAnalyticsModal(true),
                   }}
                 />
@@ -462,14 +466,14 @@ export default function App() {
                     <SidebarLink
                       link={{
                         label: 'Audit Log Trail',
-                        icon: <ShieldAlert size={18} className="text-amber-500" />,
+                        icon: <ShieldAlert size={18} className={theme === 'dark' ? 'text-amber-500' : 'text-[#cc5a37]'} />,
                         onClick: () => setShowAuditLogs(true),
                       }}
                     />
                     <SidebarLink
                       link={{
                         label: 'Manage Users',
-                        icon: <Users size={18} className="text-zinc-400" />,
+                        icon: <Users size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                         onClick: () => setShowUserSidebar(true),
                       }}
                     />
@@ -479,7 +483,7 @@ export default function App() {
                 <SidebarLink
                   link={{
                     label: 'Change Password',
-                    icon: <Key size={18} className="text-zinc-400" />,
+                    icon: <Key size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                     onClick: () => setShowChangePasswordForm(!showChangePasswordForm),
                   }}
                 />
@@ -502,7 +506,9 @@ export default function App() {
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
                     onSubmit={handleChangeProfilePassword}
-                    className="flex flex-col gap-2 p-3 mt-2 rounded-2xl border border-zinc-800 bg-zinc-900/40"
+                    className={`flex flex-col gap-2 p-3 mt-2 rounded-2xl border ${
+                      theme === 'dark' ? 'border-zinc-800 bg-zinc-900/40' : 'border-[#e5e2d9] bg-white'
+                    }`}
                   >
                     <input
                       type="password"
@@ -510,13 +516,15 @@ export default function App() {
                       value={newProfilePassword}
                       onChange={(e) => setNewProfilePassword(e.target.value)}
                       className={`w-full rounded-xl px-2.5 py-1.5 text-xs focus:outline-none border ${
-                        theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+                        theme === 'dark' ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-[#f5f2eb] border-[#e5e2d9] text-[#191919]'
                       }`}
                     />
                     <button
                       type="submit"
                       disabled={updatingPassword}
-                      className="w-full py-1.5 rounded-xl font-bold text-[10px] bg-[#cc5a37] text-white hover:bg-[#e05a47]"
+                      className={`w-full py-1.5 rounded-xl font-bold text-[10px] cursor-pointer ${
+                        theme === 'dark' ? 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700' : 'bg-[#cc5a37] hover:bg-[#e05a47] text-white'
+                      }`}
                     >
                       {updatingPassword ? 'Saving...' : 'Save Password'}
                     </button>
@@ -526,22 +534,28 @@ export default function App() {
             </div>
 
             {/* Sidebar User Profile Footer */}
-            <div className="pt-4 border-t border-zinc-800/40 flex items-center justify-between gap-2">
+            <div className={`pt-4 border-t flex items-center justify-between gap-2 ${
+              theme === 'dark' ? 'border-zinc-800/40' : 'border-[#e5e2d9]'
+            }`}>
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-8 h-8 rounded-full border bg-gradient-to-tr from-[#cc5a37] to-[#e05a47] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-md">
+                <div className={`w-8 h-8 rounded-full border flex items-center justify-center font-bold text-xs shrink-0 shadow-md ${
+                  theme === 'dark'
+                    ? 'bg-zinc-850 border-zinc-700 text-zinc-200'
+                    : 'bg-[#f0ede6] border-[#e5e2d9] text-[#cc5a37]'
+                }`}>
                   {user.username.charAt(0).toUpperCase()}
                 </div>
                 {sidebarOpen && (
                   <div className="flex flex-col min-w-0">
-                    <span className="text-xs font-bold truncate text-zinc-200">{user.username}</span>
-                    <span className="text-[9px] font-mono text-zinc-400 uppercase truncate">
+                    <span className={`text-xs font-bold truncate ${theme === 'dark' ? 'text-zinc-200' : 'text-[#191919]'}`}>
+                      {user.username}
+                    </span>
+                    <span className={`text-[9px] font-mono uppercase truncate ${theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'}`}>
                       {user.role} {user.assignedDepartment ? `(${user.assignedDepartment})` : ''}
                     </span>
                   </div>
                 )}
               </div>
-
-              {sidebarOpen && <ThemeToggle theme={theme} onToggle={toggleTheme} />}
             </div>
           </SidebarBody>
         </Sidebar>
@@ -560,14 +574,17 @@ export default function App() {
                 <span>MongoDB Connected</span>
               </div>
 
-              <button
-                onClick={() => setCurrentPage('404')}
-                className={`text-xs border px-3 py-1 rounded-full transition-all cursor-pointer ${
-                  theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800' : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
-                }`}
-              >
-                Test 404 Page
-              </button>
+              <div className="flex items-center gap-3">
+                <ThemeToggle theme={theme} onToggle={toggleTheme} />
+                <button
+                  onClick={() => setCurrentPage('404')}
+                  className={`text-xs border px-3 py-1 rounded-full transition-all cursor-pointer ${
+                    theme === 'dark' ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800' : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
+                  }`}
+                >
+                  Test 404 Page
+                </button>
+              </div>
             </div>
           </header>
 
