@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StudentForm } from './components/StudentForm';
 import { StudentList } from './components/StudentList';
-import { Sparkles, Database, GraduationCap, LogOut, Key, LayoutDashboard, BarChart3, ShieldAlert, Users } from 'lucide-react';
+import { Sparkles, Database, GraduationCap, LogOut, Key, LayoutDashboard, BarChart3, ShieldAlert, Users, UserCheck } from 'lucide-react';
 import { Sidebar, SidebarBody, SidebarLink } from './components/ui/sidebar';
 import { LiquidMetalButton } from './components/ui/liquid-metal-button';
 import { FloatingPathsBackground } from './components/ui/floating-paths';
@@ -13,10 +13,10 @@ import { ThemeToggle } from './components/ui/ThemeToggle';
 import { DepartmentChart } from './components/DepartmentChart';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { AuthPage } from './components/AuthPage';
-import { UserManageSidebar } from './components/UserManageSidebar';
-import { AuditLogDrawer } from './components/AuditLogDrawer';
-import { AnalyticsModal } from './components/AnalyticsModal';
 import { FacultyDirectory } from './components/FacultyDirectory';
+import { AnalyticsPage } from './components/AnalyticsPage';
+import { AuditLogPage } from './components/AuditLogPage';
+import { UserManagePage } from './components/UserManagePage';
 import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
 import TeamSection from './components/ui/team';
@@ -46,7 +46,7 @@ export default function App() {
   const [error, setError] = useState('');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'analytics' | 'audit-logs' | 'users' | '404'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'faculty-directory' | 'analytics' | 'audit-logs' | 'users' | '404'>('dashboard');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [user, setUser] = useState<User | null>(null);
@@ -59,10 +59,6 @@ export default function App() {
     onConfirm: () => void;
   } | null>(null);
 
-  const [showUserSidebar, setShowUserSidebar] = useState(false);
-  const [showAuditLogs, setShowAuditLogs] = useState(false);
-  const [showAnalyticsModal, setShowAnalyticsModal] = useState(false);
-  const [activeDirectoryTab, setActiveDirectoryTab] = useState<'students' | 'faculty'>('students');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showChangePasswordForm, setShowChangePasswordForm] = useState(false);
   const [newProfilePassword, setNewProfilePassword] = useState('');
@@ -451,9 +447,17 @@ export default function App() {
               <div className="mt-6 flex flex-col gap-1.5">
                 <SidebarLink
                   link={{
-                    label: 'Dashboard',
+                    label: 'Student Directory',
                     icon: <LayoutDashboard size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                     onClick: () => setCurrentPage('dashboard'),
+                  }}
+                />
+
+                <SidebarLink
+                  link={{
+                    label: 'Faculty Directory',
+                    icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                    onClick: () => setCurrentPage('faculty-directory'),
                   }}
                 />
 
@@ -595,10 +599,10 @@ export default function App() {
           {/* 3D Workspace Scaling Deck Flip Wrapper */}
           <motion.div
             animate={{
-              scale: showUserSidebar ? 0.94 : 1,
-              rotateX: showUserSidebar ? 8 : 0,
-              y: showUserSidebar ? -10 : 0,
-              opacity: showUserSidebar ? 0.35 : 1,
+              scale: 1,
+              rotateX: 0,
+              y: 0,
+              opacity: 1,
             }}
             transition={{ type: 'spring', stiffness: 260, damping: 30 }}
             style={{ transformOrigin: 'top center', transformStyle: 'preserve-3d' }}
@@ -606,40 +610,29 @@ export default function App() {
         {/* Main workspace content routing */}
         <main className="max-w-7xl mx-auto px-6 py-10 relative z-10">
           {currentPage === 'analytics' ? (
-            <div className="space-y-6">
-              <button
-                onClick={() => setCurrentPage('dashboard')}
-                className={`text-xs font-semibold px-4 py-2 rounded-2xl border transition-all cursor-pointer flex items-center gap-2 ${
-                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-[#191919] hover:text-[#cc5a37]'
-                }`}
-              >
-                &larr; Back to Dashboard
-              </button>
-              <AnalyticsModal currentUser={user} onClose={() => setCurrentPage('dashboard')} theme={theme} />
-            </div>
+            <AnalyticsPage currentUser={user} theme={theme} />
           ) : currentPage === 'audit-logs' ? (
-            <div className="space-y-6">
-              <button
-                onClick={() => setCurrentPage('dashboard')}
-                className={`text-xs font-semibold px-4 py-2 rounded-2xl border transition-all cursor-pointer flex items-center gap-2 ${
-                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-[#191919] hover:text-[#cc5a37]'
-                }`}
-              >
-                &larr; Back to Dashboard
-              </button>
-              <AuditLogDrawer currentUser={user} onClose={() => setCurrentPage('dashboard')} theme={theme} />
-            </div>
+            <AuditLogPage currentUser={user} theme={theme} />
           ) : currentPage === 'users' ? (
+            <UserManagePage currentUser={user} theme={theme} addToast={addToast} />
+          ) : currentPage === 'faculty-directory' ? (
             <div className="space-y-6">
-              <button
-                onClick={() => setCurrentPage('dashboard')}
-                className={`text-xs font-semibold px-4 py-2 rounded-2xl border transition-all cursor-pointer flex items-center gap-2 ${
-                  theme === 'dark' ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-[#191919] hover:text-[#cc5a37]'
-                }`}
-              >
-                &larr; Back to Dashboard
-              </button>
-              <UserManageSidebar currentUser={user} onClose={() => setCurrentPage('dashboard')} theme={theme} addToast={addToast} />
+              <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b transition-colors duration-300 ${
+                theme === 'dark' ? 'border-zinc-900' : 'border-[#e5e2d9]'
+              }`}>
+                <div>
+                  <h1 className={`text-3xl font-bold tracking-tight flex items-center gap-2 ${
+                    theme === 'dark' ? 'text-zinc-100' : 'text-[#191919]'
+                  }`}>
+                    Faculty Staff Directory
+                    <Sparkles size={20} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
+                  </h1>
+                  <p className={theme === 'dark' ? 'text-zinc-500 text-sm mt-1' : 'text-zinc-500 text-sm mt-1'}>
+                    Inspect academic teaching staff, assigned departments, and active system roles.
+                  </p>
+                </div>
+              </div>
+              <FacultyDirectory currentUser={user} theme={theme} />
             </div>
           ) : (
             <>
@@ -651,13 +644,13 @@ export default function App() {
                   <h1 className={`text-3xl font-bold tracking-tight flex items-center gap-2 ${
                     theme === 'dark' ? 'text-zinc-100' : 'text-[#191919]'
                   }`}>
-                    {user.role === 'faculty' ? `${user.assignedDepartment || 'Faculty'} Department Portal` : 'Student & Faculty Directory'}
+                    {user.role === 'faculty' ? `${user.assignedDepartment || 'Faculty'} Department Portal` : 'Student Directory'}
                     <Sparkles size={20} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
                   </h1>
                   <p className={theme === 'dark' ? 'text-zinc-500 text-sm mt-1' : 'text-zinc-500 text-sm mt-1'}>
                     {user.role === 'faculty'
                       ? `Department Scoped Workspace • Managing enrolled ${user.assignedDepartment || 'Department'} students`
-                      : 'Manage academic database records, query departments, and inspect staff profiles.'}
+                      : 'Manage academic database records, query departments, and update student profiles.'}
                   </p>
                 </div>
 
@@ -689,86 +682,43 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Directory View Tabs */}
-              <div className="flex items-center gap-2 mt-6">
-                <button
-                  onClick={() => setActiveDirectoryTab('students')}
-                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
-                    activeDirectoryTab === 'students'
-                      ? theme === 'dark'
-                        ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
-                        : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
-                      : theme === 'dark'
-                      ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
-                      : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
-                  }`}
-                >
-                  Student Directory ({students.length})
-                </button>
-
-                <button
-                  onClick={() => setActiveDirectoryTab('faculty')}
-                  className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all cursor-pointer border ${
-                    activeDirectoryTab === 'faculty'
-                      ? theme === 'dark'
-                        ? 'bg-zinc-800 border-zinc-700 text-zinc-100 shadow-sm'
-                        : 'bg-[#cc5a37] border-[#cc5a37] text-white shadow-md'
-                      : theme === 'dark'
-                      ? 'bg-zinc-900/40 border-zinc-800/80 text-zinc-400 hover:bg-zinc-900'
-                      : 'bg-white border-[#e5e2d9] text-zinc-650 hover:bg-[#f5f2eb]'
-                  }`}
-                >
-                  Faculty Directory
-                </button>
+              {/* Dashboard Analytics Section */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
+                <div className="lg:col-span-2">
+                  <StatsPanel students={students} theme={theme} />
+                </div>
+                <div>
+                  <DepartmentChart students={students} theme={theme} />
+                </div>
               </div>
 
-              {/* Tab 1: Student Directory Content */}
-              {activeDirectoryTab === 'students' ? (
-                <>
-                  {/* Dashboard Analytics Section */}
-                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
-                    <div className="lg:col-span-2">
-                      <StatsPanel students={students} theme={theme} />
-                    </div>
-                    <div>
-                      <DepartmentChart students={students} theme={theme} />
-                    </div>
-                  </div>
-
-                  {error && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm mt-8">
-                      {error}
-                    </div>
-                  )}
-
-                  <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
-                    {/* Main List */}
-                    <div className="flex-1 w-full order-2 lg:order-1">
-                      <StudentList
-                        students={students}
-                        isLoading={loading}
-                        theme={theme}
-                        isAdmin={user.role === 'admin' || user.role === 'faculty'}
-                        onEdit={(student) => {
-                          setEditingStudent(student);
-                          setShowForm(true);
-                          window.scrollTo({ top: 0, behavior: 'smooth' });
-                        }}
-                        onDelete={handleDelete}
-                        onBulkDelete={handleBulkDelete}
-                        filters={filters}
-                        setFilters={setFilters}
-                        onClearFilters={handleClearFilters}
-                      />
-                    </div>
-                  </div>
-                </>
-              ) : (
-                /* Tab 2: Faculty Directory Content */
-                <div className="mt-6">
-                  <FacultyDirectory currentUser={user} theme={theme} />
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-xl text-sm mt-8">
+                  {error}
                 </div>
               )}
+
+              <div className="flex flex-col lg:flex-row gap-8 items-start mt-8">
+                {/* Main List */}
+                <div className="flex-1 w-full order-2 lg:order-1">
+                  <StudentList
+                    students={students}
+                    isLoading={loading}
+                    theme={theme}
+                    isAdmin={user.role === 'admin' || user.role === 'faculty'}
+                    onEdit={(student) => {
+                      setEditingStudent(student);
+                      setShowForm(true);
+                      window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }}
+                    onDelete={handleDelete}
+                    onBulkDelete={handleBulkDelete}
+                    filters={filters}
+                    setFilters={setFilters}
+                    onClearFilters={handleClearFilters}
+                  />
+                </div>
+              </div>
             </>
           )}
           {/* Form Side-Sheet with backdrop */}
@@ -859,35 +809,6 @@ export default function App() {
           theme={theme}
         />
       )}
-      <AnimatePresence>
-        {showUserSidebar && user && user.role === 'admin' && (
-          <UserManageSidebar
-            currentUser={user}
-            onClose={() => setShowUserSidebar(false)}
-            theme={theme}
-            onAddNotification={addNotification}
-            addToast={addToast}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showAuditLogs && user && user.role === 'admin' && (
-          <AuditLogDrawer
-            currentUser={user}
-            onClose={() => setShowAuditLogs(false)}
-            theme={theme}
-          />
-        )}
-      </AnimatePresence>
-      <AnimatePresence>
-        {showAnalyticsModal && user && (
-          <AnalyticsModal
-            currentUser={user}
-            onClose={() => setShowAnalyticsModal(false)}
-            theme={theme}
-          />
-        )}
-      </AnimatePresence>
       <AnimatePresence>
         {showWelcomeSplash && user && (
           <WelcomeSplash

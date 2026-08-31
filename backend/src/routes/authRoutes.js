@@ -14,7 +14,7 @@ const {
   deleteUser,
   updateProfilePassword,
 } = require('../controllers/authController');
-const { protect, admin } = require('../middlewares/authMiddleware');
+const { protect, admin, facultyOrAdmin } = require('../middlewares/authMiddleware');
 
 router.post('/register', registerUser);
 router.post('/login', loginUser);
@@ -32,9 +32,9 @@ router.post('/refresh', refreshTokenHandler);
 router.route('/profile/password')
   .put(protect, updateProfilePassword);
 
-// Admin-only user management routes
+// User management & faculty directory routes
 router.route('/users')
-  .get(protect, admin, getAllUsers);
+  .get(protect, facultyOrAdmin, getAllUsers);
 
 router.route('/users/:id')
   .put(protect, admin, updateUser)
