@@ -266,4 +266,32 @@ describe('Full-Stack Backend API Tests', () => {
       expect(res.body.length).toBeGreaterThanOrEqual(10);
     });
   });
+
+  describe('Phase 6C: Indian Evaluation Engine & Faculty Gradebook Console Tests', () => {
+    it('POST /api/v1/grades/bulk-save should evaluate Indian marks (20-50-20-100) and save grades', async () => {
+      const res = await request(app)
+        .post('/api/v1/grades/bulk-save')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          courseCode: 'CS301',
+          section: '3CS',
+          semester: 'Spring 2026',
+          grades: [
+            { studentId: '2361001', assignment1: 18, midterm: 42, assignment2: 16, endSem: 85 },
+          ],
+        });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('savedCount');
+    });
+
+    it('GET /api/v1/grades should fetch section gradebook evaluation list', async () => {
+      const res = await request(app)
+        .get('/api/v1/grades?section=3CS&courseCode=CS301')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(Array.isArray(res.body)).toBe(true);
+    });
+  });
 });

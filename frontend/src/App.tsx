@@ -20,6 +20,8 @@ import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
 import TeamSection from './components/ui/team';
 import { CsvImporterModal } from './components/CsvImporterModal';
+import { GradebookPage } from './components/GradebookPage';
+import { BookOpen } from 'lucide-react';
 
 interface Student {
   studentId: string;
@@ -48,7 +50,7 @@ export default function App() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showCsvModal, setShowCsvModal] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'faculty-directory' | 'analytics' | 'audit-logs' | 'users' | '404'>('dashboard');
+  const [currentPage, setCurrentPage] = useState<'dashboard' | 'faculty-directory' | 'analytics' | 'audit-logs' | 'users' | 'gradebook' | '404'>('dashboard');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [user, setUser] = useState<User | null>(null);
@@ -442,6 +444,16 @@ export default function App() {
                   }}
                 />
 
+                {(user.role === 'admin' || user.role === 'faculty') && (
+                  <SidebarLink
+                    link={{
+                      label: 'Gradebook Console',
+                      icon: <BookOpen size={18} className={theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'} />,
+                      onClick: () => setCurrentPage('gradebook'),
+                    }}
+                  />
+                )}
+
                 {user.role === 'admin' && (
                   <SidebarLink
                     link={{
@@ -602,6 +614,8 @@ export default function App() {
         <main className="max-w-7xl mx-auto px-6 py-10 relative z-10">
           {currentPage === 'analytics' ? (
             <AnalyticsPage currentUser={user} theme={theme} />
+          ) : currentPage === 'gradebook' ? (
+            <GradebookPage currentUser={user} theme={theme} addToast={addToast} />
           ) : currentPage === 'audit-logs' ? (
             <AuditLogPage currentUser={user} theme={theme} />
           ) : currentPage === 'users' ? (
