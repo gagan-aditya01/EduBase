@@ -262,13 +262,21 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
     return { totalWeightedScore: weightedPerc, letterGrade, gradePoint };
   };
 
-  const getMaxForField = (field: 'assignment1' | 'midterm' | 'assignment2' | 'endSem') => {
-    switch (field) {
-      case 'assignment1': return 20;
-      case 'midterm': return 50;
-      case 'assignment2': return 20;
-      case 'endSem': return 100;
+
+
+  const getInputStyle = (val: number | string, maxVal: number) => {
+    const num = Number(val);
+    const isError = val !== '' && !isNaN(num) && (num > maxVal || num < 0);
+
+    if (isError) {
+      return isDark
+        ? 'bg-red-500/15 border-red-500 text-red-400 font-bold outline-none ring-2 ring-red-500/40 animate-pulse'
+        : 'bg-red-50 border-red-500 text-red-600 font-bold outline-none ring-2 ring-red-500/40 animate-pulse';
     }
+
+    return isDark
+      ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500'
+      : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]';
   };
 
   const handleMarkChange = (studentId: string, field: 'assignment1' | 'midterm' | 'assignment2' | 'endSem', rawValue: string) => {
@@ -289,13 +297,9 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
       return;
     }
 
-    const maxVal = getMaxForField(field);
     let parsedNum = Number(rawValue);
 
     if (isNaN(parsedNum)) return;
-
-    if (parsedNum < 0) parsedNum = 0;
-    if (parsedNum > maxVal) parsedNum = maxVal;
 
     setGradeRows((prev) =>
       prev.map((row) => {
@@ -314,6 +318,20 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
 
   const handleSaveAllGrades = async () => {
     if (gradeRows.length === 0) return;
+
+    const hasValidationErrors = gradeRows.some(
+      (r) =>
+        Number(r.assignment1) > 20 ||
+        Number(r.midterm) > 50 ||
+        Number(r.assignment2) > 20 ||
+        Number(r.endSem) > 100
+    );
+
+    if (hasValidationErrors) {
+      setErrorMsg('Cannot save: One or more mark entries exceed maximum allowed limits (Assign 1 ≤ 20, Midterm ≤ 50, Assign 2 ≤ 20, EndSem ≤ 100).');
+      return;
+    }
+
     try {
       setSaving(true);
       setErrorMsg('');
@@ -376,12 +394,9 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
             <h1 className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${
               isDark ? 'text-zinc-100' : 'text-[#191919]'
             }`}>
-              Faculty Gradebook & Evaluation Console
+              Faculty Gradebook
               <Sparkles size={18} className={isDark ? 'text-zinc-400' : 'text-[#cc5a37]'} />
             </h1>
-            <p className={isDark ? 'text-xs text-zinc-400 mt-1' : 'text-xs text-zinc-650 mt-1'}>
-              Continuous Assessment Matrix • Assignment I (20) • Midterm (50) • Assignment II (20) • EndSem (100)
-            </p>
           </div>
         </div>
 
@@ -434,9 +449,9 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
 
           <div className="mt-4">
             <LiquidMetalButton
-              label={saving ? 'Saving Marks...' : 'Save & Publish Marks'}
+              label={saving ? 'Saving...' : 'Save & Publish Marks'}
               onClick={handleSaveAllGrades}
-              width={190}
+              width={150}
               theme={theme}
             />
           </div>
@@ -495,21 +510,20 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
               ) : (
                 gradeRows.map((r) => (
                   <tr key={r.studentId} className={isDark ? 'hover:bg-zinc-800/30' : 'hover:bg-[#f8f6f0]'}>
-                    <td className={`p-4 font-mono font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{r.studentId}</td>
-                    <td className={`p-4 font-bold ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>{r.name}</td>
+                    <td className={`p-4.5 font-mono font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{r.studentId}</td>
+                    <td className={`p-4.5 font-bold ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>{r.name}</td>
 
                     {/* Assign 1 */}
                     <td className="p-3 text-center">
                       <input
                         type="number"
-                        min={0}
-                        max={20}
                         value={r.assignment1}
                         onChange={(e) => handleMarkChange(r.studentId, 'assignment1', e.target.value)}
                         onFocus={(e) => e.target.select()}
-                        className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
-                        }`}
+                        className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all ${getInputStyle(
+                          r.assignment1,
+                          20
+                        )}`}
                       />
                     </td>
 
@@ -517,14 +531,13 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                     <td className="p-3 text-center">
                       <input
                         type="number"
-                        min={0}
-                        max={50}
                         value={r.midterm}
                         onChange={(e) => handleMarkChange(r.studentId, 'midterm', e.target.value)}
                         onFocus={(e) => e.target.select()}
-                        className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
-                        }`}
+                        className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all ${getInputStyle(
+                          r.midterm,
+                          50
+                        )}`}
                       />
                     </td>
 
@@ -532,14 +545,13 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                     <td className="p-3 text-center">
                       <input
                         type="number"
-                        min={0}
-                        max={20}
                         value={r.assignment2}
                         onChange={(e) => handleMarkChange(r.studentId, 'assignment2', e.target.value)}
                         onFocus={(e) => e.target.select()}
-                        className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
-                        }`}
+                        className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all ${getInputStyle(
+                          r.assignment2,
+                          20
+                        )}`}
                       />
                     </td>
 
@@ -547,31 +559,30 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                     <td className="p-3 text-center">
                       <input
                         type="number"
-                        min={0}
-                        max={100}
                         value={r.endSem}
                         onChange={(e) => handleMarkChange(r.studentId, 'endSem', e.target.value)}
                         onFocus={(e) => e.target.select()}
-                        className={`w-20 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
-                        }`}
+                        className={`w-20 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none transition-all ${getInputStyle(
+                          r.endSem,
+                          100
+                        )}`}
                       />
                     </td>
 
                     {/* Weighted % */}
-                    <td className={`p-4 text-center font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-[#cc5a37]'}`}>
+                    <td className={`p-4.5 text-center font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-[#cc5a37]'}`}>
                       {r.totalWeightedScore.toFixed(1)}%
                     </td>
 
                     {/* Letter Grade Badge */}
-                    <td className="p-4 text-center">
+                    <td className="p-4.5 text-center">
                       <span className={`inline-block font-mono font-bold px-2.5 py-0.5 rounded-lg border text-xs ${getGradeBadgeColor(r.letterGrade)}`}>
                         {r.letterGrade}
                       </span>
                     </td>
 
                     {/* Grade Point */}
-                    <td className={`p-4 text-center font-mono font-bold ${isDark ? 'text-zinc-200' : 'text-[#191919]'}`}>
+                    <td className={`p-4.5 text-center font-mono font-bold ${isDark ? 'text-zinc-200' : 'text-[#191919]'}`}>
                       {r.gradePoint.toFixed(1)}
                     </td>
                   </tr>
