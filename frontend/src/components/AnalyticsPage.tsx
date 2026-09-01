@@ -12,6 +12,7 @@ import {
   Cell,
   CartesianGrid,
   Legend,
+  Sector,
 } from 'recharts';
 import {
   Select,
@@ -54,11 +55,34 @@ const DEPT_SHORT_CODES: Record<string, string> = {
   'Robotics': 'ROB',
 };
 
+const renderActiveShape = (props: any) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius - 3}
+        outerRadius={outerRadius + 14}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        style={{
+          filter: 'drop-shadow(0px 8px 20px rgba(0, 0, 0, 0.5))',
+          transition: 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
+        }}
+      />
+    </g>
+  );
+};
+
 export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProps) {
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [selectedDeptFilter, setSelectedDeptFilter] = useState<string>('ALL');
+  const [activeStudentIndex, setActiveStudentIndex] = useState<number>(-1);
+  const [activeFacultyIndex, setActiveFacultyIndex] = useState<number>(-1);
 
   const isDark = theme === 'dark';
 
@@ -307,7 +331,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
         </div>
       </div>
 
-      {/* Visual Pie Charts Grid for Students & Teachers */}
+      {/* Visual Pie Charts Grid for Students & Teachers with Pop-out Hover Animation */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart 1: Department-Wise Students Pie Chart */}
         <div className={`p-6 rounded-3xl border flex flex-col ${
@@ -326,21 +350,25 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           <div className="h-96 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={studentPieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={125}
-                  innerRadius={65}
-                  paddingAngle={4}
-                  label={(entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`}
-                >
-                  {studentPieData.map((entry, index) => (
+                {(Pie as any)({
+                  activeIndex: activeStudentIndex >= 0 ? activeStudentIndex : undefined,
+                  activeShape: renderActiveShape,
+                  data: studentPieData,
+                  dataKey: 'value',
+                  nameKey: 'name',
+                  cx: '50%',
+                  cy: '50%',
+                  outerRadius: 105,
+                  innerRadius: 55,
+                  paddingAngle: 4,
+                  labelLine: { stroke: isDark ? '#71717a' : '#a1a1aa', strokeWidth: 1.5 },
+                  label: (entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`,
+                  onMouseEnter: (_: any, index: number) => setActiveStudentIndex(index),
+                  onMouseLeave: () => setActiveStudentIndex(-1),
+                  children: studentPieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
+                  )),
+                })}
                 <Tooltip
                   contentStyle={{
                     backgroundColor: isDark ? '#18181b' : '#ffffff',
@@ -371,21 +399,25 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           <div className="h-96 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={facultyPieData}
-                  dataKey="value"
-                  nameKey="name"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={125}
-                  innerRadius={65}
-                  paddingAngle={4}
-                  label={(entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`}
-                >
-                  {facultyPieData.map((entry, index) => (
+                {(Pie as any)({
+                  activeIndex: activeFacultyIndex >= 0 ? activeFacultyIndex : undefined,
+                  activeShape: renderActiveShape,
+                  data: facultyPieData,
+                  dataKey: 'value',
+                  nameKey: 'name',
+                  cx: '50%',
+                  cy: '50%',
+                  outerRadius: 105,
+                  innerRadius: 55,
+                  paddingAngle: 4,
+                  labelLine: { stroke: isDark ? '#71717a' : '#a1a1aa', strokeWidth: 1.5 },
+                  label: (entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`,
+                  onMouseEnter: (_: any, index: number) => setActiveFacultyIndex(index),
+                  onMouseLeave: () => setActiveFacultyIndex(-1),
+                  children: facultyPieData.map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
+                  )),
+                })}
                 <Tooltip
                   contentStyle={{
                     backgroundColor: isDark ? '#18181b' : '#ffffff',
