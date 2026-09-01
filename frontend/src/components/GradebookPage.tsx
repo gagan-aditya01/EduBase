@@ -14,10 +14,10 @@ interface StudentGradeRow {
   section: string;
   department: string;
   courseCode: string;
-  assignment1: number;
-  midterm: number;
-  assignment2: number;
-  endSem: number;
+  assignment1: number | string;
+  midterm: number | string;
+  assignment2: number | string;
+  endSem: number | string;
   totalWeightedScore: number;
   letterGrade: string;
   gradePoint: number;
@@ -235,8 +235,8 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
     fetchGradebook();
   }, [selectedSection, selectedCourse]);
 
-  // Calculate live Indian 20-50-20-100 evaluation
-  const computeLiveGrade = (a1: number, mid: number, a2: number, end: number) => {
+  // Calculate live evaluation math
+  const computeLiveGrade = (a1: number | string, mid: number | string, a2: number | string, end: number | string) => {
     const assign1Marks = Math.min(20, Math.max(0, Number(a1) || 0));
     const midtermMarks = Math.min(50, Math.max(0, Number(mid) || 0));
     const assign2Marks = Math.min(20, Math.max(0, Number(a2) || 0));
@@ -261,17 +261,50 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
     return { totalWeightedScore: weightedPerc, letterGrade, gradePoint };
   };
 
-  const handleMarkChange = (studentId: string, field: 'assignment1' | 'midterm' | 'assignment2' | 'endSem', value: string) => {
-    const numVal = Number(value) || 0;
+  const getMaxForField = (field: 'assignment1' | 'midterm' | 'assignment2' | 'endSem') => {
+    switch (field) {
+      case 'assignment1': return 20;
+      case 'midterm': return 50;
+      case 'assignment2': return 20;
+      case 'endSem': return 100;
+    }
+  };
+
+  const handleMarkChange = (studentId: string, field: 'assignment1' | 'midterm' | 'assignment2' | 'endSem', rawValue: string) => {
+    if (rawValue === '') {
+      setGradeRows((prev) =>
+        prev.map((row) => {
+          if (row.studentId !== studentId) return row;
+          const updatedRow = { ...row, [field]: '' };
+          const liveEval = computeLiveGrade(
+            field === 'assignment1' ? 0 : updatedRow.assignment1,
+            field === 'midterm' ? 0 : updatedRow.midterm,
+            field === 'assignment2' ? 0 : updatedRow.assignment2,
+            field === 'endSem' ? 0 : updatedRow.endSem
+          );
+          return { ...updatedRow, ...liveEval };
+        })
+      );
+      return;
+    }
+
+    const maxVal = getMaxForField(field);
+    let parsedNum = Number(rawValue);
+
+    if (isNaN(parsedNum)) return;
+
+    if (parsedNum < 0) parsedNum = 0;
+    if (parsedNum > maxVal) parsedNum = maxVal;
+
     setGradeRows((prev) =>
       prev.map((row) => {
         if (row.studentId !== studentId) return row;
-        const updatedRow = { ...row, [field]: numVal };
+        const updatedRow = { ...row, [field]: parsedNum };
         const liveEval = computeLiveGrade(
-          field === 'assignment1' ? numVal : updatedRow.assignment1,
-          field === 'midterm' ? numVal : updatedRow.midterm,
-          field === 'assignment2' ? numVal : updatedRow.assignment2,
-          field === 'endSem' ? numVal : updatedRow.endSem
+          field === 'assignment1' ? parsedNum : updatedRow.assignment1,
+          field === 'midterm' ? parsedNum : updatedRow.midterm,
+          field === 'assignment2' ? parsedNum : updatedRow.assignment2,
+          field === 'endSem' ? parsedNum : updatedRow.endSem
         );
         return { ...updatedRow, ...liveEval };
       })
@@ -340,11 +373,11 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
             <h1 className={`text-2xl font-bold tracking-tight flex items-center gap-2 ${
               isDark ? 'text-zinc-100' : 'text-[#191919]'
             }`}>
-              Indian University Gradebook Console
-              <Sparkles size={18} className="text-amber-400" />
+              Faculty Gradebook & Evaluation Console
+              <Sparkles size={18} className="text-indigo-400" />
             </h1>
             <p className="text-xs text-zinc-500 mt-1">
-              Indian Marks Evaluation System • Assign 1 (20) + Midterm (50) + Assign 2 (20) + EndSem (100)
+              Continuous Assessment Matrix • Assignment I (20) • Midterm (50) • Assignment II (20) • EndSem (100)
             </p>
           </div>
         </div>
@@ -470,6 +503,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         max={20}
                         value={r.assignment1}
                         onChange={(e) => handleMarkChange(r.studentId, 'assignment1', e.target.value)}
+                        onFocus={(e) => e.target.select()}
                         className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
                           isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
                         }`}
@@ -484,6 +518,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         max={50}
                         value={r.midterm}
                         onChange={(e) => handleMarkChange(r.studentId, 'midterm', e.target.value)}
+                        onFocus={(e) => e.target.select()}
                         className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
                           isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
                         }`}
@@ -498,6 +533,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         max={20}
                         value={r.assignment2}
                         onChange={(e) => handleMarkChange(r.studentId, 'assignment2', e.target.value)}
+                        onFocus={(e) => e.target.select()}
                         className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
                           isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
                         }`}
@@ -512,6 +548,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         max={100}
                         value={r.endSem}
                         onChange={(e) => handleMarkChange(r.studentId, 'endSem', e.target.value)}
+                        onFocus={(e) => e.target.select()}
                         className={`w-20 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
                           isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
                         }`}

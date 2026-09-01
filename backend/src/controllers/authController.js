@@ -668,6 +668,19 @@ const getMe = async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+
+    if (user.role === 'faculty' && (!user.assignedSubjects || user.assignedSubjects.length === 0)) {
+      const dept = (user.assignedDepartment || '').toLowerCase();
+      if (dept.includes('computer')) user.assignedSubjects = ['CS301'];
+      else if (dept.includes('adse')) user.assignedSubjects = ['ADSE301'];
+      else if (dept.includes('math')) user.assignedSubjects = ['MATH101', 'MATH401'];
+      else if (dept.includes('electrical')) user.assignedSubjects = ['EE101'];
+      else if (dept.includes('mechanical')) user.assignedSubjects = ['ME101'];
+      else if (dept.includes('robotics')) user.assignedSubjects = ['ROB101'];
+      else user.assignedSubjects = ['CS101'];
+      await user.save();
+    }
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ error: error.message });

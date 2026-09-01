@@ -529,7 +529,7 @@ const AnimatedForm = memo(function AnimatedForm({
           overflow="visible"
         >
           <button
-            className="relative group/btn bg-[#cc5a37] hover:bg-[#b84d2e] text-white dark:bg-zinc-800 dark:hover:bg-zinc-750 dark:text-white w-full rounded-md h-10 font-semibold shadow-md transition-all outline-hidden hover:cursor-pointer"
+            className="relative group/btn bg-[#cc5a37] hover:bg-[#b84d2e] text-white dark:bg-zinc-800 dark:hover:bg-zinc-700 dark:border dark:border-zinc-700/80 dark:text-zinc-100 w-full rounded-md h-10 font-semibold shadow-md transition-all outline-hidden hover:cursor-pointer"
             type="submit"
           >
             {submitButton} &rarr;
@@ -541,7 +541,7 @@ const AnimatedForm = memo(function AnimatedForm({
           <BoxReveal boxColor="var(--skeleton)" duration={0.3}>
             <section className="mt-4 text-center hover:cursor-pointer">
               <button
-                className="text-sm font-semibold text-[#cc5a37] hover:text-[#b84d2e] dark:text-blue-400 dark:hover:text-blue-300 hover:underline cursor-pointer outline-hidden transition-colors"
+                className="text-sm font-semibold text-[#cc5a37] hover:text-[#b84d2e] dark:text-zinc-400 dark:hover:text-zinc-200 hover:underline cursor-pointer outline-hidden transition-colors"
                 onClick={goTo}
               >
                 {textVariantButton}
