@@ -559,6 +559,75 @@ const seedRealisticData = async (req, res) => {
   }
 };
 
+// @desc    Phase 4: Bulk CSV Import Batch Validator & Inserter
+// @route   POST /api/v1/students/bulk-import
+// @access  Private (Admin & Faculty)
+const bulkImportStudents = async (req, res) => {
+  try {
+    const { students } = req.body;
+
+    if (!Array.isArray(students) || students.length === 0) {
+      return res.status(400).json({ error: 'Payload must contain a non-empty array of student records.' });
+    }
+
+    const isFaculty = req.user && req.user.role === 'faculty';
+    const assignedDept = isFaculty ? (req.user.assignedDepartment || '').trim() : '';
+
+    const validRecords = [];
+    for (const record of students) {
+      if (!record.studentId || !record.name || !record.department) continue;
+      
+      // Faculty Department Isolation Guard
+      if (isFaculty && assignedDept && record.department.trim().toLowerCase() !== assignedDept.toLowerCase()) {
+        continue;
+      }
+
+      validRecords.push({
+        studentId: String(record.studentId).trim(),
+        name: String(record.name).trim(),
+        age: parseInt(record.age, 10) || 20,
+        department: String(record.department).trim(),
+        year: record.year ? String(record.year).trim() : '3rd Year',
+        section: record.section ? String(record.section).trim() : '3CS',
+        createdBy: req.user ? req.user.username : 'CSV Batch Import',
+        isDeleted: false,
+      });
+    }
+
+    if (validRecords.length === 0) {
+      return res.status(400).json({ error: 'No valid records found matching authorization rules.' });
+    }
+
+    let insertedCount = 0;
+    try {
+      const result = await Student.insertMany(validRecords, { ordered: false });
+      insertedCount = result.length;
+    } catch (bulkError) {
+      if (bulkError.insertedDocs) {
+        insertedCount = bulkError.insertedDocs.length;
+      }
+    }
+
+    memoryCache.clearPattern('students_');
+
+    backgroundQueue.enqueue('BULK_IMPORT_AUDIT', async () => {
+      await AuditLog.create({
+        action: 'BULK_IMPORT_STUDENTS',
+        targetId: `BATCH_${Date.now()}`,
+        performedBy: req.user ? req.user.username : 'Admin',
+        details: `Batch imported ${insertedCount} student records`,
+      });
+    });
+
+    res.status(201).json({
+      message: `Batch import completed successfully! ${insertedCount} new student records created.`,
+      importedCount: insertedCount,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   createStudent,
   getStudents,
@@ -573,4 +642,5 @@ module.exports = {
   getAnalyticsStats,
   streamStudentEvents,
   seedRealisticData,
+  bulkImportStudents,
 };

@@ -236,4 +236,22 @@ describe('Full-Stack Backend API Tests', () => {
       expect(Array.isArray(res.body.ageDemographics)).toBe(true);
     });
   });
+
+  describe('Phase 4: Bulk CSV Drag-and-Drop Importer & Batch Validator Tests', () => {
+    it('POST /api/v1/students/bulk-import should batch insert valid student array payload', async () => {
+      const res = await request(app)
+        .post('/api/v1/students/bulk-import')
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({
+          students: [
+            { studentId: `BULK_1_${Date.now()}`, name: 'Bulk Test One', age: 21, department: 'Computer Science', year: '3rd Year', section: '3CS' },
+            { studentId: `BULK_2_${Date.now()}`, name: 'Bulk Test Two', age: 22, department: 'Robotics', year: '2nd Year', section: '2ROB' },
+          ],
+        });
+
+      expect(res.statusCode).toEqual(201);
+      expect(res.body).toHaveProperty('importedCount');
+      expect(res.body.importedCount).toBeGreaterThanOrEqual(1);
+    });
+  });
 });

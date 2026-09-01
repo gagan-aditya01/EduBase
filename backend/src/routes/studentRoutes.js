@@ -13,6 +13,7 @@ const {
   getAnalyticsStats,
   streamStudentEvents,
   seedRealisticData,
+  bulkImportStudents,
 } = require('../controllers/studentController');
 const { protect, admin, facultyOrAdmin } = require('../middlewares/authMiddleware');
 const { validateStudentInput } = require('../middlewares/validateMiddleware');
@@ -22,6 +23,7 @@ router.get('/performance/explain', protect, admin, explainStudentQuery);
 router.get('/analytics/stats', protect, getAnalyticsStats);
 router.get('/stream', protect, streamStudentEvents);
 router.post('/seed-realistic', protect, admin, seedRealisticData);
+router.post('/bulk-import', protect, facultyOrAdmin, bulkImportStudents);
 
 // Concept 2: Admin Trash Bin Recovery Console Routes
 router.get('/trash/list', protect, admin, getTrashStudents);

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StudentForm } from './components/StudentForm';
 import { StudentList } from './components/StudentList';
-import { Sparkles, Database, GraduationCap, LogOut, Key, LayoutDashboard, BarChart3, ShieldAlert, Users, UserCheck } from 'lucide-react';
+import { Sparkles, Database, GraduationCap, LogOut, Key, LayoutDashboard, BarChart3, ShieldAlert, Users, UserCheck, UploadCloud } from 'lucide-react';
 import { Sidebar, SidebarBody, SidebarLink } from './components/ui/sidebar';
 import { LiquidMetalButton } from './components/ui/liquid-metal-button';
 import { FloatingPathsBackground } from './components/ui/floating-paths';
@@ -19,6 +19,7 @@ import { UserManagePage } from './components/UserManagePage';
 import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
 import TeamSection from './components/ui/team';
+import { CsvImporterModal } from './components/CsvImporterModal';
 
 interface Student {
   studentId: string;
@@ -45,6 +46,7 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
+  const [showCsvModal, setShowCsvModal] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [currentPage, setCurrentPage] = useState<'dashboard' | 'faculty-directory' | 'analytics' | 'audit-logs' | 'users' | '404'>('dashboard');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
@@ -597,6 +599,18 @@ export default function App() {
                   {/* Show admin actions conditionally */}
                   {(user.role === 'admin' || user.role === 'faculty') && (
                     <>
+                      <button
+                        onClick={() => setShowCsvModal(true)}
+                        className={`px-4 py-2 rounded-2xl border font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+                          theme === 'dark'
+                            ? 'bg-zinc-900 border-zinc-800 hover:bg-zinc-800 text-zinc-300'
+                            : 'bg-white border-[#e5e2d9] hover:bg-[#f5f2eb] text-[#191919]'
+                        }`}
+                      >
+                        <UploadCloud size={14} className="text-indigo-400" />
+                        Import CSV
+                      </button>
+
                       {!showForm && !editingStudent && (
                         <LiquidMetalButton
                           label="Add Student"
@@ -720,6 +734,21 @@ export default function App() {
         </div>
       </footer>
       <ToastContainer toasts={toasts} onClose={(id) => setToasts((prev) => prev.filter((t) => t.id !== id))} />
+      
+      {showCsvModal && user && (
+        <CsvImporterModal
+          isOpen={showCsvModal}
+          onClose={() => setShowCsvModal(false)}
+          userToken={user.token}
+          userRole={user.role}
+          assignedDepartment={user.assignedDepartment}
+          theme={theme}
+          onSuccess={(count) => {
+            setFilters((prev) => ({ ...prev }));
+            addToast('success', `Successfully batch imported ${count} student records!`);
+          }}
+        />
+      )}
       {confirmDialog && (
         <ConfirmDialog
           isOpen={confirmDialog.isOpen}
