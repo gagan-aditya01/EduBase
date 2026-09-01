@@ -1,6 +1,6 @@
-# 🎓 EduBase - Full-Stack Student & Faculty Management Portal
+# 🎓 EduBase ERP - Enterprise University Resource Planning System
 
-A modern, production-grade full-stack web application built with **Node.js, Express, MongoDB Atlas, React 18, TypeScript, Tailwind CSS, Recharts, Framer Motion, and Docker**.
+A modern, production-grade Enterprise University Resource Planning (ERP) System built with **Node.js, Express, MongoDB Atlas, React 18, TypeScript, Tailwind CSS, Recharts, Framer Motion, and Docker**.
 
 [![Git Commit](https://img.shields.io/github/last-commit/gagan-aditya01/EduBase?style=flat-square&color=blue)](https://github.com/gagan-aditya01/EduBase.git)
 [![Docker Support](https://img.shields.io/badge/Docker-Supported-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/gagan-aditya01/EduBase.git)
@@ -13,45 +13,34 @@ A modern, production-grade full-stack web application built with **Node.js, Expr
 | Category | Technology |
 | :--- | :--- |
 | **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Recharts, Framer Motion, `@paper-design/shaders` |
-| **Backend** | Node.js, Express 5, Mongoose, Dual JWT Auth, `bcryptjs`, `multer`, RAM Cache |
+| **Backend** | Node.js, Express 5, Mongoose, Dual JWT Auth, `bcryptjs`, `multer`, User-Isolated RAM Cache |
 | **Database** | MongoDB Atlas / MongoDB Local (Relational Mongoose `.populate()`, Aggregation Pipelines) |
 | **Testing** | Jest, Supertest (100% Passing Automated Integration Tests) |
 | **DevOps** | Docker, Docker Compose, Nginx |
 
 ---
 
-## 🚀 Key Features & Concepts Implemented
+## 🏛️ System Architecture & ERP Portals
 
-### 1. 🛡️ Fine-Grained Role-Based Access Control (RBAC) & OAuth 2.0
-- **Admin Role**: Full system control (Student & Faculty CRUD, faculty creation, user role management, soft-delete recovery, audit trails, and global enterprise analytics).
-- **Faculty Role**: Department-scoped workspace. Faculty can add students within their assigned department (*e.g. Computer Science*), view department-scoped analytics, and manage their profile. Restricted from editing/deleting students or accessing the global faculty directory.
-- **Guest Role**: Read-only directory access for public browsing.
-- **Dual-Token Session Auth**: Access Tokens + Long-lived Refresh Tokens (`POST /api/v1/auth/refresh`) for silent session renewal.
-- **Social Login**: Integrated **Google** & **GitHub** OAuth single sign-on (`POST /api/v1/auth/social`).
+### 1. 🎓 Student Self-Service ERP Portal
+- **Reverse-ID Authentication**: Registration ID (*e.g., `231001`*) as Username and Reverse Registration ID (*e.g., `100132`*) as Password.
+- **Active Enrolment Dashboard**: Displays student metadata, academic year, department, section, cumulative CGPA badge, and current active enrolled curriculum courses.
+- **Year-Wise Academic Performance Sheets**: Evaluates completed academic years (`courseYear < studentYear`) with individual Year SGPA calculations.
+- **Official Certified Transcript & PDF Export**: Consolidated academic summary with one-click print and PDF export.
 
-### 2. 📊 Academic Analytics Engine & Stock Trend Chart
-- **Global Enterprise Analytics**: Real-time department student pie charts, faculty staff distribution, and interactive Stock Growth Area Chart with dynamic department filter (`All Departments`, `CS`, `EE`, `ME`, `ADSE`, `MATH`, `ROB`).
-- **Faculty Department Analytics Portal**: Dedicated department-scoped analytics engine restricting faculty view strictly to their assigned department's section breakdown pie chart and year-over-year enrolment growth.
-- **Interactive Pie Chart Hover Animations**: Custom Recharts `<Sector>` slice pop-out animations (`outerRadius + 14`) with solid, flicker-free label rendering.
+### 2. 👨‍🏫 Faculty Academic Gradebook Console
+- **Department-Scoped Directory**: Department isolation restricting faculty view strictly to students within their assigned department (*e.g. Mathematics, Computer Science*).
+- **Indian Grading Engine & Gradebook Console**: Section-based grade evaluation (*Assign 1 [20], Midterm [50], Assign 2 [20], EndSem [100]*) with automatic letter grade calculation (`O`, `A+`, `A`, `B+`, `B`, `C`, `P`, `F`) and weighted score percentages.
+- **Section Live Search & Performance Bar**: Live search by Student Name or Registration ID with dynamic grade tier badges.
 
-### 3. 👨‍🏫 Faculty Directory & Automated Credentials
-- **Faculty Management**: Admin console for creating faculty accounts with assigned department scoping (`POST /api/auth/faculty`).
-- **Automated Faculty ID & Password Rules**: Faculty accounts receive a unique 4-digit numeric ID (*e.g. `4001`*) and initial password set to reversed numeric ID (*e.g. `1004`*).
-- **KPI Summary Cards**: Top status cards displaying **Total Staff** count and **Active Staff** status.
+### 3. 🛡️ Administrator Governance & Compliance Suite
+- **Faculty Directory Management**: Admin console for provisioning faculty staff accounts with assigned department scoping and automated 4-digit ID credentials.
+- **Immutable System Audit Trail**: Enterprise audit logger tracking user actions, student record mutations, role updates, and system events.
+- **Soft Delete & Recovery Console**: Non-destructive data protection with Admin Trash Bin recovery or permanent purge.
+- **Bulk CSV Batch Importer**: Drag-and-drop CSV batch import engine with validation.
 
-### 4. 🗂️ Relational Data Modeling & Auto Section Naming
-- **Mongoose Relational Joins**: Dedicated `Department` collection populated dynamically via `departmentRef` (`.populate('departmentRef', 'name code')`).
-- **Automated Section Code Generation**: Automatically formats sections as `{YearNumber}{ShortDept}` (*e.g., `3CS`, `2EE`, `4ME`*) based on joining year and department.
-- **Automated Student ID Format**: Generates serial registration IDs formatted as `{2-digit joining year}{5-digit serial}` (*e.g., `2361001`, `2462001`*).
-
-### 5. 🗄️ Soft Deletes & Admin Trash Recovery Console
-- **Soft Delete Protection**: Setting `isDeleted: true` and `deletedAt: Date` prevents accidental database data loss.
-- **Trash Bin Console**: Admin endpoints to list (`GET /trash/list`), restore (`PUT /restore`), or permanently purge (`DELETE /purge`) records.
-
-### 6. ⚡ High-Performance Caching & Async Task Queue
-- **MongoDB Aggregation Pipelines**: Multi-faceted analytics engine (`$group`, `$facet`, `$bucket`) powering demographic metrics (`GET /api/v1/students/analytics/stats`).
-- **In-Memory RAM Cache Engine**: Custom TTL cache returning sub-millisecond responses (`X-Cache: HIT` / `MISS`) with automatic invalidation on record mutation.
-- **Async Background Task Queue**: Non-blocking queue engine offloading audit logging without delaying HTTP controller responses.
+### 4. 📊 Analytics Engine & Performance Metrics
+- **Real-Time Department Aggregation**: MongoDB multi-faceted aggregation pipelines (`$group`, `$facet`, `$bucket`) powering enrolment statistics, age distribution, and department growth trends.
 
 ---
 
@@ -69,10 +58,10 @@ cd EduBase
 
 ### 2. Install Dependencies
 ```bash
-# Install root dependencies (Express, Mongoose, Jest, Supertest, Multer)
+# Install root dependencies
 npm install
 
-# Install frontend dependencies (Vite, React, Tailwind, Framer Motion, Recharts)
+# Install frontend dependencies
 cd frontend
 npm install
 cd ..
@@ -89,10 +78,10 @@ JWT_REFRESH_SECRET=supersecretrefreshkey456
 
 ### 4. Run Development Servers
 ```bash
-# Terminal 1: Run Backend Server (Port 5050)
+# Terminal 1: Run Backend ERP Server (Port 5050)
 node backend/src/server.js
 
-# Terminal 2: Run Frontend Dev Server (Port 5173)
+# Terminal 2: Run Frontend Dev Client (Port 5173)
 cd frontend
 npm run dev
 ```
@@ -101,15 +90,15 @@ npm run dev
 
 ## 🐳 Running with Docker & Docker Compose
 
-Launch the entire stack (**Backend + React Frontend + Local MongoDB**) with a single command:
+Launch the complete ERP stack (**Backend API + React Client + Local MongoDB**) with a single command:
 
 ```bash
 docker-compose up --build
 ```
 
-- **Frontend Application**: `http://localhost:3000`
-- **Backend API**: `http://localhost:5050`
-- **MongoDB**: `localhost:27017`
+- **Frontend ERP Client**: `http://localhost:3000`
+- **Backend ERP API**: `http://localhost:5050`
+- **MongoDB Database**: `localhost:27017`
 
 ---
 
@@ -120,15 +109,6 @@ Run the automated Jest + Supertest integration test suite:
 ```bash
 npm test
 ```
-
-**Test Coverage**:
-- `GET /`: API Health Check & Status Page (200 OK)
-- `GET /api/students`: JWT Authorization Guard (401 Unauthorized)
-- `POST /api/students`: Unauthenticated Submission Guard (401 Unauthorized)
-- `GET /api/unhandled-route`: Custom 404 Route Not Found Handler
-- `Validation Error Tests`: Duplicate ID, Negative Age, Age > 90 (400 Bad Request)
-- `Dual-Token & API v2 Tests`: Refresh Token Renewal, v2 HATEOAS Envelope, Trash Bin Console (200 OK)
-- `RBAC & Scoping Tests`: Faculty Department Creation Scoping & Admin-Only Audit Logs (200 OK / 403 Forbidden)
 
 ---
 
