@@ -106,11 +106,11 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
   return (
     <div className="space-y-6 pb-12">
       {/* Header Panel */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className={`px-3 py-1 rounded-full text-[10.5px] font-mono font-bold uppercase tracking-wider border ${
-              isDark ? 'bg-zinc-800 text-amber-400 border-zinc-700' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
+              isDark ? 'bg-zinc-800 text-emerald-400 border-zinc-700' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
             }`}>
               Student Marks Console
             </span>
@@ -123,46 +123,74 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
           </p>
         </div>
 
-        {/* View Switcher Tabs */}
-        <div className="flex items-center gap-2">
+        {/* Header Controls: Academic Year Select Dropdown + View Switcher Tabs + PDF Button */}
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Prominent Academic Year Dropdown */}
+          <div className="w-48 sm:w-56">
+            <Select value={selectedYearFilter} onValueChange={(val) => setSelectedYearFilter(val)}>
+              <SelectTrigger className={`w-full rounded-2xl text-xs font-bold ${
+                isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+              }`}>
+                <SelectValue placeholder="Academic Year" />
+              </SelectTrigger>
+              <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+                <SelectItem value="ALL" className="text-xs font-bold cursor-pointer">
+                  All Years ({transcriptData?.grades?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="1st Year" className="text-xs font-medium cursor-pointer">
+                  1st Year ({gradesByYear['1st Year']?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="2nd Year" className="text-xs font-medium cursor-pointer">
+                  2nd Year ({gradesByYear['2nd Year']?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="3rd Year" className="text-xs font-medium cursor-pointer">
+                  3rd Year ({gradesByYear['3rd Year']?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="4th Year" className="text-xs font-medium cursor-pointer">
+                  4th Year ({gradesByYear['4th Year']?.length || 0} Courses)
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className={`p-1 rounded-2xl border flex items-center gap-1 ${
             isDark ? 'bg-zinc-950 border-zinc-800' : 'bg-white border-[#e5e2d9]'
           }`}>
             <button
               onClick={() => setActiveTab('yearwise')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'yearwise'
                   ? isDark ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'bg-[#191919] text-white'
                   : isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-black'
               }`}
             >
               <Layers size={14} />
-              <span>Year-Wise Sheet</span>
+              <span>Year-Wise</span>
             </button>
 
             <button
               onClick={() => setActiveTab('combined')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'combined'
                   ? isDark ? 'bg-zinc-800 text-emerald-400 shadow-sm' : 'bg-[#191919] text-white'
                   : isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-black'
               }`}
             >
               <FileText size={14} />
-              <span>Combined Sheet</span>
+              <span>Combined</span>
             </button>
           </div>
 
           <button
             onClick={() => setShowPdfModal(true)}
-            className={`px-4 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+            className={`px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
               isDark
                 ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
                 : 'bg-[#191919] text-white border-[#191919] hover:bg-[#333]'
             }`}
           >
             <Download size={14} />
-            <span>Download Official PDF</span>
+            <span>PDF</span>
           </button>
         </div>
       </div>
