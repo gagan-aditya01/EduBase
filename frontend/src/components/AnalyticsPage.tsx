@@ -321,7 +321,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
             </span>
           </div>
 
-          <div className="h-72 w-full flex items-center justify-center">
+          <div className="h-96 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -330,9 +330,9 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  outerRadius={90}
-                  innerRadius={45}
-                  paddingAngle={3}
+                  outerRadius={125}
+                  innerRadius={65}
+                  paddingAngle={4}
                   label={(entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`}
                 >
                   {studentPieData.map((entry, index) => (
@@ -346,13 +346,6 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                     borderRadius: '12px',
                     fontSize: '12px',
                   }}
-                />
-                <Legend
-                  formatter={(value) => (
-                    <span className={`text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                      {DEPT_SHORT_CODES[value] ? `${DEPT_SHORT_CODES[value]} (${value})` : value}
-                    </span>
-                  )}
                 />
               </PieChart>
             </ResponsiveContainer>
@@ -373,7 +366,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
             </span>
           </div>
 
-          <div className="h-72 w-full flex items-center justify-center">
+          <div className="h-96 w-full flex items-center justify-center">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -382,9 +375,9 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   nameKey="name"
                   cx="50%"
                   cy="50%"
-                  outerRadius={90}
-                  innerRadius={45}
-                  paddingAngle={3}
+                  outerRadius={125}
+                  innerRadius={65}
+                  paddingAngle={4}
                   label={(entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`}
                 >
                   {facultyPieData.map((entry, index) => (
@@ -398,13 +391,6 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                     borderRadius: '12px',
                     fontSize: '12px',
                   }}
-                />
-                <Legend
-                  formatter={(value) => (
-                    <span className={`text-xs font-semibold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                      {DEPT_SHORT_CODES[value] ? `${DEPT_SHORT_CODES[value]} (${value})` : value}
-                    </span>
-                  )}
                 />
               </PieChart>
             </ResponsiveContainer>
