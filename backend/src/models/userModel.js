@@ -23,6 +23,10 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
+    assignedSubjects: [{
+      type: String,
+      trim: true,
+    }],
     facultyId: {
       type: String,
       default: () => Math.floor(1000 + Math.random() * 9000).toString(),

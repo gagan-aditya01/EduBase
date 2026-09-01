@@ -254,4 +254,16 @@ describe('Full-Stack Backend API Tests', () => {
       expect(res.body.importedCount).toBeGreaterThanOrEqual(1);
     });
   });
+
+  describe('Phase 6A: Course Curriculum & Faculty Subject Mapping Schema Tests', () => {
+    it('GET /api/v1/courses should return curriculum courses database array', async () => {
+      const res = await request(app)
+        .get('/api/v1/courses')
+        .set('Authorization', `Bearer ${adminToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThanOrEqual(10);
+    });
+  });
 });
