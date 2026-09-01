@@ -45,10 +45,10 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
     fetchData();
   }, [studentId, user?.token]);
 
-  // Extract enrolled subjects matching student department and current year
-  const userDept = user?.department || transcriptData?.student?.department || 'Computer Science';
-  const userYear = user?.year || transcriptData?.student?.year || '3rd Year';
-  const yearDigit = userYear.match(/\d+/)?.[0] || '3';
+  // Extract enrolled subjects matching student department and current year with robust fallbacks
+  const userDept = transcriptData?.student?.department || user?.department || 'Computer Science';
+  const userYear = transcriptData?.student?.year || user?.year || '4th Year';
+  const yearDigit = userYear.match(/\d+/)?.[0] || '4';
 
   const enrolledCourses = courses.filter((c) => {
     const matchesDept = (c.department || '').toLowerCase().includes(userDept.toLowerCase()) ||
@@ -65,6 +65,13 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
     return matchesDept && matchesYear;
   });
 
+  // Fallback enrolled courses if exact year match is empty
+  const activeCourses = enrolledCourses.length > 0
+    ? enrolledCourses
+    : transcriptData?.grades
+    ? courses.filter((c) => transcriptData.grades.some((g: any) => g.courseCode === c.courseCode))
+    : courses.filter((c) => (c.department || '').toLowerCase().includes(userDept.toLowerCase()));
+
   return (
     <div className="space-y-6 pb-12">
       {/* Student Welcome Banner */}
@@ -77,7 +84,7 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <span className={`px-3 py-1 rounded-full text-[10.5px] font-mono font-bold uppercase tracking-wider border ${
-                isDark ? 'bg-zinc-800/80 border-zinc-700 text-amber-400' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
+                isDark ? 'bg-zinc-800/80 border-zinc-700 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
               }`}>
                 Active Academic Enrolment
               </span>
@@ -88,10 +95,10 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
-              Welcome back, <span className="gradient-text">{transcriptData?.student?.name || user?.name || user?.username}</span>!
+              Welcome, <span className="gradient-text">{transcriptData?.student?.name || user?.name || user?.username}</span>!
             </h1>
             <p className={`text-xs font-medium ${isDark ? 'text-zinc-400' : 'text-zinc-600'}`}>
-              Department of {userDept} &bull; {userYear} &bull; Section {user?.section || transcriptData?.student?.section || '3CS'}
+              Department of {userDept} &bull; {userYear} &bull; Section {user?.section || transcriptData?.student?.section || '4CS'}
             </p>
           </div>
 
@@ -123,11 +130,11 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold tracking-tight flex items-center gap-2">
-            <BookOpen size={18} className={isDark ? 'text-amber-400' : 'text-[#cc5a37]'} />
-            Currently Enrolled Subjects ({enrolledCourses.length})
+            <BookOpen size={18} className={isDark ? 'text-emerald-400' : 'text-[#cc5a37]'} />
+            Currently Enrolled Subjects ({activeCourses.length})
           </h2>
           <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-650'}`}>
-            Active curriculum courses for your current academic year ({userYear})
+            Active curriculum courses for your academic year ({userYear})
           </p>
         </div>
       </div>
@@ -141,7 +148,7 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
             }`} />
           ))}
         </div>
-      ) : enrolledCourses.length === 0 ? (
+      ) : activeCourses.length === 0 ? (
         <div className={`p-8 rounded-2xl border text-center ${
           isDark ? 'bg-zinc-900/40 border-zinc-800 text-zinc-400' : 'bg-white border-[#e5e2d9] text-zinc-600'
         }`}>
@@ -149,7 +156,7 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {enrolledCourses.map((course) => (
+          {activeCourses.map((course) => (
             <div
               key={course.courseCode}
               className={`p-5 rounded-2xl border flex flex-col justify-between transition-all hover:scale-[1.01] ${
@@ -161,7 +168,7 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border ${
-                    isDark ? 'bg-zinc-800 text-amber-300 border-zinc-700' : 'bg-[#f5f2eb] text-[#cc5a37] border-[#e5e2d9]'
+                    isDark ? 'bg-zinc-800 text-emerald-400 border-zinc-700' : 'bg-[#f5f2eb] text-[#cc5a37] border-[#e5e2d9]'
                   }`}>
                     {course.courseCode}
                   </span>

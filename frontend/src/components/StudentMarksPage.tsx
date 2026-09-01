@@ -1,6 +1,13 @@
 import { useState, useEffect, useMemo } from 'react';
 import { Download, FileText, AlertCircle, Layers } from 'lucide-react';
 import { TranscriptModal } from './TranscriptModal';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/interfaces-select';
 
 interface StudentMarksPageProps {
   user: any;
@@ -64,11 +71,11 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
     return groups;
   }, [transcriptData]);
 
-  // Helper for grade badge styling
+  // Helper for grade badge styling (Monochromatic & Emerald/Rust - NO Yellow)
   const getGradeBadgeColor = (grade: string) => {
     switch (grade) {
       case 'O':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/40';
+        return 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 font-black';
       case 'A+':
       case 'A':
         return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40';
@@ -77,7 +84,7 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
         return 'bg-teal-500/20 text-teal-400 border-teal-500/40';
       case 'C':
       case 'P':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/40';
+        return 'bg-zinc-800 text-zinc-300 border-zinc-700';
       case 'F':
         return 'bg-red-500/20 text-red-400 border-red-500/40';
       default:
@@ -125,7 +132,7 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
               onClick={() => setActiveTab('yearwise')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeTab === 'yearwise'
-                  ? isDark ? 'bg-zinc-800 text-amber-300 shadow-sm' : 'bg-[#191919] text-white'
+                  ? isDark ? 'bg-zinc-800 text-zinc-100 shadow-sm' : 'bg-[#191919] text-white'
                   : isDark ? 'text-zinc-400 hover:text-zinc-200' : 'text-zinc-600 hover:text-black'
               }`}
             >
@@ -176,31 +183,37 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
       ) : activeTab === 'yearwise' ? (
         /* YEAR-WISE SHEET VIEW */
         <div className="space-y-6">
-          {/* Year Filter Buttons */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
-              onClick={() => setSelectedYearFilter('ALL')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer ${
-                selectedYearFilter === 'ALL'
-                  ? isDark ? 'bg-zinc-200 text-zinc-950 border-white' : 'bg-[#191919] text-white border-[#191919]'
-                  : isDark ? 'bg-zinc-900 text-zinc-400 border-zinc-800' : 'bg-white text-zinc-650 border-[#e5e2d9]'
-              }`}
-            >
-              All Academic Years
-            </button>
-            {['1st Year', '2nd Year', '3rd Year', '4th Year'].map((yr) => (
-              <button
-                key={yr}
-                onClick={() => setSelectedYearFilter(yr)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition-all cursor-pointer ${
-                  selectedYearFilter === yr
-                    ? isDark ? 'bg-amber-400 text-zinc-950 border-amber-300' : 'bg-[#cc5a37] text-white border-[#cc5a37]'
-                    : isDark ? 'bg-zinc-900 text-zinc-400 border-zinc-800' : 'bg-white text-zinc-650 border-[#e5e2d9]'
-                }`}
-              >
-                {yr} ({gradesByYear[yr]?.length || 0})
-              </button>
-            ))}
+          {/* Year Filter Select Dropdown */}
+          <div className="w-full sm:w-64">
+            <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1.5 ${
+              isDark ? 'text-zinc-400' : 'text-zinc-650'
+            }`}>
+              Filter Academic Year
+            </label>
+            <Select value={selectedYearFilter} onValueChange={(val) => setSelectedYearFilter(val)}>
+              <SelectTrigger className={`w-full rounded-2xl text-xs font-bold ${
+                isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+              }`}>
+                <SelectValue placeholder="Select Academic Year" />
+              </SelectTrigger>
+              <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+                <SelectItem value="ALL" className="text-xs font-bold cursor-pointer">
+                  All Academic Years ({transcriptData?.grades?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="1st Year" className="text-xs font-medium cursor-pointer">
+                  1st Year ({gradesByYear['1st Year']?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="2nd Year" className="text-xs font-medium cursor-pointer">
+                  2nd Year ({gradesByYear['2nd Year']?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="3rd Year" className="text-xs font-medium cursor-pointer">
+                  3rd Year ({gradesByYear['3rd Year']?.length || 0} Courses)
+                </SelectItem>
+                <SelectItem value="4th Year" className="text-xs font-medium cursor-pointer">
+                  4th Year ({gradesByYear['4th Year']?.length || 0} Courses)
+                </SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Year Tables */}
@@ -221,7 +234,7 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <span className={`px-3 py-1 rounded-xl text-xs font-black font-mono uppercase tracking-wider border ${
-                      isDark ? 'bg-zinc-800 text-amber-300 border-zinc-700' : 'bg-[#f5f2eb] text-[#cc5a37] border-[#e5e2d9]'
+                      isDark ? 'bg-zinc-800 text-zinc-200 border-zinc-700' : 'bg-[#f5f2eb] text-[#cc5a37] border-[#e5e2d9]'
                     }`}>
                       {yr}
                     </span>
@@ -263,7 +276,7 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
                             isDark ? 'hover:bg-zinc-800/40' : 'hover:bg-[#fcfbf9]'
                           }`}
                         >
-                          <td className="py-3 px-3 font-mono font-bold text-amber-400">{g.courseCode}</td>
+                          <td className="py-3 px-3 font-mono font-bold text-emerald-400">{g.courseCode}</td>
                           <td className="py-3 px-3 font-medium">{g.courseTitle}</td>
                           <td className="py-3 px-3 text-center font-mono">{g.assignment1}</td>
                           <td className="py-3 px-3 text-center font-mono">{g.midterm}</td>
@@ -336,7 +349,7 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
                 {(transcriptData?.grades || []).map((g: any) => (
                   <tr key={g.courseCode} className={isDark ? 'hover:bg-zinc-800/40' : 'hover:bg-[#fcfbf9]'}>
                     <td className="py-3 px-3 font-mono font-bold text-zinc-400">{g.year}</td>
-                    <td className="py-3 px-3 font-mono font-bold text-amber-400">{g.courseCode}</td>
+                    <td className="py-3 px-3 font-mono font-bold text-emerald-400">{g.courseCode}</td>
                     <td className="py-3 px-3 font-medium">{g.courseTitle}</td>
                     <td className="py-3 px-3 text-center font-mono">{g.assignment1}</td>
                     <td className="py-3 px-3 text-center font-mono">{g.midterm}</td>
