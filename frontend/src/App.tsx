@@ -168,6 +168,36 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [filters, user]);
 
+  // Phase 5: Real-Time Multi-Admin SSE Collaboration Stream Subscriber
+  useEffect(() => {
+    if (!user) return;
+
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('http://localhost:5050/api/v1/students/stream');
+
+      eventSource.addEventListener('student_mutation', (e: MessageEvent) => {
+        try {
+          const data = JSON.parse(e.data);
+          if (data && data.performedBy !== user.username) {
+            addToast('info', `📡 Real-Time Update: ${data.details} (by ${data.performedBy})`);
+            setFilters((prev) => ({ ...prev }));
+          }
+        } catch (err) {
+          // Ignore parse errors
+        }
+      });
+    } catch (err) {
+      // SSE connection fallback
+    }
+
+    return () => {
+      if (eventSource) {
+        eventSource.close();
+      }
+    };
+  }, [user]);
+
   const handleAuthSuccess = (
     token: string,
     username: string,
@@ -412,6 +442,16 @@ export default function App() {
                   }}
                 />
 
+                {user.role === 'admin' && (
+                  <SidebarLink
+                    link={{
+                      label: 'Faculty Directory',
+                      icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                      onClick: () => setCurrentPage('faculty-directory'),
+                    }}
+                  />
+                )}
+
                 <SidebarLink
                   link={{
                     label: 'Analytics Engine',
@@ -422,13 +462,6 @@ export default function App() {
 
                 {user.role === 'admin' && (
                   <>
-                    <SidebarLink
-                      link={{
-                        label: 'Faculty Directory',
-                        icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                        onClick: () => setCurrentPage('faculty-directory'),
-                      }}
-                    />
                     <SidebarLink
                       link={{
                         label: 'Audit Log Trail',

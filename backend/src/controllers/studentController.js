@@ -48,6 +48,12 @@ const createStudent = async (req, res) => {
     });
 
     memoryCache.clearPattern('students_');
+    broadcastSSE('student_mutation', {
+      action: 'CREATE_STUDENT',
+      targetId: studentId,
+      performedBy: createdBy,
+      details: `Created student ${name} (${department})`,
+    });
 
     backgroundQueue.enqueue('CREATE_STUDENT_AUDIT', async () => {
       await AuditLog.create({
@@ -609,6 +615,12 @@ const bulkImportStudents = async (req, res) => {
     }
 
     memoryCache.clearPattern('students_');
+    broadcastSSE('student_mutation', {
+      action: 'BULK_IMPORT_STUDENTS',
+      targetId: `BATCH_${Date.now()}`,
+      performedBy: req.user ? req.user.username : 'Admin',
+      details: `Batch imported ${insertedCount} student records`,
+    });
 
     backgroundQueue.enqueue('BULK_IMPORT_AUDIT', async () => {
       await AuditLog.create({
