@@ -378,10 +378,34 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    // Find user by username OR by 4-digit facultyId OR by reversed 4-digit facultyId
     const cleanInput = username.trim();
     const cleanPass = password.trim();
 
+    // 1. Priority Check: Student Authentication (by Student Registration ID)
+    const student = await Student.findOne({ studentId: cleanInput, isDeleted: false });
+    if (student) {
+      const expectedReversePass = student.studentId.split('').reverse().join('');
+      if (cleanPass === expectedReversePass || cleanPass === student.studentId) {
+        const accessToken = generateAccessToken(student._id);
+        const refreshToken = generateRefreshToken(student._id);
+
+        return res.json({
+          _id: student._id,
+          username: student.studentId,
+          studentId: student.studentId,
+          name: student.name,
+          role: 'student',
+          department: student.department,
+          assignedDepartment: student.department,
+          year: student.year || '3rd Year',
+          section: student.section || '3CS',
+          token: accessToken,
+          refreshToken,
+        });
+      }
+    }
+
+    // 2. Admin & Faculty User Authentication
     let user = await User.findOne({
       $or: [{ username: cleanInput }, { facultyId: cleanInput }],
     });
@@ -400,32 +424,6 @@ const loginUser = async (req, res) => {
         const revId = user.facultyId.split('').reverse().join('');
         if (cleanPass === revId || cleanPass === user.facultyId) {
           isPasswordMatch = true;
-        }
-      }
-    }
-
-    // Student Authentication Fallback: Look up by studentId in Student collection
-    if (!user) {
-      const student = await Student.findOne({ studentId: cleanInput, isDeleted: false });
-      if (student) {
-        const expectedReversePass = student.studentId.split('').reverse().join('');
-        if (cleanPass === expectedReversePass || cleanPass === student.studentId) {
-          const accessToken = generateAccessToken(student._id);
-          const refreshToken = generateRefreshToken(student._id);
-
-          return res.json({
-            _id: student._id,
-            username: student.studentId,
-            studentId: student.studentId,
-            name: student.name,
-            role: 'student',
-            department: student.department,
-            assignedDepartment: student.department,
-            year: student.year || '3rd Year',
-            section: student.section || '3CS',
-            token: accessToken,
-            refreshToken,
-          });
         }
       }
     }

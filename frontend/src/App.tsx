@@ -38,6 +38,7 @@ interface Student {
 interface User {
   token: string;
   username: string;
+  name?: string;
   role: 'admin' | 'guest' | 'faculty' | 'student';
   assignedDepartment?: string;
   assignedSubjects?: string[];
@@ -213,9 +214,26 @@ export default function App() {
     role: 'admin' | 'guest' | 'faculty' | 'student',
     assignedDepartment?: string,
     facultyId?: string,
-    assignedSubjects?: string[]
+    assignedSubjects?: string[],
+    name?: string,
+    studentId?: string,
+    department?: string,
+    year?: string,
+    section?: string
   ) => {
-    const newUser: User = { token, username, role, assignedDepartment, facultyId, assignedSubjects };
+    const newUser: User = {
+      token,
+      username,
+      role,
+      assignedDepartment,
+      facultyId,
+      assignedSubjects,
+      name,
+      studentId,
+      department,
+      year,
+      section,
+    };
     setUser(newUser);
     localStorage.setItem('edubase_user', JSON.stringify(newUser));
     if (role === 'student') {
@@ -224,7 +242,7 @@ export default function App() {
       setCurrentPage('dashboard');
     }
     setShowWelcomeSplash(true);
-    addToast('success', `Welcome back, ${username}!`);
+    addToast('success', `Welcome, ${name || username}!`);
   };
 
   const handleLogout = () => {
@@ -849,6 +867,7 @@ export default function App() {
         {showWelcomeSplash && user && (
           <WelcomeSplash
             username={user.username}
+            name={user.name || user.username}
             role={user.role}
             onComplete={() => setShowWelcomeSplash(false)}
             theme={theme}

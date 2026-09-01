@@ -4,12 +4,13 @@ import { AppleHelloEnglishEffect } from './apple-hello-effect';
 
 interface WelcomeSplashProps {
   username: string;
+  name?: string;
   role: 'admin' | 'guest' | 'faculty' | 'student';
   onComplete: () => void;
   theme?: 'dark' | 'light';
 }
 
-export function WelcomeSplash({ username, role, onComplete, theme = 'dark' }: WelcomeSplashProps) {
+export function WelcomeSplash({ username, name, role, onComplete, theme = 'dark' }: WelcomeSplashProps) {
   const [showText, setShowText] = useState(false);
 
   useEffect(() => {
@@ -53,10 +54,16 @@ export function WelcomeSplash({ username, role, onComplete, theme = 'dark' }: We
           className="flex flex-col items-center gap-1.5"
         >
           <h2 className="text-xl md:text-2xl font-bold tracking-tight gradient-text">
-            Welcome back, {username}!
+            Welcome, {name || username}!
           </h2>
           <span className="text-xs text-zinc-500 font-medium tracking-wide uppercase">
-            {role === 'admin' ? 'Administrator Directory Access' : 'Guest Account Portal'}
+            {role === 'admin'
+              ? 'Administrator Directory Access'
+              : role === 'faculty'
+              ? 'Faculty Academic Portal'
+              : role === 'student'
+              ? 'Student Self-Service Portal'
+              : 'EduBase Portal'}
           </span>
         </motion.div>
 

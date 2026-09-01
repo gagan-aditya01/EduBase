@@ -6,7 +6,19 @@ import {
 } from './ui/modern-animated-sign-in';
 
 interface AuthPageProps {
-  onAuthSuccess: (token: string, username: string, role: 'admin' | 'guest' | 'faculty' | 'student', assignedDepartment?: string, facultyId?: string, assignedSubjects?: string[]) => void;
+  onAuthSuccess: (
+    token: string,
+    username: string,
+    role: 'admin' | 'guest' | 'faculty' | 'student',
+    assignedDepartment?: string,
+    facultyId?: string,
+    assignedSubjects?: string[],
+    name?: string,
+    studentId?: string,
+    department?: string,
+    year?: string,
+    section?: string
+  ) => void;
   theme?: 'light' | 'dark';
 }
 
@@ -235,7 +247,19 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      onAuthSuccess(data.token, data.username, data.role, data.assignedDepartment, data.facultyId, data.assignedSubjects);
+      onAuthSuccess(
+        data.token,
+        data.username,
+        data.role,
+        data.assignedDepartment,
+        data.facultyId,
+        data.assignedSubjects,
+        data.name,
+        data.studentId,
+        data.department,
+        data.year,
+        data.section
+      );
     } catch (err: any) {
       setError(err.message);
     } finally {
