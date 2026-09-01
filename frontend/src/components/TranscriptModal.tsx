@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { GraduationCap, Download, X, Award, BookOpen, Sparkles, FileText, Building2 } from 'lucide-react';
 
 interface TranscriptModalProps {
@@ -109,10 +110,10 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
     return { text: 'Re-evaluation Required', color: 'text-red-400 bg-red-500/10 border-red-500/30' };
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-in fade-in duration-200">
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 bg-black/75 backdrop-blur-md animate-in fade-in duration-200">
       <div
-        className={`w-full max-w-4xl max-h-[90vh] rounded-3xl border shadow-2xl flex flex-col overflow-hidden ${
+        className={`w-full max-w-4xl max-h-[85vh] my-auto rounded-3xl border shadow-2xl flex flex-col overflow-hidden ${
           isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100' : 'bg-white border-[#e5e2d9] text-[#191919]'
         }`}
       >
@@ -322,6 +323,7 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
