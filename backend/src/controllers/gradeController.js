@@ -166,7 +166,19 @@ const saveBulkGrades = async (req, res) => {
   }
 };
 
-// @desc    Get cumulative GPA and grade transcript for a student
+const parseYearNum = (val) => {
+  if (!val) return 1;
+  const s = String(val).toUpperCase();
+  if (s.includes('1ST') || s.startsWith('1')) return 1;
+  if (s.includes('2ND') || s.startsWith('2')) return 2;
+  if (s.includes('3RD') || s.startsWith('3')) return 3;
+  if (s.includes('4TH') || s.startsWith('4')) return 4;
+  const match = s.match(/[A-Z]+([1-4])\d{2}/);
+  if (match) return parseInt(match[1], 10);
+  return 1;
+};
+
+// @desc    Get complete official transcript and CGPA for a student
 // @route   GET /api/v1/grades/student/:studentId
 // @access  Private
 const getStudentTranscript = async (req, res) => {
@@ -178,31 +190,42 @@ const getStudentTranscript = async (req, res) => {
       return res.status(404).json({ error: 'Student record not found' });
     }
 
+    const studentYearNum = parseYearNum(student.year || student.section);
+
     const grades = await Grade.find({ studentId }).populate('courseRef', 'title credits year department');
 
     let totalCredits = 0;
     let totalGradePointsWeighted = 0;
+    const courseGrades = [];
 
-    const courseGrades = grades.map((g) => {
-      const credits = g.courseRef ? g.courseRef.credits : 3;
-      totalCredits += credits;
-      totalGradePointsWeighted += g.gradePoint * credits;
+    grades.forEach((g) => {
+      const courseYearNum = g.courseRef ? parseYearNum(g.courseRef.year || g.courseCode) : parseYearNum(g.courseCode);
 
-      return {
-        courseCode: g.courseCode,
-        courseTitle: g.courseRef ? g.courseRef.title : g.courseCode,
-        year: g.courseRef ? g.courseRef.year : 'N/A',
-        credits,
-        assignment1: g.assignment1,
-        midterm: g.midterm,
-        assignment2: g.assignment2,
-        endSem: g.endSem,
-        totalWeightedScore: g.totalWeightedScore,
-        letterGrade: g.letterGrade,
-        gradePoint: g.gradePoint,
-        semester: g.semester,
-      };
+      // A student can ONLY have grades for completed years (courseYear <= studentYear)
+      if (courseYearNum <= studentYearNum) {
+        const credits = g.courseRef ? g.courseRef.credits : 3;
+        totalCredits += credits;
+        totalGradePointsWeighted += g.gradePoint * credits;
+
+        courseGrades.push({
+          courseCode: g.courseCode,
+          courseTitle: g.courseRef ? g.courseRef.title : g.courseCode,
+          year: g.courseRef ? g.courseRef.year : `Year ${courseYearNum}`,
+          credits,
+          assignment1: g.assignment1,
+          midterm: g.midterm,
+          assignment2: g.assignment2,
+          endSem: g.endSem,
+          totalWeightedScore: g.totalWeightedScore,
+          letterGrade: g.letterGrade,
+          gradePoint: g.gradePoint,
+          semester: g.semester,
+        });
+      }
     });
+
+    // Sort courses logically: 1st Year first, then 2nd Year, then 3rd Year, then 4th Year
+    courseGrades.sort((a, b) => a.courseCode.localeCompare(b.courseCode));
 
     const cgpa = totalCredits > 0 ? Math.round((totalGradePointsWeighted / totalCredits) * 100) / 100 : 0;
 
@@ -212,8 +235,8 @@ const getStudentTranscript = async (req, res) => {
         name: student.name,
         age: student.age,
         department: student.department,
-        year: student.year || '3rd Year',
-        section: student.section || '3CS',
+        year: student.year || `${studentYearNum}${studentYearNum === 1 ? 'st' : studentYearNum === 2 ? 'nd' : studentYearNum === 3 ? 'rd' : 'th'} Year`,
+        section: student.section || `${studentYearNum}CS`,
       },
       cgpa,
       totalCredits,
