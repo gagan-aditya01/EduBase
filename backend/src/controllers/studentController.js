@@ -426,9 +426,41 @@ const getAnalyticsStats = async (req, res) => {
       { $group: { _id: '$role', count: { $sum: 1 } } }
     ]);
 
+    const facultyDepartmentBreakdown = await User.aggregate([
+      { $match: { role: 'faculty' } },
+      { $group: { _id: '$assignedDepartment', count: { $sum: 1 } } },
+      { $sort: { count: -1 } }
+    ]);
+
+    // Student Enrolment Growth Over Joining Years by Department
+    const allStudents = await Student.find({ isDeleted: { $ne: true } }, 'studentId department year createdAt');
+    
+    const years = ['2023', '2024', '2025', '2026'];
+    const depts = ['Computer Science', 'Electrical Engineering', 'Mechanical Engineering', 'ADSE', 'Mathematics', 'Robotics'];
+    
+    const growthTrend = years.map((yr) => {
+      const yearShort = yr.substring(2);
+      const entry = { year: yr };
+      let totalYrCount = 0;
+      
+      depts.forEach((d) => {
+        const count = allStudents.filter((s) => {
+          const matchDept = s.department && s.department.trim().toLowerCase() === d.toLowerCase();
+          const matchYear = s.studentId && s.studentId.startsWith(yearShort);
+          return matchDept && matchYear;
+        }).length;
+        entry[d] = count;
+        totalYrCount += count;
+      });
+      entry.Total = totalYrCount;
+      return entry;
+    });
+
     const result = stats[0] || {};
     result.totalTrash = totalTrash;
     result.userRoleCounts = userRoleCounts;
+    result.facultyDepartmentBreakdown = facultyDepartmentBreakdown;
+    result.studentGrowthTrend = growthTrend;
 
     res.json(result);
   } catch (error) {

@@ -654,7 +654,7 @@ export default function App() {
                   </p>
                 </div>
               </div>
-              <FacultyDirectory currentUser={user} theme={theme} />
+              <FacultyDirectory currentUser={user} theme={theme} addToast={addToast} />
             </div>
           ) : (
             <>

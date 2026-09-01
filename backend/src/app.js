@@ -11,10 +11,28 @@ const path = require('path');
 
 const { helmet, apiLimiter } = require('./middlewares/securityMiddleware');
 
+const morgan = require('morgan');
+
 // Security & Standard Middlewares
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
+
+// Live Colored HTTP Request Logger for Demonstration & Terminal Monitoring
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    const timestamp = new Date().toLocaleTimeString();
+    const statusColor = res.statusCode >= 400 ? '\x1b[31m' : res.statusCode >= 300 ? '\x1b[33m' : '\x1b[32m';
+    console.log(
+      `\x1b[36m[${timestamp}]\x1b[0m \x1b[1m\x1b[33m${req.method}\x1b[0m \x1b[34m${req.originalUrl}\x1b[0m ${statusColor}${res.statusCode}\x1b[0m - \x1b[36m${duration}ms\x1b[0m`
+    );
+  });
+  next();
+});
+app.use(morgan('dev'));
+
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 app.use('/api/', apiLimiter);
 

@@ -24,6 +24,7 @@ interface DBUser {
 interface FacultyDirectoryProps {
   currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' };
   theme?: 'light' | 'dark';
+  addToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
 type FacultySortOption = 'name_asc' | 'name_desc' | 'id_asc' | 'id_desc' | 'dept_asc' | 'status_active' | 'status_inactive';
@@ -57,7 +58,7 @@ const COMMON_DEPARTMENTS = [
   'Robotics',
 ];
 
-export function FacultyDirectory({ currentUser, theme = 'dark' }: FacultyDirectoryProps) {
+export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: FacultyDirectoryProps) {
   const [facultyUsers, setFacultyUsers] = useState<DBUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -165,7 +166,10 @@ export function FacultyDirectory({ currentUser, theme = 'dark' }: FacultyDirecto
 
       setFacultyUsers((prev) => [data, ...prev]);
       const reversedPass = newFacultyId.trim().split('').reverse().join('');
-      setAddSuccessMsg(`Successfully added ${newFacultyName}! Login ID: ${newFacultyId.trim()} | Password: ${reversedPass}`);
+      setShowAddDrawer(false);
+      if (addToast) {
+        addToast('success', `Faculty ${newFacultyName.trim()} created! ID: ${newFacultyId.trim()} | Password: ${reversedPass}`);
+      }
       setNewFacultyName('');
       const nextRandom = Math.floor(1000 + Math.random() * 9000).toString();
       setNewFacultyId(nextRandom);
@@ -317,6 +321,8 @@ export function FacultyDirectory({ currentUser, theme = 'dark' }: FacultyDirecto
     setCurrentPage(1);
   };
 
+  const canManageFaculty = currentUser.role === 'admin' || currentUser.role === 'faculty';
+
   return (
     <div className="space-y-6">
       {/* Header Bar with Add Faculty Button */}
@@ -326,7 +332,7 @@ export function FacultyDirectory({ currentUser, theme = 'dark' }: FacultyDirecto
           <p className="text-xs text-zinc-500 mt-0.5">Manage academic staff profiles, departments, and login access</p>
         </div>
 
-        {currentUser.role === 'admin' && (
+        {canManageFaculty && (
           <LiquidMetalButton
             label="Add Faculty"
             theme={theme}
@@ -667,108 +673,108 @@ export function FacultyDirectory({ currentUser, theme = 'dark' }: FacultyDirecto
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', stiffness: 260, damping: 30 }}
-              className={`fixed right-0 top-0 bottom-0 w-full max-w-md border-l z-[100] shadow-2xl p-6 overflow-y-auto space-y-6 flex flex-col justify-between ${
+              className={`fixed right-0 top-0 bottom-0 w-full max-w-md border-l z-[100] shadow-2xl p-6 overflow-y-auto ${
                 isDark ? 'bg-zinc-950 border-zinc-900 text-zinc-100' : 'bg-[#fbfaf7] border-[#e5e2d9] text-[#191919]'
               }`}
             >
-              <form onSubmit={handleCreateFaculty} className="space-y-5 flex-1 flex flex-col justify-between">
-                <div className="space-y-5">
-                  <div className="flex items-center justify-between pb-4 border-b border-zinc-800/40">
-                    <div>
-                      <h3 className="text-xl font-bold tracking-tight">Add New Faculty Member</h3>
-                      <p className="text-xs text-zinc-500 mt-0.5">Create a new academic faculty account in database</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShowAddDrawer(false)}
-                      className="p-1.5 rounded-full border border-zinc-800 text-zinc-500 hover:text-zinc-200 cursor-pointer"
-                    >
-                      <X size={16} />
-                    </button>
+              <form onSubmit={handleCreateFaculty} className="space-y-5">
+                <div className="flex items-center justify-between pb-2 border-b border-zinc-800/40">
+                  <div>
+                    <h3 className="text-xl font-bold tracking-tight">Add New Faculty Member</h3>
+                    <p className="text-xs text-zinc-500 mt-0.5">Enter the details below to create a faculty record.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddDrawer(false)}
+                    className="p-1.5 rounded-full border border-zinc-800 text-zinc-500 hover:text-zinc-200 cursor-pointer"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                {addError && (
+                  <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-2xl text-xs">
+                    {addError}
+                  </div>
+                )}
+
+                {addSuccessMsg && (
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3.5 rounded-2xl text-xs flex items-start gap-2">
+                    <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
+                    <span>{addSuccessMsg}</span>
+                  </div>
+                )}
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                      Faculty Full Name / Academic Title
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g., Dr. Evelyn Wright"
+                      value={newFacultyName}
+                      onChange={(e) => setNewFacultyName(e.target.value)}
+                      className={`w-full rounded-2xl px-4 py-2.5 text-xs focus:outline-none border ${
+                        isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200 placeholder-zinc-600' : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400'
+                      }`}
+                    />
                   </div>
 
-                  {addError && (
-                    <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-3 rounded-2xl text-xs">
-                      {addError}
-                    </div>
-                  )}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                      Assigned Department
+                    </label>
+                    <Select value={newFacultyDept} onValueChange={(val) => setNewFacultyDept(val)}>
+                      <SelectTrigger className={`w-full rounded-2xl text-xs font-semibold py-2.5 ${
+                        isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+                      }`}>
+                        <SelectValue placeholder="Select Department" />
+                      </SelectTrigger>
+                      <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+                        {COMMON_DEPARTMENTS.map((d) => (
+                          <SelectItem key={d} value={d} className="text-xs font-medium cursor-pointer">{d}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                  {addSuccessMsg && (
-                    <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3.5 rounded-2xl text-xs flex items-start gap-2">
-                      <CheckCircle2 size={16} className="shrink-0 mt-0.5" />
-                      <span>{addSuccessMsg}</span>
-                    </div>
-                  )}
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                      4-Digit Faculty ID
+                    </label>
+                    <input
+                      type="text"
+                      maxLength={4}
+                      placeholder="e.g., 4921"
+                      value={newFacultyId}
+                      onChange={(e) => setNewFacultyId(e.target.value)}
+                      className={`w-full rounded-2xl px-4 py-2.5 text-xs font-mono font-bold focus:outline-none border ${
+                        isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200 placeholder-zinc-600' : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400'
+                      }`}
+                    />
+                  </div>
 
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
-                        Faculty Full Name / Academic Title
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g., Dr. Evelyn Wright"
-                        value={newFacultyName}
-                        onChange={(e) => setNewFacultyName(e.target.value)}
-                        className={`w-full rounded-2xl px-4 py-2.5 text-xs focus:outline-none border ${
-                          isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200 placeholder-zinc-600' : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400'
-                        }`}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
-                        Assigned Department
-                      </label>
-                      <Select value={newFacultyDept} onValueChange={(val) => setNewFacultyDept(val)}>
-                        <SelectTrigger className={`w-full rounded-2xl text-xs font-semibold py-2.5 ${
-                          isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
-                        }`}>
-                          <SelectValue placeholder="Select Department" />
-                        </SelectTrigger>
-                        <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
-                          {COMMON_DEPARTMENTS.map((d) => (
-                            <SelectItem key={d} value={d} className="text-xs font-medium cursor-pointer">{d}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
-                        4-Digit Faculty ID
-                      </label>
-                      <input
-                        type="text"
-                        maxLength={4}
-                        placeholder="e.g., 4921"
-                        value={newFacultyId}
-                        onChange={(e) => setNewFacultyId(e.target.value)}
-                        className={`w-full rounded-2xl px-4 py-2.5 text-xs font-mono font-bold focus:outline-none border ${
-                          isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200 placeholder-zinc-600' : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400'
-                        }`}
-                      />
-                    </div>
-
-                    <div className={`p-3.5 rounded-2xl border text-[11px] leading-relaxed ${
-                      isDark ? 'bg-zinc-900/60 border-zinc-800 text-zinc-400' : 'bg-[#f8f6f0] border-[#e5e2d9] text-zinc-600'
-                    }`}>
-                      💡 <strong>Instant Database Login Enabled:</strong> Password will be automatically set to the reversed 4-digit ID (e.g. for ID <code>{newFacultyId || '4921'}</code>, login password will be <code>{newFacultyId ? newFacultyId.split('').reverse().join('') : '1294'}</code>).
-                    </div>
+                  <div className={`p-3.5 rounded-2xl border text-[11px] leading-relaxed ${
+                    isDark ? 'bg-zinc-900/60 border-zinc-800 text-zinc-400' : 'bg-[#f8f6f0] border-[#e5e2d9] text-zinc-600'
+                  }`}>
+                    💡 <strong>Instant Database Login Enabled:</strong> Password will be automatically set to the reversed 4-digit ID (e.g. for ID <code>{newFacultyId || '4921'}</code>, login password will be <code>{newFacultyId ? newFacultyId.split('').reverse().join('') : '1294'}</code>).
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 pt-4 border-t border-zinc-800/40">
+                <div className="flex items-center gap-3 pt-2">
                   <LiquidMetalButton
-                    label={creating ? 'Saving to Database...' : 'Add Faculty Member'}
+                    label={creating ? 'Saving...' : 'Add Faculty'}
                     theme={theme}
                     type="submit"
                   />
                   <button
                     type="button"
                     onClick={() => setShowAddDrawer(false)}
-                    className={`px-5 py-3 rounded-2xl text-xs font-bold border transition-colors cursor-pointer ${
-                      isDark ? 'border-zinc-800 text-zinc-400 hover:text-zinc-200' : 'border-[#e5e2d9] text-zinc-650 hover:bg-[#f0ede6]'
+                    className={`px-4 py-2.5 rounded-full border text-xs font-semibold transition-colors cursor-pointer ${
+                      isDark
+                        ? 'border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                        : 'border-[#e5e2d9] text-zinc-600 hover:text-zinc-900 hover:border-zinc-400'
                     }`}
                   >
                     Cancel

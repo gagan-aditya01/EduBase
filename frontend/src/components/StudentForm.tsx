@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/interfaces-select';
 
 interface Student {
   studentId: string;
@@ -17,13 +24,58 @@ interface StudentFormProps {
   theme?: 'light' | 'dark';
 }
 
+const COMMON_DEPARTMENTS = [
+  'Computer Science',
+  'Electrical Engineering',
+  'Mechanical Engineering',
+  'ADSE',
+  'Mathematics',
+  'Robotics',
+];
+
+const DEPT_SHORT_CODES: Record<string, string> = {
+  'Computer Science': 'CS',
+  'Electrical Engineering': 'EE',
+  'Mechanical Engineering': 'ME',
+  'ADSE': 'ADSE',
+  'Mathematics': 'MATH',
+  'Robotics': 'ROB',
+};
+
+function deriveYearAndSection(id: string, dept: string) {
+  let derivedYear = '3rd Year';
+  let yearNum = '3';
+
+  if (id && id.length >= 2) {
+    const prefix = id.substring(0, 2);
+    if (prefix === '26') {
+      derivedYear = '1st Year';
+      yearNum = '1';
+    } else if (prefix === '25') {
+      derivedYear = '2nd Year';
+      yearNum = '2';
+    } else if (prefix === '24') {
+      derivedYear = '3rd Year';
+      yearNum = '3';
+    } else if (prefix === '23') {
+      derivedYear = '4th Year';
+      yearNum = '4';
+    }
+  }
+
+  const shortCode = DEPT_SHORT_CODES[dept] || (dept ? dept.substring(0, 2).toUpperCase() : 'CS');
+  const derivedSection = `${yearNum}${shortCode}`;
+
+  return { derivedYear, derivedSection };
+}
+
 export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }: StudentFormProps) {
   const [studentId, setStudentId] = useState('');
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
-  const [department, setDepartment] = useState('');
+  const [department, setDepartment] = useState('Computer Science');
   const [year, setYear] = useState('3rd Year');
-  const [section, setSection] = useState('3CS B');
+  const [section, setSection] = useState('3CS');
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
 
@@ -36,17 +88,37 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
       setAge(String(initialData.age));
       setDepartment(initialData.department);
       setYear(initialData.year || '3rd Year');
-      setSection(initialData.section || '3CS B');
+      setSection(initialData.section || '3CS');
     } else {
-      setStudentId('');
+      const defaultId = '24' + Math.floor(10000 + Math.random() * 90000).toString();
+      setStudentId(defaultId);
       setName('');
       setAge('');
-      setDepartment('');
-      setYear('3rd Year');
-      setSection('3CS B');
+      setDepartment('Computer Science');
+      const { derivedYear, derivedSection } = deriveYearAndSection(defaultId, 'Computer Science');
+      setYear(derivedYear);
+      setSection(derivedSection);
     }
     setError('');
   }, [initialData]);
+
+  const handleIdChange = (newId: string) => {
+    setStudentId(newId);
+    if (!initialData) {
+      const { derivedYear, derivedSection } = deriveYearAndSection(newId, department);
+      setYear(derivedYear);
+      setSection(derivedSection);
+    }
+  };
+
+  const handleDeptChange = (newDept: string) => {
+    setDepartment(newDept);
+    if (!initialData) {
+      const { derivedYear, derivedSection } = deriveYearAndSection(studentId, newDept);
+      setYear(derivedYear);
+      setSection(derivedSection);
+    }
+  };
 
   const triggerShake = () => {
     setShake(true);
@@ -90,12 +162,14 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
     
     // Reset if adding new
     if (!initialData) {
-      setStudentId('');
+      const nextId = '24' + Math.floor(10000 + Math.random() * 90000).toString();
+      setStudentId(nextId);
       setName('');
       setAge('');
-      setDepartment('');
-      setYear('3rd Year');
-      setSection('3CS B');
+      setDepartment('Computer Science');
+      const { derivedYear, derivedSection } = deriveYearAndSection(nextId, 'Computer Science');
+      setYear(derivedYear);
+      setSection(derivedSection);
     }
     setError('');
   };
@@ -135,12 +209,12 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
       <div className="space-y-4">
         <div>
           <label className={labelClass}>
-            Student Numeric ID
+            Student Registration No / ID
           </label>
           <input
             type="text"
             value={studentId}
-            onChange={(e) => setStudentId(e.target.value)}
+            onChange={(e) => handleIdChange(e.target.value)}
             disabled={!!initialData}
             placeholder="e.g., 2462128"
             className={inputClass}
@@ -178,13 +252,16 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
             <label className={labelClass}>
               Department
             </label>
-            <input
-              type="text"
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              placeholder="e.g., Computer Science"
-              className={inputClass}
-            />
+            <Select value={department} onValueChange={handleDeptChange}>
+              <SelectTrigger className={inputClass}>
+                <SelectValue placeholder="Select Department" />
+              </SelectTrigger>
+              <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+                {COMMON_DEPARTMENTS.map((d) => (
+                  <SelectItem key={d} value={d} className="text-xs font-medium cursor-pointer">{d}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
@@ -210,7 +287,7 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
               type="text"
               value={section}
               onChange={(e) => setSection(e.target.value)}
-              placeholder="e.g., 3CS B"
+              placeholder="e.g., 3CS"
               className={inputClass}
             />
           </div>
