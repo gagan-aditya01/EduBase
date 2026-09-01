@@ -594,21 +594,6 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
 
           <div className="pt-4 flex items-center gap-2">
             <button
-              onClick={() => setGradeFilter((prev) => (prev === 'FAILURES' ? 'ALL' : 'FAILURES'))}
-              className={`px-3 py-2 rounded-full text-[11.5px] font-bold flex items-center gap-1.5 cursor-pointer transition-all border ${
-                gradeFilter === 'FAILURES'
-                  ? 'bg-red-500/20 text-red-400 border-red-500/50 shadow-md'
-                  : isDark
-                  ? 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-400 hover:text-zinc-200'
-                  : 'bg-white hover:bg-zinc-100 border-[#e5e2d9] text-zinc-650 hover:text-black shadow-sm'
-              }`}
-              title="Filter Failures Only (F Grade)"
-            >
-              <AlertTriangle size={13} className={gradeFilter === 'FAILURES' ? 'text-red-400 animate-pulse' : 'text-zinc-500'} />
-              <span>Failures Only ({performanceStats.gradesCount['F'] || 0})</span>
-            </button>
-
-            <button
               onClick={exportGradebookCSV}
               disabled={gradeRows.length === 0}
               className={`px-3 py-2 rounded-full text-[11.5px] font-bold flex items-center gap-1.5 cursor-pointer transition-all border ${
