@@ -161,6 +161,27 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
     ? Array.from(new Set(availableCourses.map((c) => getSectionFromCourseCode(c.courseCode))))
     : SECTIONS_LIST;
 
+  // Filter available courses matching the selected section year (e.g. 4MATH -> 4th Year courses only)
+  const filterCoursesForSection = (sec: string, courses: any[]) => {
+    if (!sec) return courses;
+    const yearDigit = sec.match(/^\d+/)?.[0];
+    if (!yearDigit) return courses;
+
+    const filtered = courses.filter((c) => {
+      if (c.year) {
+        const yDigit = c.year.match(/\d+/)?.[0];
+        if (yDigit === yearDigit) return true;
+      }
+      const codeMatch = c.courseCode.match(/[A-Z]+([1-4])\d{2}/);
+      if (codeMatch && codeMatch[1] === yearDigit) return true;
+      return false;
+    });
+
+    return filtered.length > 0 ? filtered : courses;
+  };
+
+  const scopedCoursesForSection = filterCoursesForSection(selectedSection, availableCourses);
+
   // Fetch fresh profile from MongoDB and strictly scope available courses
   useEffect(() => {
     const fetchFreshProfileAndCourses = async () => {
@@ -408,7 +429,16 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
             <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${
               isDark ? 'text-zinc-400' : 'text-zinc-650'
             }`}>Section</label>
-            <Select value={selectedSection} onValueChange={(val) => setSelectedSection(val)}>
+            <Select
+              value={selectedSection}
+              onValueChange={(sec) => {
+                setSelectedSection(sec);
+                const matchingCourses = filterCoursesForSection(sec, availableCourses);
+                if (matchingCourses.length > 0) {
+                  setSelectedCourse(matchingCourses[0].courseCode);
+                }
+              }}
+            >
               <SelectTrigger className={`w-28 rounded-2xl text-xs font-mono font-bold ${
                 isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
               }`}>
@@ -439,7 +469,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                 <SelectValue placeholder="Select Course" />
               </SelectTrigger>
               <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
-                {availableCourses.map((c) => (
+                {scopedCoursesForSection.map((c) => (
                   <SelectItem key={c.courseCode} value={c.courseCode} className="text-xs font-medium cursor-pointer">
                     <span className={`font-mono font-bold mr-1.5 ${isDark ? 'text-zinc-300' : 'text-[#cc5a37]'}`}>{c.courseCode}</span>
                     {c.title}
