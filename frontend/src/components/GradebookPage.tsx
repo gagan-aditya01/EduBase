@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertCircle, Sparkles, GraduationCap } from 'lucide-react';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
+import { TranscriptModal } from './TranscriptModal';
 import {
   Select,
   SelectContent,
@@ -152,6 +153,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+  const [transcriptStudent, setTranscriptStudent] = useState<any>(null);
 
   // Allowed sections: For Faculty, filter sections to ONLY match their assigned subjects. For Admin, show all.
   const activeRole = userProfile?.role || currentUser.role;
@@ -512,7 +514,15 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                 gradeRows.map((r) => (
                   <tr key={r.studentId} className={isDark ? 'hover:bg-zinc-800/30' : 'hover:bg-[#f8f6f0]'}>
                     <td className={`p-4.5 font-mono font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{r.studentId}</td>
-                    <td className={`p-4.5 font-bold ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>{r.name}</td>
+                    <td className={`p-4.5 font-bold ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
+                      <button
+                        onClick={() => setTranscriptStudent({ studentId: r.studentId, name: r.name, department: r.department, section: r.section })}
+                        className="hover:underline flex items-center gap-1.5 cursor-pointer text-left"
+                      >
+                        <span>{r.name}</span>
+                        <GraduationCap size={13} className={isDark ? 'text-emerald-400' : 'text-[#cc5a37]'} />
+                      </button>
+                    </td>
 
                     {/* Assign 1 */}
                     <td className="p-3 text-center">
@@ -593,6 +603,14 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
           </table>
         </div>
       </div>
+      {/* Transcript Modal */}
+      {transcriptStudent && (
+        <TranscriptModal
+          student={transcriptStudent}
+          onClose={() => setTranscriptStudent(null)}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Trash2, Edit2, Search, CheckSquare, Square, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, User, Calendar, Award, Filter, X, ArrowUpDown } from 'lucide-react';
+import { Trash2, Edit2, Search, CheckSquare, Square, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, User, Calendar, Award, Filter, X, ArrowUpDown, GraduationCap } from 'lucide-react';
+import { TranscriptModal } from './TranscriptModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Select,
@@ -94,6 +95,7 @@ export function StudentList({
 }: StudentListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);
+  const [transcriptStudent, setTranscriptStudent] = useState<Student | null>(null);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const [sortOption, setSortOption] = useState<SortOption>('name_asc');
   const [yearFilter, setYearFilter] = useState('ALL');
@@ -416,6 +418,17 @@ export function StudentList({
 
                             <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                               <div className="flex items-center justify-end gap-2">
+                                <button
+                                  onClick={() => setTranscriptStudent(student)}
+                                  className={`p-1.5 rounded-xl border cursor-pointer transition-colors ${
+                                    isDark
+                                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
+                                      : 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100'
+                                  }`}
+                                  title="View Official Academic Transcript"
+                                >
+                                  <GraduationCap size={13} />
+                                </button>
                                 {isAdmin && (
                                   <>
                                     <button
@@ -534,6 +547,15 @@ export function StudentList({
           </div>
         </div>
       </div>
+
+      {/* Transcript Modal */}
+      {transcriptStudent && (
+        <TranscriptModal
+          student={transcriptStudent}
+          onClose={() => setTranscriptStudent(null)}
+          theme={theme}
+        />
+      )}
     </div>
   );
 }
