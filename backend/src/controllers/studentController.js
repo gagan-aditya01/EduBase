@@ -209,14 +209,9 @@ const updateStudent = async (req, res) => {
       return res.status(404).json({ error: 'Student not found' });
     }
 
-    // Faculty Department Isolation Guard
+    // Faculty Permission Guard: Faculty members CANNOT edit students
     if (req.user && req.user.role === 'faculty') {
-      if (!req.user.assignedDepartment || student.department.trim().toLowerCase() !== req.user.assignedDepartment.trim().toLowerCase()) {
-        return res.status(403).json({ error: `Access denied: Faculty members can only update records within their assigned department (${req.user.assignedDepartment || 'None'})` });
-      }
-      if (department && department.trim().toLowerCase() !== req.user.assignedDepartment.trim().toLowerCase()) {
-        return res.status(403).json({ error: `Access denied: Cannot reassign student to another department outside your assigned department (${req.user.assignedDepartment})` });
-      }
+      return res.status(403).json({ error: 'Access denied: Faculty members do not have permission to edit student records.' });
     }
 
     if (name) student.name = name;
@@ -250,9 +245,6 @@ const updateStudent = async (req, res) => {
   }
 };
 
-// @desc    Concept 2: Soft Delete a student (Sets isDeleted=true, deletedAt=Date)
-// @route   DELETE /api/v1/students/:studentId
-// @access  Private/Admin
 const deleteStudent = async (req, res) => {
   try {
     const { studentId } = req.params;
@@ -260,6 +252,11 @@ const deleteStudent = async (req, res) => {
 
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
+    }
+
+    // Faculty Permission Guard: Faculty members CANNOT delete students
+    if (req.user && req.user.role === 'faculty') {
+      return res.status(403).json({ error: 'Access denied: Faculty members do not have permission to delete student records.' });
     }
 
     // Soft delete

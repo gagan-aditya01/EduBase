@@ -139,13 +139,16 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
     color: PIE_SLICE_COLORS[idx % PIE_SLICE_COLORS.length],
   }));
 
-  // Academic Year Breakdown Pie Data
-  const yearPieData = (data?.academicYearBreakdown || []).map((item, idx) => ({
-    name: item._id || `Year ${idx + 1}`,
-    shortCode: item._id || `Yr ${idx + 1}`,
-    value: item.count,
-    color: PIE_SLICE_COLORS[(idx + 2) % PIE_SLICE_COLORS.length],
-  }));
+  // Department Age Demographics Bucket Pie Data for Faculty Scoped Portal
+  const ageDemographicsPieData = (data?.ageDemographics || []).map((item, idx) => {
+    const rangeLabel = item._id === 16 ? '16-20 yrs' : item._id === 21 ? '21-25 yrs' : item._id === 26 ? '26-30 yrs' : `${item._id}+ yrs`;
+    return {
+      name: rangeLabel,
+      shortCode: rangeLabel,
+      value: item.count,
+      color: PIE_SLICE_COLORS[(idx + 2) % PIE_SLICE_COLORS.length],
+    };
+  });
 
   // Faculty/Teacher Pie Chart Data
   const rawFacultyDept = data?.facultyDepartmentBreakdown && data.facultyDepartmentBreakdown.length > 0
@@ -430,14 +433,14 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           </div>
         </div>
 
-        {/* Pie Chart 2: Academic Year Breakdown (Faculty Scoped) OR Faculty Staff Slices (Global) */}
+        {/* Pie Chart 2: Age Demographics (Faculty Scoped) OR Faculty Staff Slices (Global) */}
         <div className={`p-6 rounded-3xl border flex flex-col ${
           isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
         }`}>
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-bold text-base flex items-center gap-2">
               <PieChartIcon size={18} className="text-pink-400" />
-              {isFaculty ? `${facultyDept} Academic Year Breakdown` : 'Department-Wise Teachers & Faculty Slices'}
+              {isFaculty ? `${facultyDept} Student Age Demographics` : 'Department-Wise Teachers & Faculty Slices'}
             </h4>
             <span className="text-xs font-bold text-zinc-500 font-mono">
               Total: {isFaculty ? overall.totalStudents : totalFacultyCount} {isFaculty ? 'Students' : 'Staff'}
@@ -450,7 +453,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                 {(Pie as any)({
                   activeIndex: activeFacultyIndex >= 0 ? activeFacultyIndex : undefined,
                   activeShape: renderActiveShape,
-                  data: isFaculty ? yearPieData : facultyPieData,
+                  data: isFaculty ? ageDemographicsPieData : facultyPieData,
                   dataKey: 'value',
                   nameKey: 'name',
                   cx: '50%',
@@ -463,7 +466,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   label: (entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`,
                   onMouseEnter: (_: any, index: number) => setActiveFacultyIndex(index),
                   onMouseLeave: () => setActiveFacultyIndex(-1),
-                  children: (isFaculty ? yearPieData : facultyPieData).map((entry, index) => (
+                  children: (isFaculty ? ageDemographicsPieData : facultyPieData).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   )),
                 })}
