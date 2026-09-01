@@ -187,11 +187,6 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
             <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
               {isFaculty ? `${facultyDept} Department Analytics` : 'Academic Analytics Dashboard'}
             </h1>
-            <p className="text-xs text-zinc-500">
-              {isFaculty
-                ? `Department-scoped workspace • Managing enrolled ${facultyDept} students`
-                : 'Real-time department insights, student enrolment trends, and faculty distribution'}
-            </p>
           </div>
         </div>
 

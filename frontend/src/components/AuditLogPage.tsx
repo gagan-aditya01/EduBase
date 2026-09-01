@@ -112,7 +112,6 @@ export function AuditLogPage({ currentUser, theme = 'dark' }: AuditLogPageProps)
             <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
               System Audit Trail
             </h1>
-            <p className="text-xs text-zinc-500">Immutable security event logs & audit record stream</p>
           </div>
         </div>
 

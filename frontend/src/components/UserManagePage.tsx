@@ -217,7 +217,6 @@ export function UserManagePage({ currentUser, theme = 'dark', addToast }: UserMa
             <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
               User Role & Department Administration
             </h1>
-            <p className="text-xs text-zinc-500">Manage user permissions, role upgrades, and department scoping</p>
           </div>
         </div>
       </div>

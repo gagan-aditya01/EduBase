@@ -695,11 +695,6 @@ export default function App() {
                     {user.role === 'faculty' ? `${user.assignedDepartment || 'Faculty'} Department Portal` : 'Student Directory'}
                     <Sparkles size={20} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
                   </h1>
-                  <p className={theme === 'dark' ? 'text-zinc-500 text-sm mt-1' : 'text-zinc-500 text-sm mt-1'}>
-                    {user.role === 'faculty'
-                      ? `Department Scoped Workspace • Managing enrolled ${user.assignedDepartment || 'Department'} students`
-                      : 'Manage academic database records, query departments, and update student profiles.'}
-                  </p>
                 </div>
 
                 <div className="flex items-center gap-3">

@@ -432,7 +432,6 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Faculty Directory</h2>
-          <p className="text-xs text-zinc-500 mt-0.5">Manage academic staff profiles, departments, and login access</p>
         </div>
 
         {canManageFaculty && (
