@@ -62,14 +62,14 @@ const renderActiveShape = (props: any) => {
       <Sector
         cx={cx}
         cy={cy}
-        innerRadius={innerRadius - 3}
+        innerRadius={innerRadius - 2}
         outerRadius={outerRadius + 14}
         startAngle={startAngle}
         endAngle={endAngle}
         fill={fill}
         style={{
-          filter: 'drop-shadow(0px 8px 20px rgba(0, 0, 0, 0.5))',
-          transition: 'all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
+          filter: 'drop-shadow(0px 8px 18px rgba(0, 0, 0, 0.45))',
+          transition: 'all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)',
         }}
       />
     </g>
@@ -331,7 +331,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
         </div>
       </div>
 
-      {/* Visual Pie Charts Grid for Students & Teachers with Pop-out Hover Animation */}
+      {/* Visual Pie Charts Grid for Students & Teachers with Pop-out Hover Animation & Zero Text Glitch */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Pie Chart 1: Department-Wise Students Pie Chart */}
         <div className={`p-6 rounded-3xl border flex flex-col ${
@@ -361,6 +361,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   outerRadius: 105,
                   innerRadius: 55,
                   paddingAngle: 4,
+                  isAnimationActive: false,
                   labelLine: { stroke: isDark ? '#71717a' : '#a1a1aa', strokeWidth: 1.5 },
                   label: (entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`,
                   onMouseEnter: (_: any, index: number) => setActiveStudentIndex(index),
@@ -410,6 +411,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   outerRadius: 105,
                   innerRadius: 55,
                   paddingAngle: 4,
+                  isAnimationActive: false,
                   labelLine: { stroke: isDark ? '#71717a' : '#a1a1aa', strokeWidth: 1.5 },
                   label: (entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`,
                   onMouseEnter: (_: any, index: number) => setActiveFacultyIndex(index),
