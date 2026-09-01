@@ -90,7 +90,7 @@ export function StudentList({
   onClearFilters,
   isLoading = false,
   theme = 'dark',
-  isAdmin = true,
+  isAdmin = false,
 }: StudentListProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [expandedStudentId, setExpandedStudentId] = useState<string | null>(null);

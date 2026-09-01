@@ -627,7 +627,7 @@ export default function App() {
                     students={students}
                     isLoading={loading}
                     theme={theme}
-                    isAdmin={user.role === 'admin' || user.role === 'faculty'}
+                    isAdmin={user.role === 'admin'}
                     onEdit={(student) => {
                       setEditingStudent(student);
                       setShowForm(true);
