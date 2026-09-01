@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { BookOpen, CheckCircle2, AlertCircle, Sparkles, GraduationCap, Download, TrendingUp, Award } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertCircle, Sparkles, GraduationCap, Download, TrendingUp, Award, AlertTriangle } from 'lucide-react';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
 import { TranscriptModal } from './TranscriptModal';
 import {
@@ -111,7 +111,16 @@ const FALLBACK_COURSES = [
   { courseCode: 'ROB402', title: 'Computer Vision for Robotics', department: 'Robotics', year: '4th Year', credits: 4 },
 ];
 
-const SECTIONS_LIST = ['3CS', '2CS', '4CS', '1CS', '3EE', '2EE', '3ME', '2ME', '3ADSE', '2ADSE', '3MATH', '3ROB'];
+const SECTIONS_BY_DEPT = [
+  { dept: 'Computer Science', sections: ['1CS', '2CS', '3CS', '4CS'] },
+  { dept: 'Mathematics', sections: ['1MATH', '2MATH', '3MATH', '4MATH'] },
+  { dept: 'ADSE', sections: ['1ADSE', '2ADSE', '3ADSE', '4ADSE'] },
+  { dept: 'Electrical Engineering', sections: ['1EE', '2EE', '3EE', '4EE'] },
+  { dept: 'Mechanical Engineering', sections: ['1ME', '2ME', '3ME', '4ME'] },
+  { dept: 'Robotics', sections: ['1ROB', '2ROB', '3ROB', '4ROB'] },
+];
+
+const SECTIONS_LIST = SECTIONS_BY_DEPT.flatMap((group) => group.sections);
 
 const getSectionFromCourseCode = (code: string) => {
   if (!code) return '3CS';
@@ -154,6 +163,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [transcriptStudent, setTranscriptStudent] = useState<any>(null);
+  const [gradeFilter, setGradeFilter] = useState<string>('ALL');
 
   // Allowed sections: For Faculty, filter sections to ONLY match their assigned subjects. For Admin, show all.
   const activeRole = userProfile?.role || currentUser.role;
@@ -207,7 +217,14 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
     };
   }, [gradeRows]);
 
-  // Export Section Gradebook spreadsheet to CSV file
+  // Filter gradeRows by grade tier or Failures Only
+  const filteredGradeRows = useMemo(() => {
+    if (gradeFilter === 'ALL') return gradeRows;
+    if (gradeFilter === 'FAILURES' || gradeFilter === 'F') {
+      return gradeRows.filter((r) => r.letterGrade === 'F');
+    }
+    return gradeRows.filter((r) => r.letterGrade === gradeFilter);
+  }, [gradeRows, gradeFilter]);
   const exportGradebookCSV = () => {
     if (gradeRows.length === 0) return;
 
@@ -519,15 +536,31 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                 }
               }}
             >
-              <SelectTrigger className={`w-28 rounded-2xl text-xs font-mono font-bold ${
+              <SelectTrigger className={`w-32 rounded-2xl text-xs font-mono font-bold ${
                 isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
               }`}>
                 <SelectValue placeholder="Section" />
               </SelectTrigger>
-              <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
-                {allowedSections.map((sec) => (
-                  <SelectItem key={sec} value={sec} className="text-xs font-mono font-bold cursor-pointer">{sec}</SelectItem>
-                ))}
+              <SelectContent className={`max-h-80 overflow-y-auto ${isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}`}>
+                {SECTIONS_BY_DEPT.map((group) => {
+                  const validGroupSections = group.sections.filter((sec) => allowedSections.includes(sec));
+                  if (validGroupSections.length === 0) return null;
+
+                  return (
+                    <div key={group.dept} className="py-1">
+                      <div className={`px-3 py-1 text-[9.5px] font-bold uppercase tracking-wider ${
+                        isDark ? 'text-zinc-500 bg-zinc-900/80' : 'text-zinc-650 bg-[#f5f2eb]'
+                      }`}>
+                        {group.dept}
+                      </div>
+                      {validGroupSections.map((sec) => (
+                        <SelectItem key={sec} value={sec} className="text-xs font-mono font-bold cursor-pointer pl-4">
+                          {sec}
+                        </SelectItem>
+                      ))}
+                    </div>
+                  );
+                })}
               </SelectContent>
             </Select>
           </div>
@@ -560,6 +593,21 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
           </div>
 
           <div className="pt-4 flex items-center gap-2">
+            <button
+              onClick={() => setGradeFilter((prev) => (prev === 'FAILURES' ? 'ALL' : 'FAILURES'))}
+              className={`px-3 py-2 rounded-full text-[11.5px] font-bold flex items-center gap-1.5 cursor-pointer transition-all border ${
+                gradeFilter === 'FAILURES'
+                  ? 'bg-red-500/20 text-red-400 border-red-500/50 shadow-md'
+                  : isDark
+                  ? 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+                  : 'bg-white hover:bg-zinc-100 border-[#e5e2d9] text-zinc-650 hover:text-black shadow-sm'
+              }`}
+              title="Filter Failures Only (F Grade)"
+            >
+              <AlertTriangle size={13} className={gradeFilter === 'FAILURES' ? 'text-red-400 animate-pulse' : 'text-zinc-500'} />
+              <span>Failures Only ({performanceStats.gradesCount['F'] || 0})</span>
+            </button>
+
             <button
               onClick={exportGradebookCSV}
               disabled={gradeRows.length === 0}
@@ -614,14 +662,49 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
           </div>
 
           <div className="col-span-2 flex items-center justify-end gap-1.5 flex-wrap">
+            <button
+              onClick={() => setGradeFilter('ALL')}
+              className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border transition-all cursor-pointer ${
+                gradeFilter === 'ALL'
+                  ? isDark ? 'bg-zinc-200 text-zinc-950 border-white' : 'bg-[#191919] text-white border-[#191919]'
+                  : isDark ? 'bg-zinc-800 text-zinc-400 border-zinc-700' : 'bg-white text-zinc-600 border-[#e5e2d9]'
+              }`}
+            >
+              All ({gradeRows.length})
+            </button>
+
             {Object.entries(performanceStats.gradesCount).map(([grade, count]) => (
               count > 0 && (
-                <span key={grade} className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border ${getGradeBadgeColor(grade)}`}>
+                <button
+                  key={grade}
+                  onClick={() => setGradeFilter(gradeFilter === grade ? 'ALL' : grade)}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border transition-all cursor-pointer ${getGradeBadgeColor(grade)} ${
+                    gradeFilter === grade ? 'ring-2 ring-emerald-400 scale-105 shadow-md' : 'opacity-85 hover:opacity-100'
+                  }`}
+                >
                   {grade}: {count}
-                </span>
+                </button>
               )
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Backlog Alert Banner */}
+      {performanceStats.gradesCount['F'] > 0 && (
+        <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2 font-medium">
+            <AlertTriangle size={16} className="shrink-0 animate-pulse" />
+            <span>
+              <strong>{performanceStats.gradesCount['F']} Student(s)</strong> in {selectedSection} ({selectedCourse}) failed evaluation and require re-examination / backlog processing.
+            </span>
+          </div>
+          <button
+            onClick={() => setGradeFilter('FAILURES')}
+            className="px-3 py-1 rounded-xl bg-red-500/20 border border-red-500/40 text-red-300 font-bold hover:bg-red-500/30 text-[11px] cursor-pointer transition-all"
+          >
+            View {performanceStats.gradesCount['F']} Failures
+          </button>
         </div>
       )}
 
@@ -668,14 +751,16 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                     Loading section gradebook evaluation grid...
                   </td>
                 </tr>
-              ) : gradeRows.length === 0 ? (
+              ) : filteredGradeRows.length === 0 ? (
                 <tr>
                   <td colSpan={9} className="text-center p-12 text-zinc-500 font-mono">
-                    No enrolled students found in section {selectedSection}.
+                    {gradeFilter !== 'ALL'
+                      ? `No student records found matching grade filter "${gradeFilter}".`
+                      : `No enrolled students found in section ${selectedSection}.`}
                   </td>
                 </tr>
               ) : (
-                gradeRows.map((r) => (
+                filteredGradeRows.map((r) => (
                   <tr key={r.studentId} className={isDark ? 'hover:bg-zinc-800/30' : 'hover:bg-[#f8f6f0]'}>
                     <td className={`p-4.5 font-mono font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{r.studentId}</td>
                     <td className={`p-4.5 font-bold ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
