@@ -17,6 +17,7 @@ interface DBUser {
   facultyId?: string;
   status?: 'Active' | 'Inactive';
   assignedDepartment?: string;
+  assignedSubjects?: string[];
   authProvider?: 'local' | 'google' | 'github';
   createdAt?: string;
 }
@@ -90,6 +91,9 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
+  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+  const [newFacultySubjects, setNewFacultySubjects] = useState<string[]>([]);
+  const [editFacultySubjects, setEditFacultySubjects] = useState<string[]>([]);
 
   const isDark = theme === 'dark';
   const itemsPerPage = 8;
@@ -116,14 +120,28 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
     }
   };
 
+  const fetchCourses = async () => {
+    try {
+      const res = await fetch('http://localhost:5050/api/v1/courses', {
+        headers: { Authorization: `Bearer ${currentUser.token}` },
+      });
+      const data = await res.json();
+      if (Array.isArray(data)) setAvailableCourses(data);
+    } catch (err) {
+      // Ignore fallback
+    }
+  };
+
   useEffect(() => {
     fetchFaculty();
+    fetchCourses();
   }, []);
 
   const handleOpenAddDrawer = () => {
     setShowAddDrawer(true);
     setNewFacultyName('');
     setNewFacultyDept('Computer Science');
+    setNewFacultySubjects([]);
     const random4 = Math.floor(1000 + Math.random() * 9000).toString();
     setNewFacultyId(random4);
     setAddSuccessMsg('');
@@ -154,6 +172,7 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
         body: JSON.stringify({
           username: newFacultyName.trim(),
           assignedDepartment: newFacultyDept,
+          assignedSubjects: newFacultySubjects,
           facultyId: newFacultyId.trim(),
           status: 'Active',
         }),
@@ -180,10 +199,12 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
     }
   };
 
-  const handleOpenEdit = (f: DBUser) => {
-    setEditingFaculty(f);
-    setEditStatus(f.status || 'Active');
-    setEditDept(f.assignedDepartment || 'Computer Science');
+  const handleOpenEdit = (faculty: DBUser) => {
+    setEditingFaculty(faculty);
+    setEditDept(faculty.assignedDepartment || 'Computer Science');
+    setEditStatus(faculty.status || 'Active');
+    setEditFacultySubjects(faculty.assignedSubjects || []);
+    setError('');
   };
 
   const handleSaveEdit = async () => {
@@ -198,8 +219,9 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
           Authorization: `Bearer ${currentUser.token}`,
         },
         body: JSON.stringify({
-          status: editStatus,
           assignedDepartment: editDept,
+          assignedSubjects: editFacultySubjects,
+          status: editStatus,
         }),
       });
       const data = await res.json();
@@ -556,6 +578,7 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
                     <th className="p-4">Faculty ID</th>
                     <th className="p-4">Faculty Name</th>
                     <th className="p-4">Department</th>
+                    <th className="p-4">Teaching Subjects</th>
                     <th className="p-4">Status</th>
                     <th className="p-4 text-right">Actions</th>
                   </tr>
@@ -625,6 +648,27 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
                             }`}>
                               {f.assignedDepartment || 'Computer Science'}
                             </span>
+                          </td>
+
+                          <td className="p-4">
+                            <div className="flex flex-wrap items-center gap-1.5 max-w-[220px]">
+                              {f.assignedSubjects && f.assignedSubjects.length > 0 ? (
+                                f.assignedSubjects.map((subCode) => {
+                                  const matchedCourse = availableCourses.find((c) => c.courseCode === subCode);
+                                  return (
+                                    <span
+                                      key={subCode}
+                                      title={matchedCourse ? `${matchedCourse.title} (${matchedCourse.credits} Credits, ${matchedCourse.year})` : subCode}
+                                      className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 cursor-help"
+                                    >
+                                      {subCode}
+                                    </span>
+                                  );
+                                })
+                              ) : (
+                                <span className="text-[11px] text-zinc-500 italic">No subjects assigned</span>
+                              )}
+                            </div>
                           </td>
 
                           <td className="p-4">
@@ -804,6 +848,49 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
                     />
                   </div>
 
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                      Assign Teaching Subjects ({newFacultyDept})
+                    </label>
+                    <div className={`p-3 rounded-2xl border max-h-44 overflow-y-auto space-y-1.5 ${
+                      isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-[#f8f6f0] border-[#e5e2d9]'
+                    }`}>
+                      {availableCourses
+                        .filter((c) => c.department.toLowerCase() === newFacultyDept.toLowerCase())
+                        .map((course) => {
+                          const isChecked = newFacultySubjects.includes(course.courseCode);
+                          return (
+                            <label
+                              key={course.courseCode}
+                              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                                isChecked
+                                  ? isDark ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300' : 'bg-indigo-50 border border-indigo-200 text-indigo-900'
+                                  : isDark ? 'hover:bg-zinc-800/60 text-zinc-300' : 'hover:bg-white text-zinc-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setNewFacultySubjects((prev) => [...prev, course.courseCode]);
+                                    } else {
+                                      setNewFacultySubjects((prev) => prev.filter((code) => code !== course.courseCode));
+                                    }
+                                  }}
+                                  className="rounded border-zinc-700 text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <span className="font-mono font-bold text-indigo-400">{course.courseCode}</span>
+                                <span className="truncate max-w-[180px]">{course.title}</span>
+                              </div>
+                              <span className="text-[10px] text-zinc-500">{course.year} ({course.credits} Cr)</span>
+                            </label>
+                          );
+                        })}
+                    </div>
+                  </div>
+
                   <div className={`p-3.5 rounded-2xl border text-[11px] leading-relaxed ${
                     isDark ? 'bg-zinc-900/60 border-zinc-800 text-zinc-400' : 'bg-[#f8f6f0] border-[#e5e2d9] text-zinc-600'
                   }`}>
@@ -916,6 +1003,49 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+                      Assign Teaching Subjects ({editDept})
+                    </label>
+                    <div className={`p-3 rounded-2xl border max-h-44 overflow-y-auto space-y-1.5 ${
+                      isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-[#f8f6f0] border-[#e5e2d9]'
+                    }`}>
+                      {availableCourses
+                        .filter((c) => c.department.toLowerCase() === editDept.toLowerCase())
+                        .map((course) => {
+                          const isChecked = editFacultySubjects.includes(course.courseCode);
+                          return (
+                            <label
+                              key={course.courseCode}
+                              className={`flex items-center justify-between p-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                                isChecked
+                                  ? isDark ? 'bg-indigo-500/10 border border-indigo-500/20 text-indigo-300' : 'bg-indigo-50 border border-indigo-200 text-indigo-900'
+                                  : isDark ? 'hover:bg-zinc-800/60 text-zinc-300' : 'hover:bg-white text-zinc-700'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setEditFacultySubjects((prev) => [...prev, course.courseCode]);
+                                    } else {
+                                      setEditFacultySubjects((prev) => prev.filter((code) => code !== course.courseCode));
+                                    }
+                                  }}
+                                  className="rounded border-zinc-700 text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <span className="font-mono font-bold text-indigo-400">{course.courseCode}</span>
+                                <span className="truncate max-w-[180px]">{course.title}</span>
+                              </div>
+                              <span className="text-[10px] text-zinc-500">{course.year} ({course.credits} Cr)</span>
+                            </label>
+                          );
+                        })}
+                    </div>
                   </div>
                 </div>
               </div>

@@ -515,12 +515,17 @@ const updateUser = async (req, res) => {
       user.password = req.body.password;
     }
 
+    if (req.body.assignedSubjects !== undefined) {
+      user.assignedSubjects = req.body.assignedSubjects;
+    }
+
     const updatedUser = await user.save();
     res.json({
       _id: updatedUser._id,
       username: updatedUser.username,
       role: updatedUser.role,
       assignedDepartment: updatedUser.assignedDepartment,
+      assignedSubjects: updatedUser.assignedSubjects,
       facultyId: updatedUser.facultyId || Math.floor(1000 + Math.random() * 9000).toString(),
       status: updatedUser.status || 'Active',
       authProvider: updatedUser.authProvider,
@@ -604,7 +609,7 @@ const updateProfilePassword = async (req, res) => {
 // @access  Private/Admin
 const createFaculty = async (req, res) => {
   try {
-    const { username, assignedDepartment, facultyId, status } = req.body;
+    const { username, assignedDepartment, assignedSubjects, facultyId, status } = req.body;
 
     if (!username || !assignedDepartment) {
       return res.status(400).json({ error: 'Faculty name and assigned department are required' });
@@ -632,6 +637,7 @@ const createFaculty = async (req, res) => {
       role: 'faculty',
       facultyId: fId,
       assignedDepartment,
+      assignedSubjects: Array.isArray(assignedSubjects) ? assignedSubjects : [],
       status: status || 'Active',
       authProvider: 'local',
     });
@@ -642,6 +648,7 @@ const createFaculty = async (req, res) => {
       role: newFaculty.role,
       facultyId: newFaculty.facultyId,
       assignedDepartment: newFaculty.assignedDepartment,
+      assignedSubjects: newFaculty.assignedSubjects,
       status: newFaculty.status,
       loginInstruction: `Faculty can now log in using ID "${newFaculty.facultyId}" and password "${reversedPass}".`,
     });
