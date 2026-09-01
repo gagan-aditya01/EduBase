@@ -14,9 +14,11 @@ const {
   updateUser,
   deleteUser,
   updateProfilePassword,
+  getMe,
 } = require('../controllers/authController');
 const { protect, admin, facultyOrAdmin } = require('../middlewares/authMiddleware');
 
+router.get('/me', protect, getMe);
 router.post('/register', registerUser);
 router.post('/faculty', protect, admin, createFaculty);
 router.post('/login', loginUser);

@@ -659,6 +659,21 @@ const createFaculty = async (req, res) => {
   }
 };
 
+// @desc    Get current authenticated user profile
+// @route   GET /api/v1/auth/me
+// @access  Private
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   createFaculty,
@@ -673,4 +688,5 @@ module.exports = {
   updateUser,
   deleteUser,
   updateProfilePassword,
+  getMe,
 };

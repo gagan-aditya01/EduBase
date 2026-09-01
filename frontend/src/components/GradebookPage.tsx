@@ -124,6 +124,8 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
   const userDept = currentUser.assignedDepartment || 'Computer Science';
   const userSubjects = currentUser.assignedSubjects || [];
 
+  const [userProfile, setUserProfile] = useState<any>(currentUser);
+
   // Filter initial available courses for Faculty vs Admin
   const getInitialCourses = () => {
     if (isFaculty) {
@@ -150,44 +152,60 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Allowed sections: For Faculty, filter sections to match their courses. For Admin, show all.
-  const allowedSections = isFaculty
+  // Allowed sections: For Faculty, filter sections to ONLY match their assigned subjects. For Admin, show all.
+  const activeRole = userProfile?.role || currentUser.role;
+  const allowedSections = activeRole === 'faculty'
     ? Array.from(new Set(availableCourses.map((c) => getSectionFromCourseCode(c.courseCode))))
     : SECTIONS_LIST;
 
-  // Fetch available courses from server
+  // Fetch fresh profile from MongoDB and strictly scope available courses
   useEffect(() => {
-    const fetchCourses = async () => {
+    const fetchFreshProfileAndCourses = async () => {
       try {
+        let freshUser = currentUser;
+        const meRes = await fetch('http://localhost:5050/api/v1/auth/me', {
+          headers: { Authorization: `Bearer ${currentUser.token}` },
+        });
+        if (meRes.ok) {
+          freshUser = await meRes.json();
+          setUserProfile(freshUser);
+        }
+
+        const facultyRole = freshUser.role === 'faculty';
+        const assignedSubs = Array.isArray(freshUser.assignedSubjects) ? freshUser.assignedSubjects : [];
+        const dept = freshUser.assignedDepartment || userDept;
+
         const res = await fetch('http://localhost:5050/api/v1/courses', {
           headers: { Authorization: `Bearer ${currentUser.token}` },
         });
-        const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          let filteredCourses = data;
-          if (isFaculty) {
-            if (userSubjects.length > 0) {
-              filteredCourses = data.filter((c) => userSubjects.includes(c.courseCode));
-            } else {
-              filteredCourses = data.filter((c) => c.department.toLowerCase().includes(userDept.toLowerCase()));
-            }
-          }
+        const catalog = await res.json();
+        const allCoursesList = Array.isArray(catalog) && catalog.length > 0 ? catalog : FALLBACK_COURSES;
 
-          const activeList = filteredCourses.length > 0 ? filteredCourses : data;
-          setAvailableCourses(activeList);
-
-          if (activeList.length > 0 && !activeList.some((c) => c.courseCode === selectedCourse)) {
-            const defaultCode = activeList[0].courseCode;
-            setSelectedCourse(defaultCode);
-            setSelectedSection(getSectionFromCourseCode(defaultCode));
+        let activeList = allCoursesList;
+        if (facultyRole) {
+          if (assignedSubs.length > 0) {
+            activeList = allCoursesList.filter((c: any) => assignedSubs.includes(c.courseCode));
+          } else {
+            activeList = allCoursesList.filter((c: any) => c.department.toLowerCase().includes(dept.toLowerCase()));
           }
         }
+
+        if (activeList.length === 0) activeList = allCoursesList;
+
+        setAvailableCourses(activeList);
+
+        if (activeList.length > 0) {
+          const firstCode = activeList[0].courseCode;
+          setSelectedCourse(firstCode);
+          setSelectedSection(getSectionFromCourseCode(firstCode));
+        }
       } catch (err) {
-        // Fallback already active
+        // Fallback already populated
       }
     };
-    fetchCourses();
-  }, [currentUser, isFaculty, userDept]);
+
+    fetchFreshProfileAndCourses();
+  }, [currentUser]);
 
   // Fetch gradebook for selected section & course
   const fetchGradebook = async () => {
