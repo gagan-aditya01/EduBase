@@ -98,12 +98,26 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
   }));
 
   // Faculty/Teacher Pie Chart Data
-  const facultyPieData = (data?.facultyDepartmentBreakdown || []).map((item) => ({
-    name: item._id || 'Computer Science',
-    shortCode: DEPT_SHORT_CODES[item._id] || item._id,
-    value: item.count,
-    color: DEPT_COLORS[item._id] || '#6366f1',
-  }));
+  const rawFacultyDept = data?.facultyDepartmentBreakdown && data.facultyDepartmentBreakdown.length > 0
+    ? data.facultyDepartmentBreakdown
+    : [
+        { _id: 'Computer Science', count: 18 },
+        { _id: 'Electrical Engineering', count: 14 },
+        { _id: 'Mechanical Engineering', count: 12 },
+        { _id: 'ADSE', count: 11 },
+        { _id: 'Mathematics', count: 10 },
+        { _id: 'Robotics', count: 10 },
+      ];
+
+  const facultyPieData = rawFacultyDept.map((item) => {
+    const deptName = item._id || 'Computer Science';
+    return {
+      name: deptName,
+      shortCode: DEPT_SHORT_CODES[deptName] || deptName,
+      value: item.count || 1,
+      color: DEPT_COLORS[deptName] || '#6366f1',
+    };
+  });
 
   // Stock Market Enrolment Growth Data
   const rawGrowthTrend = data?.studentGrowthTrend || [
@@ -125,9 +139,9 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           </div>
           <div>
             <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
-              Enterprise Analytics Engine
+              Academic Analytics Dashboard
             </h1>
-            <p className="text-xs text-zinc-500">MongoDB Aggregation Pipeline ($facet, $bucket & Real-time Metrics)</p>
+            <p className="text-xs text-zinc-500">Real-time department insights, student enrolment trends, and faculty distribution</p>
           </div>
         </div>
 
@@ -219,7 +233,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                 <SelectValue placeholder="All Departments" />
               </SelectTrigger>
               <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
-                <SelectItem value="ALL" className="text-xs font-medium cursor-pointer">All Departments (Multi-Line Stock Graph)</SelectItem>
+                <SelectItem value="ALL" className="text-xs font-medium cursor-pointer">All Departments</SelectItem>
                 <SelectItem value="Computer Science" className="text-xs font-medium cursor-pointer">Computer Science (CS)</SelectItem>
                 <SelectItem value="Electrical Engineering" className="text-xs font-medium cursor-pointer">Electrical Engineering (EE)</SelectItem>
                 <SelectItem value="Mechanical Engineering" className="text-xs font-medium cursor-pointer">Mechanical Engineering (ME)</SelectItem>
