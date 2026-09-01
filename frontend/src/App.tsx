@@ -10,7 +10,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { StatsPanel } from './components/StatsPanel';
 import { ToastContainer, type ToastMessage } from './components/ui/toast';
 import { ThemeToggle } from './components/ui/ThemeToggle';
-import { DepartmentChart } from './components/DepartmentChart';
 import { ConfirmDialog } from './components/ui/ConfirmDialog';
 import { AuthPage } from './components/AuthPage';
 import { FacultyDirectory } from './components/FacultyDirectory';
@@ -150,7 +149,8 @@ export default function App() {
           throw new Error('Failed to fetch students');
         }
         const data = await response.json();
-        setStudents(data);
+        const studentArray = Array.isArray(data) ? data : (data.data || []);
+        setStudents(studentArray);
         setError('');
       } catch (err: any) {
         setError(err.message || 'Something went wrong');
@@ -705,13 +705,8 @@ export default function App() {
               </div>
 
               {/* Dashboard Analytics Section */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
-                <div className="lg:col-span-2">
-                  <StatsPanel students={students} theme={theme} />
-                </div>
-                <div>
-                  <DepartmentChart students={students} theme={theme} />
-                </div>
+              <div className="mt-6">
+                <StatsPanel students={students} theme={theme} />
               </div>
 
               {error && (

@@ -114,7 +114,7 @@ const getStudents = async (req, res) => {
     }
 
     const pageNum = parseInt(page, 10) || 1;
-    const limitNum = parseInt(limit, 10) || 50;
+    const limitNum = limit ? parseInt(limit, 10) : 1000;
     const skip = (pageNum - 1) * limitNum;
 
     const totalStudents = await Student.countDocuments(filter);

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { Users, Calendar, Network } from 'lucide-react';
+import { Users, Network } from 'lucide-react';
 
 interface StatsPanelProps {
   students: Array<{
@@ -15,17 +15,14 @@ function AnimatedCounter({ value }: { value: number }) {
 
   useEffect(() => {
     let startTimestamp: number | null = null;
-    const duration = 600; // Counter animation duration in ms
+    const duration = 600;
     const startValue = prevValue.current;
     const endValue = value;
 
     const step = (timestamp: number) => {
       if (!startTimestamp) startTimestamp = timestamp;
       const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-      
-      // Easing function (easeOutQuad)
       const easeProgress = progress * (2 - progress);
-      
       const currentVal = Math.round(startValue + easeProgress * (endValue - startValue));
       setCount(currentVal);
 
@@ -43,13 +40,7 @@ function AnimatedCounter({ value }: { value: number }) {
 }
 
 export function StatsPanel({ students, theme = 'dark' }: StatsPanelProps) {
-  // Calculations
   const totalStudents = students.length;
-  
-  const avgAge = totalStudents > 0 
-    ? Math.round(students.reduce((sum, s) => sum + s.age, 0) / totalStudents)
-    : 0;
-
   const departments = new Set(students.map(s => s.department.toLowerCase().trim()));
   const activeDeps = totalStudents > 0 ? departments.size : 0;
 
@@ -74,7 +65,7 @@ export function StatsPanel({ students, theme = 'dark' }: StatsPanelProps) {
   }`;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       {/* Total Students Card */}
       <div className={cardClass}>
         <div className={iconClass}>
@@ -86,21 +77,6 @@ export function StatsPanel({ students, theme = 'dark' }: StatsPanelProps) {
           </span>
           <span className={numClass}>
             <AnimatedCounter value={totalStudents} />
-          </span>
-        </div>
-      </div>
-
-      {/* Average Age Card */}
-      <div className={cardClass}>
-        <div className={iconClass}>
-          <Calendar size={20} />
-        </div>
-        <div>
-          <span className={titleClass}>
-            Average Age
-          </span>
-          <span className={numClass}>
-            <AnimatedCounter value={avgAge} /> y/o
           </span>
         </div>
       </div>
