@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Users, PieChart as PieChartIcon, Activity, RefreshCw, Trash2, Award, TrendingUp, Filter } from 'lucide-react';
+import { BarChart3, Users, PieChart as PieChartIcon, Activity, RefreshCw, Trash2, Award, TrendingUp, Filter, BookOpen, Layers } from 'lucide-react';
 import {
   AreaChart,
   Area,
@@ -23,18 +23,22 @@ import {
 } from './ui/interfaces-select';
 
 interface AnalyticsPageProps {
-  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' };
+  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty'; assignedDepartment?: string };
   theme?: 'light' | 'dark';
 }
 
 interface AnalyticsData {
   departmentBreakdown: Array<{ _id: string; count: number; avgAge: number }>;
+  sectionBreakdown?: Array<{ _id: string; count: number }>;
+  academicYearBreakdown?: Array<{ _id: string; count: number }>;
   facultyDepartmentBreakdown?: Array<{ _id: string; count: number }>;
   studentGrowthTrend?: Array<Record<string, any>>;
   ageDemographics: Array<{ _id: number | string; count: number }>;
   overall: Array<{ totalStudents: number; avgAge: number; minAge: number; maxAge: number }>;
   totalTrash: number;
   userRoleCounts: Array<{ _id: string; count: number }>;
+  isFacultyScoped?: boolean;
+  assignedDepartment?: string;
 }
 
 const DEPT_COLORS: Record<string, string> = {
@@ -45,6 +49,8 @@ const DEPT_COLORS: Record<string, string> = {
   'Mathematics': '#3b82f6',
   'Robotics': '#8b5cf6',
 };
+
+const PIE_SLICE_COLORS = ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#34d399', '#f43f5e'];
 
 const DEPT_SHORT_CODES: Record<string, string> = {
   'Computer Science': 'CS',
@@ -85,6 +91,8 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
   const [activeFacultyIndex, setActiveFacultyIndex] = useState<number>(-1);
 
   const isDark = theme === 'dark';
+  const isFaculty = currentUser.role === 'faculty' || data?.isFacultyScoped;
+  const facultyDept = data?.assignedDepartment || currentUser.assignedDepartment || 'Computer Science';
 
   const fetchAnalytics = async () => {
     try {
@@ -113,15 +121,31 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
 
   const overall = data?.overall?.[0] || { totalStudents: 0, avgAge: 0, minAge: 0, maxAge: 0 };
   
-  // Student Pie Chart Data
+  // Student Pie Chart Data (Global vs Faculty Department Scoped)
   const studentPieData = (data?.departmentBreakdown || [])
-    .filter((item) => item._id && DEPT_SHORT_CODES[item._id])
+    .filter((item) => item._id && (DEPT_SHORT_CODES[item._id] || isFaculty))
     .map((item) => ({
       name: item._id,
       shortCode: DEPT_SHORT_CODES[item._id] || item._id,
       value: item.count,
       color: DEPT_COLORS[item._id] || '#6366f1',
     }));
+
+  // Faculty Section Pie Data for Faculty Scoped Portal
+  const sectionPieData = (data?.sectionBreakdown || []).map((item, idx) => ({
+    name: item._id || `Section ${idx + 1}`,
+    shortCode: item._id || `Sec ${idx + 1}`,
+    value: item.count,
+    color: PIE_SLICE_COLORS[idx % PIE_SLICE_COLORS.length],
+  }));
+
+  // Academic Year Breakdown Pie Data
+  const yearPieData = (data?.academicYearBreakdown || []).map((item, idx) => ({
+    name: item._id || `Year ${idx + 1}`,
+    shortCode: item._id || `Yr ${idx + 1}`,
+    value: item.count,
+    color: PIE_SLICE_COLORS[(idx + 2) % PIE_SLICE_COLORS.length],
+  }));
 
   // Faculty/Teacher Pie Chart Data
   const rawFacultyDept = data?.facultyDepartmentBreakdown && data.facultyDepartmentBreakdown.length > 0
@@ -147,10 +171,10 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
 
   // Stock Market Enrolment Growth Data
   const rawGrowthTrend = data?.studentGrowthTrend || [
-    { year: '2023', 'Computer Science': 5, 'Electrical Engineering': 3, 'Mechanical Engineering': 2, ADSE: 2, Mathematics: 2, Robotics: 2, Total: 16 },
-    { year: '2024', 'Computer Science': 8, 'Electrical Engineering': 4, 'Mechanical Engineering': 4, ADSE: 3, Mathematics: 3, Robotics: 2, Total: 24 },
-    { year: '2025', 'Computer Science': 12, 'Electrical Engineering': 6, 'Mechanical Engineering': 5, ADSE: 4, Mathematics: 4, Robotics: 3, Total: 34 },
-    { year: '2026', 'Computer Science': 15, 'Electrical Engineering': 8, 'Mechanical Engineering': 6, ADSE: 5, Mathematics: 5, Robotics: 4, Total: 43 },
+    { year: '2023', 'Computer Science': 5, Total: 16 },
+    { year: '2024', 'Computer Science': 8, Total: 24 },
+    { year: '2025', 'Computer Science': 12, Total: 34 },
+    { year: '2026', 'Computer Science': 15, Total: 43 },
   ];
 
   const totalFacultyCount = facultyPieData.reduce((acc, curr) => acc + curr.value, 0);
@@ -160,14 +184,22 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
       {/* Page Header */}
       <div className={`flex items-center justify-between pb-4 border-b ${isDark ? 'border-zinc-900' : 'border-[#e5e2d9]'}`}>
         <div className="flex items-center gap-3">
-          <div className={`p-2.5 rounded-2xl border ${isDark ? 'bg-zinc-900 border-zinc-800 text-amber-400' : 'bg-[#cc5a37]/10 border-[#cc5a37]/20 text-[#cc5a37]'}`}>
-            <BarChart3 size={24} />
+          <div className={`p-2.5 rounded-2xl border ${
+            isFaculty
+              ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400'
+              : isDark ? 'bg-zinc-900 border-zinc-800 text-amber-400' : 'bg-[#cc5a37]/10 border-[#cc5a37]/20 text-[#cc5a37]'
+          }`}>
+            {isFaculty ? <BookOpen size={24} /> : <BarChart3 size={24} />}
           </div>
           <div>
             <h1 className={`text-2xl font-bold tracking-tight ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
-              Academic Analytics Dashboard
+              {isFaculty ? `${facultyDept} Department Analytics` : 'Academic Analytics Dashboard'}
             </h1>
-            <p className="text-xs text-zinc-500">Real-time department insights, student enrolment trends, and faculty distribution</p>
+            <p className="text-xs text-zinc-500">
+              {isFaculty
+                ? `Department-scoped workspace • Managing enrolled ${facultyDept} students`
+                : 'Real-time department insights, student enrolment trends, and faculty distribution'}
+            </p>
           </div>
         </div>
 
@@ -195,7 +227,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
         }`}>
           <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-            <Users size={14} /> Enrolled Students
+            <Users size={14} /> {isFaculty ? 'Department Students' : 'Enrolled Students'}
           </span>
           <span className="text-3xl font-extrabold mt-2 tracking-tight">
             {overall.totalStudents}
@@ -206,7 +238,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
         }`}>
           <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-            <Award size={14} /> Total Faculty Staff
+            <Award size={14} /> {isFaculty ? 'Department Faculty' : 'Total Faculty Staff'}
           </span>
           <span className="text-3xl font-extrabold mt-2 tracking-tight text-indigo-400">
             {totalFacultyCount}
@@ -228,15 +260,16 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
         }`}>
           <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-1.5">
-            <Trash2 size={14} /> Soft-Deleted Records
+            {isFaculty ? <Layers size={14} /> : <Trash2 size={14} />}
+            {isFaculty ? 'Active Sections' : 'Soft-Deleted Records'}
           </span>
-          <span className="text-3xl font-extrabold mt-2 tracking-tight text-amber-500">
-            {data?.totalTrash || 0}
+          <span className={`text-3xl font-extrabold mt-2 tracking-tight ${isFaculty ? 'text-emerald-400' : 'text-amber-500'}`}>
+            {isFaculty ? (sectionPieData.length || 4) : (data?.totalTrash || 0)}
           </span>
         </div>
       </div>
 
-      {/* Stock Market Style Growth Trend Graph with Specific Department Filter */}
+      {/* Growth Trend Graph */}
       <div className={`p-6 rounded-3xl border flex flex-col ${
         isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
       }`}>
@@ -244,31 +277,33 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           <div>
             <h3 className="font-bold text-base flex items-center gap-2">
               <TrendingUp size={18} className="text-emerald-400" />
-              Department Student Growth Stock Trend
+              {isFaculty ? `${facultyDept} Student Growth Trend` : 'Department Student Growth Stock Trend'}
             </h3>
             <p className="text-xs text-zinc-500 mt-0.5">Enrolment trajectory across joining academic years</p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Filter size={13} className="text-zinc-500" />
-            <span className="text-xs text-zinc-400 font-semibold">View Department:</span>
-            <Select value={selectedDeptFilter} onValueChange={(val) => setSelectedDeptFilter(val)}>
-              <SelectTrigger className={`w-60 rounded-2xl text-xs font-bold ${
-                isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-zinc-800'
-              }`}>
-                <SelectValue placeholder="All Departments" />
-              </SelectTrigger>
-              <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
-                <SelectItem value="ALL" className="text-xs font-medium cursor-pointer">All Departments</SelectItem>
-                <SelectItem value="Computer Science" className="text-xs font-medium cursor-pointer">Computer Science (CS)</SelectItem>
-                <SelectItem value="Electrical Engineering" className="text-xs font-medium cursor-pointer">Electrical Engineering (EE)</SelectItem>
-                <SelectItem value="Mechanical Engineering" className="text-xs font-medium cursor-pointer">Mechanical Engineering (ME)</SelectItem>
-                <SelectItem value="ADSE" className="text-xs font-medium cursor-pointer">ADSE</SelectItem>
-                <SelectItem value="Mathematics" className="text-xs font-medium cursor-pointer">Mathematics (MATH)</SelectItem>
-                <SelectItem value="Robotics" className="text-xs font-medium cursor-pointer">Robotics (ROB)</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {!isFaculty && (
+            <div className="flex items-center gap-2">
+              <Filter size={13} className="text-zinc-500" />
+              <span className="text-xs text-zinc-400 font-semibold">View Department:</span>
+              <Select value={selectedDeptFilter} onValueChange={(val) => setSelectedDeptFilter(val)}>
+                <SelectTrigger className={`w-60 rounded-2xl text-xs font-bold ${
+                  isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-zinc-800'
+                }`}>
+                  <SelectValue placeholder="All Departments" />
+                </SelectTrigger>
+                <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+                  <SelectItem value="ALL" className="text-xs font-medium cursor-pointer">All Departments</SelectItem>
+                  <SelectItem value="Computer Science" className="text-xs font-medium cursor-pointer">Computer Science (CS)</SelectItem>
+                  <SelectItem value="Electrical Engineering" className="text-xs font-medium cursor-pointer">Electrical Engineering (EE)</SelectItem>
+                  <SelectItem value="Mechanical Engineering" className="text-xs font-medium cursor-pointer">Mechanical Engineering (ME)</SelectItem>
+                  <SelectItem value="ADSE" className="text-xs font-medium cursor-pointer">ADSE</SelectItem>
+                  <SelectItem value="Mathematics" className="text-xs font-medium cursor-pointer">Mathematics (MATH)</SelectItem>
+                  <SelectItem value="Robotics" className="text-xs font-medium cursor-pointer">Robotics (ROB)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
         <div className="h-80 w-full">
@@ -276,7 +311,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
             <AreaChart data={rawGrowthTrend} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 {Object.entries(DEPT_COLORS).map(([dept, color]) => (
-                  <linearGradient key={dept} id={`color_${DEPT_SHORT_CODES[dept]}`} x1="0" y1="0" x2="0" y2="1">
+                  <linearGradient key={dept} id={`color_${DEPT_SHORT_CODES[dept] || 'CS'}`} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor={color} stopOpacity={0.4} />
                     <stop offset="95%" stopColor={color} stopOpacity={0.0} />
                   </linearGradient>
@@ -294,15 +329,27 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.5)',
                 }}
               />
-              <Legend
-                formatter={(value) => (
-                  <span className={`text-xs font-semibold px-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                    {DEPT_SHORT_CODES[value] ? `${DEPT_SHORT_CODES[value]}` : value}
-                  </span>
-                )}
-              />
+              {!isFaculty && (
+                <Legend
+                  formatter={(value) => (
+                    <span className={`text-xs font-semibold px-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                      {DEPT_SHORT_CODES[value] ? `${DEPT_SHORT_CODES[value]}` : value}
+                    </span>
+                  )}
+                />
+              )}
 
-              {selectedDeptFilter === 'ALL' ? (
+              {isFaculty ? (
+                <Area
+                  type="monotone"
+                  dataKey={facultyDept}
+                  name={facultyDept}
+                  stroke={DEPT_COLORS[facultyDept] || '#6366f1'}
+                  fillOpacity={1}
+                  fill={`url(#color_${DEPT_SHORT_CODES[facultyDept] || 'CS'})`}
+                  strokeWidth={3.5}
+                />
+              ) : selectedDeptFilter === 'ALL' ? (
                 Object.keys(DEPT_COLORS).map((dept) => (
                   <Area
                     key={dept}
@@ -331,16 +378,16 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
         </div>
       </div>
 
-      {/* Visual Pie Charts Grid for Students & Teachers with Pop-out Hover Animation & Zero Text Glitch */}
+      {/* Visual Pie Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Pie Chart 1: Department-Wise Students Pie Chart */}
+        {/* Pie Chart 1: Section Breakdown (Faculty Scoped) OR Department Student Distribution (Global) */}
         <div className={`p-6 rounded-3xl border flex flex-col ${
           isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
         }`}>
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-bold text-base flex items-center gap-2">
               <PieChartIcon size={18} className="text-indigo-400" />
-              Department-Wise Students Distribution
+              {isFaculty ? `${facultyDept} Section Distribution` : 'Department-Wise Students Distribution'}
             </h4>
             <span className="text-xs font-bold text-zinc-500 font-mono">
               Total: {overall.totalStudents}
@@ -353,7 +400,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                 {(Pie as any)({
                   activeIndex: activeStudentIndex >= 0 ? activeStudentIndex : undefined,
                   activeShape: renderActiveShape,
-                  data: studentPieData,
+                  data: isFaculty ? sectionPieData : studentPieData,
                   dataKey: 'value',
                   nameKey: 'name',
                   cx: '50%',
@@ -366,7 +413,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   label: (entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`,
                   onMouseEnter: (_: any, index: number) => setActiveStudentIndex(index),
                   onMouseLeave: () => setActiveStudentIndex(-1),
-                  children: studentPieData.map((entry, index) => (
+                  children: (isFaculty ? sectionPieData : studentPieData).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   )),
                 })}
@@ -383,17 +430,17 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
           </div>
         </div>
 
-        {/* Pie Chart 2: Department-Wise Teachers/Faculty Pie Chart */}
+        {/* Pie Chart 2: Academic Year Breakdown (Faculty Scoped) OR Faculty Staff Slices (Global) */}
         <div className={`p-6 rounded-3xl border flex flex-col ${
           isDark ? 'bg-zinc-900/40 border-zinc-800' : 'bg-white border-[#e5e2d9]'
         }`}>
           <div className="flex items-center justify-between mb-4">
             <h4 className="font-bold text-base flex items-center gap-2">
               <PieChartIcon size={18} className="text-pink-400" />
-              Department-Wise Teachers & Faculty Slices
+              {isFaculty ? `${facultyDept} Academic Year Breakdown` : 'Department-Wise Teachers & Faculty Slices'}
             </h4>
             <span className="text-xs font-bold text-zinc-500 font-mono">
-              Total: {totalFacultyCount} Staff
+              Total: {isFaculty ? overall.totalStudents : totalFacultyCount} {isFaculty ? 'Students' : 'Staff'}
             </span>
           </div>
 
@@ -403,7 +450,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                 {(Pie as any)({
                   activeIndex: activeFacultyIndex >= 0 ? activeFacultyIndex : undefined,
                   activeShape: renderActiveShape,
-                  data: facultyPieData,
+                  data: isFaculty ? yearPieData : facultyPieData,
                   dataKey: 'value',
                   nameKey: 'name',
                   cx: '50%',
@@ -416,7 +463,7 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
                   label: (entry: any) => `${entry.shortCode || entry.name} (${((entry.percent || 0) * 100).toFixed(0)}%)`,
                   onMouseEnter: (_: any, index: number) => setActiveFacultyIndex(index),
                   onMouseLeave: () => setActiveFacultyIndex(-1),
-                  children: facultyPieData.map((entry, index) => (
+                  children: (isFaculty ? yearPieData : facultyPieData).map((entry, index) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   )),
                 })}

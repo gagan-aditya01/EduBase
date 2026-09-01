@@ -412,14 +412,6 @@ export default function App() {
 
                 <SidebarLink
                   link={{
-                    label: 'Faculty Directory',
-                    icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                    onClick: () => setCurrentPage('faculty-directory'),
-                  }}
-                />
-
-                <SidebarLink
-                  link={{
                     label: 'Analytics Engine',
                     icon: <BarChart3 size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                     onClick: () => setCurrentPage('analytics'),
@@ -428,6 +420,13 @@ export default function App() {
 
                 {user.role === 'admin' && (
                   <>
+                    <SidebarLink
+                      link={{
+                        label: 'Faculty Directory',
+                        icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                        onClick: () => setCurrentPage('faculty-directory'),
+                      }}
+                    />
                     <SidebarLink
                       link={{
                         label: 'Audit Log Trail',

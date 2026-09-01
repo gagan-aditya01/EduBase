@@ -382,9 +382,12 @@ const explainStudentQuery = async (req, res) => {
 // @access  Private
 const getAnalyticsStats = async (req, res) => {
   try {
+    const isFaculty = req.user && req.user.role === 'faculty';
+    const assignedDept = isFaculty ? (req.user.assignedDepartment || '').trim() : '';
+
     const matchStage = { isDeleted: { $ne: true } };
-    if (req.user && req.user.role === 'faculty' && req.user.assignedDepartment) {
-      matchStage.department = new RegExp(`^${req.user.assignedDepartment.trim()}$`, 'i');
+    if (isFaculty && assignedDept) {
+      matchStage.department = new RegExp(`^${assignedDept}$`, 'i');
     }
 
     const stats = await Student.aggregate([
@@ -394,6 +397,14 @@ const getAnalyticsStats = async (req, res) => {
           departmentBreakdown: [
             { $group: { _id: '$department', count: { $sum: 1 }, avgAge: { $avg: '$age' } } },
             { $sort: { count: -1 } },
+          ],
+          sectionBreakdown: [
+            { $group: { _id: '$section', count: { $sum: 1 } } },
+            { $sort: { count: -1 } },
+          ],
+          academicYearBreakdown: [
+            { $group: { _id: '$year', count: { $sum: 1 } } },
+            { $sort: { _id: 1 } },
           ],
           ageDemographics: [
             {
@@ -421,22 +432,32 @@ const getAnalyticsStats = async (req, res) => {
     ]);
 
     const User = require('../models/userModel');
-    const totalTrash = await Student.countDocuments({ isDeleted: true });
-    const userRoleCounts = await User.aggregate([
+    const totalTrash = isFaculty ? 0 : await Student.countDocuments({ isDeleted: true });
+    const userRoleCounts = isFaculty ? [] : await User.aggregate([
       { $group: { _id: '$role', count: { $sum: 1 } } }
     ]);
 
-    const facultyDepartmentBreakdown = await User.aggregate([
-      { $match: { role: 'faculty' } },
-      { $group: { _id: '$assignedDepartment', count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
-    ]);
+    let facultyDepartmentBreakdown = [];
+    if (!isFaculty) {
+      facultyDepartmentBreakdown = await User.aggregate([
+        { $match: { role: 'faculty' } },
+        { $group: { _id: '$assignedDepartment', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]);
+    } else {
+      const deptFacultyCount = await User.countDocuments({ role: 'faculty', assignedDepartment: new RegExp(`^${assignedDept}$`, 'i') });
+      facultyDepartmentBreakdown = [{ _id: assignedDept, count: deptFacultyCount }];
+    }
 
-    // Student Enrolment Growth Over Joining Years by Department
-    const allStudents = await Student.find({ isDeleted: { $ne: true } }, 'studentId department year createdAt');
+    // Student Enrolment Growth Over Joining Years
+    const studentQuery = { isDeleted: { $ne: true } };
+    if (isFaculty && assignedDept) {
+      studentQuery.department = new RegExp(`^${assignedDept}$`, 'i');
+    }
+    const allStudents = await Student.find(studentQuery, 'studentId department year createdAt');
     
     const years = ['2023', '2024', '2025', '2026'];
-    const depts = ['Computer Science', 'Electrical Engineering', 'Mechanical Engineering', 'ADSE', 'Mathematics', 'Robotics'];
+    const depts = isFaculty && assignedDept ? [assignedDept] : ['Computer Science', 'Electrical Engineering', 'Mechanical Engineering', 'ADSE', 'Mathematics', 'Robotics'];
     
     const growthTrend = years.map((yr) => {
       const yearShort = yr.substring(2);
@@ -461,6 +482,8 @@ const getAnalyticsStats = async (req, res) => {
     result.userRoleCounts = userRoleCounts;
     result.facultyDepartmentBreakdown = facultyDepartmentBreakdown;
     result.studentGrowthTrend = growthTrend;
+    result.isFacultyScoped = isFaculty;
+    result.assignedDepartment = assignedDept;
 
     res.json(result);
   } catch (error) {
