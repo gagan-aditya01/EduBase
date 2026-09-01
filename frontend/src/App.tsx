@@ -446,22 +446,22 @@ export default function App() {
                   }}
                 />
 
-                {(user.role === 'admin' || user.role === 'faculty') && (
-                  <SidebarLink
-                    link={{
-                      label: 'Gradebook Console',
-                      icon: <BookOpen size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                      onClick: () => setCurrentPage('gradebook'),
-                    }}
-                  />
-                )}
-
                 {user.role === 'admin' && (
                   <SidebarLink
                     link={{
                       label: 'Faculty Directory',
                       icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                       onClick: () => setCurrentPage('faculty-directory'),
+                    }}
+                  />
+                )}
+
+                {(user.role === 'admin' || user.role === 'faculty') && (
+                  <SidebarLink
+                    link={{
+                      label: 'Gradebook Console',
+                      icon: <BookOpen size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                      onClick: () => setCurrentPage('gradebook'),
                     }}
                   />
                 )}
