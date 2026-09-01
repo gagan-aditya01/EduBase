@@ -424,6 +424,8 @@ const loginUser = async (req, res) => {
         username: user.username,
         role: user.role,
         assignedDepartment: user.assignedDepartment,
+        assignedSubjects: user.assignedSubjects || [],
+        facultyId: user.facultyId,
         authProvider: user.authProvider,
         token: accessToken,
         refreshToken,

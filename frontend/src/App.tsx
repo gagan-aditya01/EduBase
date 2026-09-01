@@ -38,6 +38,7 @@ interface User {
   username: string;
   role: 'admin' | 'guest' | 'faculty';
   assignedDepartment?: string;
+  assignedSubjects?: string[];
   facultyId?: string;
 }
 
@@ -205,9 +206,10 @@ export default function App() {
     username: string,
     role: 'admin' | 'guest' | 'faculty',
     assignedDepartment?: string,
-    facultyId?: string
+    facultyId?: string,
+    assignedSubjects?: string[]
   ) => {
-    const newUser: User = { token, username, role, assignedDepartment, facultyId };
+    const newUser: User = { token, username, role, assignedDepartment, facultyId, assignedSubjects };
     setUser(newUser);
     localStorage.setItem('edubase_user', JSON.stringify(newUser));
     setShowWelcomeSplash(true);

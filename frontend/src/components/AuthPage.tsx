@@ -6,7 +6,7 @@ import {
 } from './ui/modern-animated-sign-in';
 
 interface AuthPageProps {
-  onAuthSuccess: (token: string, username: string, role: 'admin' | 'guest' | 'faculty', assignedDepartment?: string, facultyId?: string) => void;
+  onAuthSuccess: (token: string, username: string, role: 'admin' | 'guest' | 'faculty', assignedDepartment?: string, facultyId?: string, assignedSubjects?: string[]) => void;
   theme?: 'light' | 'dark';
 }
 
@@ -242,7 +242,7 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
         throw new Error(data.error || 'Authentication failed');
       }
 
-      onAuthSuccess(data.token, data.username, data.role, data.assignedDepartment, data.facultyId);
+      onAuthSuccess(data.token, data.username, data.role, data.assignedDepartment, data.facultyId, data.assignedSubjects);
     } catch (err: any) {
       setError(err.message);
     } finally {
