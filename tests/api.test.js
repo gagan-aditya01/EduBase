@@ -38,6 +38,7 @@ describe('Full-Stack Backend API Tests', () => {
       await User.deleteMany({
         $or: [
           { username: /FAC_CS/i },
+          { username: /^fac_/i },
           { username: /^adm_/i },
           { username: /^test_/i }
         ]
