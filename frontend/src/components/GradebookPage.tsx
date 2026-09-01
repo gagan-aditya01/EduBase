@@ -24,12 +24,25 @@ interface StudentGradeRow {
 }
 
 interface GradebookPageProps {
-  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty'; assignedDepartment?: string };
+  currentUser: {
+    token: string;
+    username: string;
+    role: 'admin' | 'guest' | 'faculty';
+    assignedDepartment?: string;
+    assignedSubjects?: string[];
+  };
   theme?: 'light' | 'dark';
   addToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
 const SECTIONS_LIST = ['3CS', '2CS', '4CS', '1CS', '3EE', '2EE', '3ME', '2ME', '3ADSE', '2ADSE', '3MATH', '3ROB'];
+
+const getSectionFromCourseCode = (code: string) => {
+  if (!code) return '3CS';
+  const yearDigit = code.replace(/[^0-9]/g, '').charAt(0) || '3';
+  const deptPrefix = code.replace(/[0-9]/g, '').toUpperCase();
+  return `${yearDigit}${deptPrefix}`;
+};
 
 export function GradebookPage({ currentUser, theme = 'dark', addToast }: GradebookPageProps) {
   const [selectedSection, setSelectedSection] = useState('3CS');
@@ -45,7 +58,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
   const isFaculty = currentUser.role === 'faculty';
   const userDept = currentUser.assignedDepartment || 'Computer Science';
 
-  // Fetch available courses
+  // Fetch available courses and scope to Faculty assigned subjects
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -54,13 +67,23 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
         });
         const data = await res.json();
         if (Array.isArray(data)) {
-          const deptFiltered = isFaculty
-            ? data.filter((c) => c.department.toLowerCase() === userDept.toLowerCase())
-            : data;
-          setAvailableCourses(deptFiltered.length > 0 ? deptFiltered : data);
+          let filteredCourses = data;
+          if (isFaculty) {
+            const userSubjects = currentUser.assignedSubjects || [];
+            if (userSubjects.length > 0) {
+              filteredCourses = data.filter((c) => userSubjects.includes(c.courseCode));
+            } else {
+              filteredCourses = data.filter((c) => c.department.toLowerCase() === userDept.toLowerCase());
+            }
+          }
 
-          if (deptFiltered.length > 0) {
-            setSelectedCourse(deptFiltered[0].courseCode);
+          const activeList = filteredCourses.length > 0 ? filteredCourses : data;
+          setAvailableCourses(activeList);
+
+          if (activeList.length > 0) {
+            const defaultCode = activeList[0].courseCode;
+            setSelectedCourse(defaultCode);
+            setSelectedSection(getSectionFromCourseCode(defaultCode));
           }
         }
       } catch (err) {
@@ -232,8 +255,14 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
 
           <div>
             <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">Subject</label>
-            <Select value={selectedCourse} onValueChange={(val) => setSelectedCourse(val)}>
-              <SelectTrigger className={`w-52 rounded-2xl text-xs font-bold ${
+            <Select
+              value={selectedCourse}
+              onValueChange={(val) => {
+                setSelectedCourse(val);
+                setSelectedSection(getSectionFromCourseCode(val));
+              }}
+            >
+              <SelectTrigger className={`w-56 rounded-2xl text-xs font-bold ${
                 isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
               }`}>
                 <SelectValue placeholder="Select Course" />
