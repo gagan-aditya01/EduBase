@@ -25,7 +25,12 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
     const fetchTranscript = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`http://localhost:5050/api/v1/grades/student/${student.studentId}`);
+        const token = localStorage.getItem('edubase_token') || (JSON.parse(localStorage.getItem('edubase_user') || '{}').token);
+        const res = await fetch(`http://localhost:5050/api/v1/grades/student/${student.studentId}`, {
+          headers: {
+            Authorization: token ? `Bearer ${token}` : '',
+          },
+        });
         const data = await res.json();
         if (!res.ok) {
           throw new Error(data.error || 'Failed to fetch academic transcript');
