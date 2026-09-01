@@ -100,7 +100,11 @@ export default function App() {
     const storedUser = localStorage.getItem('edubase_user');
     if (storedUser) {
       try {
-        setUser(JSON.parse(storedUser));
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        if (parsedUser.role === 'student') {
+          setCurrentPage('student-home');
+        }
       } catch (e) {
         localStorage.removeItem('edubase_user');
       }
@@ -140,7 +144,7 @@ export default function App() {
 
   // Debounced/Effect-based search & filter fetch
   useEffect(() => {
-    if (!user) return; // Only fetch if logged in
+    if (!user || user.role === 'student') return; // Only fetch if logged in as Admin or Faculty
 
     const fetchStudents = async () => {
       try {
