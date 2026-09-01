@@ -10,6 +10,7 @@ interface LiquidMetalButtonProps {
   theme?: "light" | "dark";
   type?: "button" | "submit" | "reset";
   width?: number;
+  fontSize?: number;
 }
 
 export function LiquidMetalButton({
@@ -19,6 +20,7 @@ export function LiquidMetalButton({
   theme = "dark",
   type = "button",
   width,
+  fontSize,
 }: LiquidMetalButtonProps) {
   const [isHovered, setIsHovered] = useState(false);
   const [isPressed, setIsPressed] = useState(false);
@@ -220,9 +222,9 @@ export function LiquidMetalButton({
             {viewMode === "text" && (
               <span
                 style={{
-                  fontSize: "14px",
+                  fontSize: fontSize ? `${fontSize}px` : "12px",
                   color: "#ffffff",
-                  fontWeight: 500,
+                  fontWeight: 600,
                   textShadow: "0px 1px 2px rgba(0, 0, 0, 0.5)",
                   transition: "all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   transform: "scale(1)",

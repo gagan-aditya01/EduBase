@@ -451,7 +451,8 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
             <LiquidMetalButton
               label={saving ? 'Saving...' : 'Save & Publish Marks'}
               onClick={handleSaveAllGrades}
-              width={150}
+              width={155}
+              fontSize={11.5}
               theme={theme}
             />
           </div>
