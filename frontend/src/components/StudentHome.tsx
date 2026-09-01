@@ -30,10 +30,14 @@ export function StudentHome({ user, theme = 'dark' }: StudentHomeProps) {
         }
 
         // 2. Fetch Course Curriculum to filter enrolled subjects
-        const cRes = await fetch('http://localhost:5050/api/v1/courses');
-        if (cRes.ok) {
-          const cJson = await cRes.json();
-          setCourses(cJson);
+        if (user?.token) {
+          const cRes = await fetch('http://localhost:5050/api/v1/courses', {
+            headers: { Authorization: `Bearer ${user.token}` },
+          });
+          if (cRes.ok) {
+            const cJson = await cRes.json();
+            setCourses(cJson);
+          }
         }
       } catch (err) {
         console.error('Failed to load student home data:', err);

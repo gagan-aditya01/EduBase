@@ -201,8 +201,8 @@ const getStudentTranscript = async (req, res) => {
     grades.forEach((g) => {
       const courseYearNum = g.courseRef ? parseYearNum(g.courseRef.year || g.courseCode) : parseYearNum(g.courseCode);
 
-      // A student can ONLY have grades for completed years (courseYear <= studentYear)
-      if (courseYearNum <= studentYearNum) {
+      // A student can ONLY have evaluated marks for COMPLETED academic years (courseYear < studentYear)
+      if (courseYearNum < studentYearNum) {
         const credits = g.courseRef ? g.courseRef.credits : 3;
         totalCredits += credits;
         totalGradePointsWeighted += g.gradePoint * credits;

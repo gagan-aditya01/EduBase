@@ -103,6 +103,18 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
     return Math.min(10.0, Math.max(0, Math.round((avg / 10) * 100) / 100));
   };
 
+  // Determine completed academic years based on student's current enrolled year (courseYear < studentYear)
+  const studentYearStr = transcriptData?.student?.year || user?.year || '4th Year';
+  const studentYearNum = parseInt(studentYearStr.match(/\d+/)?.[0] || '4', 10);
+
+  const availableCompletedYears = useMemo(() => {
+    const years = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+    return years.filter((yr) => {
+      const yrNum = parseInt(yr.match(/\d+/)?.[0] || '0', 10);
+      return yrNum < studentYearNum;
+    });
+  }, [studentYearNum]);
+
   return (
     <div className="space-y-6 pb-12">
       {/* Header Panel */}
@@ -119,14 +131,14 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
             Academic Performance & Grade Sheet
           </h1>
           <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-650'}`}>
-            View year-by-year mark breakdown or inspect certified combined transcript
+            View completed year mark breakdowns or inspect certified combined transcript ({studentYearStr} Enrolled)
           </p>
         </div>
 
         {/* Header Controls: Academic Year Select Dropdown + View Switcher Tabs + PDF Button */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Prominent Academic Year Dropdown */}
-          <div className="w-48 sm:w-56">
+          <div className="w-52 sm:w-60">
             <Select value={selectedYearFilter} onValueChange={(val) => setSelectedYearFilter(val)}>
               <SelectTrigger className={`w-full rounded-2xl text-xs font-bold ${
                 isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
@@ -135,20 +147,13 @@ export function StudentMarksPage({ user, theme = 'dark' }: StudentMarksPageProps
               </SelectTrigger>
               <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
                 <SelectItem value="ALL" className="text-xs font-bold cursor-pointer">
-                  All Years ({transcriptData?.grades?.length || 0} Courses)
+                  All Completed Years ({transcriptData?.grades?.length || 0} Courses)
                 </SelectItem>
-                <SelectItem value="1st Year" className="text-xs font-medium cursor-pointer">
-                  1st Year ({gradesByYear['1st Year']?.length || 0} Courses)
-                </SelectItem>
-                <SelectItem value="2nd Year" className="text-xs font-medium cursor-pointer">
-                  2nd Year ({gradesByYear['2nd Year']?.length || 0} Courses)
-                </SelectItem>
-                <SelectItem value="3rd Year" className="text-xs font-medium cursor-pointer">
-                  3rd Year ({gradesByYear['3rd Year']?.length || 0} Courses)
-                </SelectItem>
-                <SelectItem value="4th Year" className="text-xs font-medium cursor-pointer">
-                  4th Year ({gradesByYear['4th Year']?.length || 0} Courses)
-                </SelectItem>
+                {availableCompletedYears.map((yr) => (
+                  <SelectItem key={yr} value={yr} className="text-xs font-medium cursor-pointer">
+                    {yr} ({gradesByYear[yr]?.length || 0} Courses)
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
