@@ -23,7 +23,7 @@ import {
 } from './ui/interfaces-select';
 
 interface AnalyticsPageProps {
-  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty'; assignedDepartment?: string };
+  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' | 'student'; assignedDepartment?: string };
   theme?: 'light' | 'dark';
 }
 

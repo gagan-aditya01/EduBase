@@ -1,4 +1,5 @@
 const User = require('../models/userModel');
+const Student = require('../models/studentModel');
 const AuditLog = require('../models/auditLogModel');
 const backgroundQueue = require('../utils/backgroundQueue');
 const jwt = require('jsonwebtoken');
@@ -399,6 +400,32 @@ const loginUser = async (req, res) => {
         const revId = user.facultyId.split('').reverse().join('');
         if (cleanPass === revId || cleanPass === user.facultyId) {
           isPasswordMatch = true;
+        }
+      }
+    }
+
+    // Student Authentication Fallback: Look up by studentId in Student collection
+    if (!user) {
+      const student = await Student.findOne({ studentId: cleanInput, isDeleted: false });
+      if (student) {
+        const expectedReversePass = student.studentId.split('').reverse().join('');
+        if (cleanPass === expectedReversePass || cleanPass === student.studentId) {
+          const accessToken = generateAccessToken(student._id);
+          const refreshToken = generateRefreshToken(student._id);
+
+          return res.json({
+            _id: student._id,
+            username: student.studentId,
+            studentId: student.studentId,
+            name: student.name,
+            role: 'student',
+            department: student.department,
+            assignedDepartment: student.department,
+            year: student.year || '3rd Year',
+            section: student.section || '3CS',
+            token: accessToken,
+            refreshToken,
+          });
         }
       }
     }

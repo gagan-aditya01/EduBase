@@ -6,7 +6,7 @@ import {
 } from './ui/modern-animated-sign-in';
 
 interface AuthPageProps {
-  onAuthSuccess: (token: string, username: string, role: 'admin' | 'guest' | 'faculty', assignedDepartment?: string, facultyId?: string, assignedSubjects?: string[]) => void;
+  onAuthSuccess: (token: string, username: string, role: 'admin' | 'guest' | 'faculty' | 'student', assignedDepartment?: string, facultyId?: string, assignedSubjects?: string[]) => void;
   theme?: 'light' | 'dark';
 }
 
@@ -205,10 +205,8 @@ const iconsArray = [
 ];
 
 export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
-  const [isLogin, setIsLogin] = useState(true);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const role = 'guest';
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -224,16 +222,11 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
     setLoading(true);
     setError('');
 
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
-    const payload = isLogin
-      ? { username, password }
-      : { username, password, role };
-
     try {
-      const response = await fetch(`http://localhost:5050${endpoint}`, {
+      const response = await fetch('http://localhost:5050/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ username, password }),
       });
 
       const data = await response.json();
@@ -247,14 +240,6 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
       setError(err.message);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSocialLogin = (provider: 'Google' | 'GitHub') => {
-    if (provider === 'Google') {
-      window.location.href = 'http://localhost:5050/api/auth/google';
-    } else if (provider === 'GitHub') {
-      window.location.href = 'http://localhost:5050/api/auth/github';
     }
   };
 
@@ -291,28 +276,12 @@ export function AuthPage({ onAuthSuccess, theme = 'dark' }: AuthPageProps) {
       <div className="w-full lg:w-1/2 h-[100vh] flex flex-col justify-center items-center px-6 lg:px-12 relative z-10 overflow-y-auto">
         <div className="w-full max-w-md">
           <AnimatedForm
-            header={isLogin ? 'Welcome Back' : 'Join EduBase'}
-            subHeader={
-              isLogin
-                ? 'Sign in to access your student directory'
-                : 'Create an account to manage student database registers'
-            }
+            header="EduBase Portal"
+            subHeader="Enter your Admin, Faculty, or Student Registration ID"
             fields={formFields}
-            submitButton={loading ? 'Authenticating...' : isLogin ? 'Sign In' : 'Create Account'}
+            submitButton={loading ? 'Authenticating...' : 'Sign In to Portal'}
             errorField={error}
             onSubmit={handleSubmit}
-            onGoogleClick={() => handleSocialLogin('Google')}
-            onGithubClick={() => handleSocialLogin('GitHub')}
-            textVariantButton={
-              isLogin
-                ? "Don't have an account? Sign Up"
-                : 'Already registered? Log In'
-            }
-            goTo={(e) => {
-              e.preventDefault();
-              setIsLogin(!isLogin);
-              setError('');
-            }}
           />
         </div>
       </div>

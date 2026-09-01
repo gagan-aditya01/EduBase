@@ -12,7 +12,7 @@ interface AuditLogItem {
 }
 
 interface AuditLogPageProps {
-  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' };
+  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' | 'student' };
   theme?: 'light' | 'dark';
 }
 

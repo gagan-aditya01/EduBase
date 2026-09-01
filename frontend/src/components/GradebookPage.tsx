@@ -29,7 +29,7 @@ interface GradebookPageProps {
   currentUser: {
     token: string;
     username: string;
-    role: 'admin' | 'guest' | 'faculty';
+    role: 'admin' | 'guest' | 'faculty' | 'student';
     assignedDepartment?: string;
     assignedSubjects?: string[];
   };

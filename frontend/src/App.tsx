@@ -21,7 +21,9 @@ import { WelcomeSplash } from './components/ui/WelcomeSplash';
 import TeamSection from './components/ui/team';
 import { CsvImporterModal } from './components/CsvImporterModal';
 import { GradebookPage } from './components/GradebookPage';
-import { BookOpen } from 'lucide-react';
+import { StudentHome } from './components/StudentHome';
+import { StudentMarksPage } from './components/StudentMarksPage';
+import { BookOpen, Home, Award } from 'lucide-react';
 
 interface Student {
   studentId: string;
@@ -36,10 +38,14 @@ interface Student {
 interface User {
   token: string;
   username: string;
-  role: 'admin' | 'guest' | 'faculty';
+  role: 'admin' | 'guest' | 'faculty' | 'student';
   assignedDepartment?: string;
   assignedSubjects?: string[];
   facultyId?: string;
+  studentId?: string;
+  department?: string;
+  year?: string;
+  section?: string;
 }
 
 const API_BASE_URL = 'http://localhost:5050/api/students';
@@ -51,10 +57,10 @@ export default function App() {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [showCsvModal, setShowCsvModal] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [currentPage, setCurrentPage] = useState<'dashboard' | 'faculty-directory' | 'analytics' | 'audit-logs' | 'users' | 'gradebook' | '404'>('dashboard');
+  const [user, setUser] = useState<User | null>(null);
+  const [currentPage, setCurrentPage] = useState<string>(user?.role === 'student' ? 'student-home' : 'dashboard');
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [user, setUser] = useState<User | null>(null);
 
   const [confirmDialog, setConfirmDialog] = useState<{
     isOpen: boolean;
@@ -204,7 +210,7 @@ export default function App() {
   const handleAuthSuccess = (
     token: string,
     username: string,
-    role: 'admin' | 'guest' | 'faculty',
+    role: 'admin' | 'guest' | 'faculty' | 'student',
     assignedDepartment?: string,
     facultyId?: string,
     assignedSubjects?: string[]
@@ -212,6 +218,11 @@ export default function App() {
     const newUser: User = { token, username, role, assignedDepartment, facultyId, assignedSubjects };
     setUser(newUser);
     localStorage.setItem('edubase_user', JSON.stringify(newUser));
+    if (role === 'student') {
+      setCurrentPage('student-home');
+    } else {
+      setCurrentPage('dashboard');
+    }
     setShowWelcomeSplash(true);
     addToast('success', `Welcome back, ${username}!`);
   };
@@ -438,58 +449,79 @@ export default function App() {
 
               {/* Navigation Links */}
               <div className="mt-6 flex flex-col gap-1.5">
-                <SidebarLink
-                  link={{
-                    label: 'Student Directory',
-                    icon: <LayoutDashboard size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                    onClick: () => setCurrentPage('dashboard'),
-                  }}
-                />
-
-                {user.role === 'admin' && (
-                  <SidebarLink
-                    link={{
-                      label: 'Faculty Directory',
-                      icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                      onClick: () => setCurrentPage('faculty-directory'),
-                    }}
-                  />
-                )}
-
-                {(user.role === 'admin' || user.role === 'faculty') && (
-                  <SidebarLink
-                    link={{
-                      label: 'Gradebook Console',
-                      icon: <BookOpen size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                      onClick: () => setCurrentPage('gradebook'),
-                    }}
-                  />
-                )}
-
-                <SidebarLink
-                  link={{
-                    label: 'Analytics Engine',
-                    icon: <BarChart3 size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                    onClick: () => setCurrentPage('analytics'),
-                  }}
-                />
-
-                {user.role === 'admin' && (
+                {user.role === 'student' ? (
                   <>
                     <SidebarLink
                       link={{
-                        label: 'Audit Log Trail',
-                        icon: <ShieldAlert size={18} className={theme === 'dark' ? 'text-amber-500' : 'text-[#cc5a37]'} />,
-                        onClick: () => setCurrentPage('audit-logs'),
+                        label: 'Home',
+                        icon: <Home size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                        onClick: () => setCurrentPage('student-home'),
                       }}
                     />
                     <SidebarLink
                       link={{
-                        label: 'Manage Users',
-                        icon: <Users size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                        onClick: () => setCurrentPage('users'),
+                        label: 'Academic Marks',
+                        icon: <Award size={18} className={theme === 'dark' ? 'text-amber-400' : 'text-[#cc5a37]'} />,
+                        onClick: () => setCurrentPage('student-marks'),
                       }}
                     />
+                  </>
+                ) : (
+                  <>
+                    <SidebarLink
+                      link={{
+                        label: 'Student Directory',
+                        icon: <LayoutDashboard size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                        onClick: () => setCurrentPage('dashboard'),
+                      }}
+                    />
+
+                    {user.role === 'admin' && (
+                      <SidebarLink
+                        link={{
+                          label: 'Faculty Directory',
+                          icon: <UserCheck size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                          onClick: () => setCurrentPage('faculty-directory'),
+                        }}
+                      />
+                    )}
+
+                    {(user.role === 'admin' || user.role === 'faculty') && (
+                      <SidebarLink
+                        link={{
+                          label: 'Gradebook Console',
+                          icon: <BookOpen size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                          onClick: () => setCurrentPage('gradebook'),
+                        }}
+                      />
+                    )}
+
+                    <SidebarLink
+                      link={{
+                        label: 'Analytics Engine',
+                        icon: <BarChart3 size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                        onClick: () => setCurrentPage('analytics'),
+                      }}
+                    />
+
+                    {user.role === 'admin' && (
+                      <>
+                        <SidebarLink
+                          link={{
+                            label: 'Audit Log Trail',
+                            icon: <ShieldAlert size={18} className={theme === 'dark' ? 'text-amber-500' : 'text-[#cc5a37]'} />,
+                            onClick: () => setCurrentPage('audit-logs'),
+                          }}
+                        />
+                        <SidebarLink
+                          link={{
+                            label: 'Manage Users',
+                            icon: <Users size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                            onClick: () => setCurrentPage('users'),
+                          }}
+                        />
+                      </>
+                    )}
                   </>
                 )}
 
@@ -614,7 +646,11 @@ export default function App() {
           >
         {/* Main workspace content routing */}
         <main className="max-w-7xl mx-auto px-6 py-10 relative z-10">
-          {currentPage === 'analytics' ? (
+          {currentPage === 'student-home' ? (
+            <StudentHome user={user} theme={theme} />
+          ) : currentPage === 'student-marks' ? (
+            <StudentMarksPage user={user} theme={theme} />
+          ) : currentPage === 'analytics' ? (
             <AnalyticsPage currentUser={user} theme={theme} />
           ) : currentPage === 'gradebook' ? (
             <GradebookPage currentUser={user} theme={theme} addToast={addToast} />

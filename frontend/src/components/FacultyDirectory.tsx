@@ -23,7 +23,7 @@ interface DBUser {
 }
 
 interface FacultyDirectoryProps {
-  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' };
+  currentUser: { token: string; username: string; role: 'admin' | 'guest' | 'faculty' | 'student' };
   theme?: 'light' | 'dark';
   addToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
