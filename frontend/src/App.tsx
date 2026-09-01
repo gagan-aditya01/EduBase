@@ -332,71 +332,6 @@ export default function App() {
     });
   };
 
-  const handleSeedData = async () => {
-    if (!user) return;
-    const mockStudents = [
-      { studentId: 'CS-2024-001', name: 'Eleanor Vance', age: 20, department: 'Computer Science' },
-      { studentId: 'CS-2024-014', name: 'Marcus Sterling', age: 22, department: 'Computer Science' },
-      { studentId: 'CS-2024-032', name: 'Sophia Chen', age: 21, department: 'Computer Science' },
-      { studentId: 'CS-2024-045', name: 'David Miller', age: 23, department: 'Computer Science' },
-      { studentId: 'CS-2024-058', name: 'Hannah Abbott', age: 19, department: 'Computer Science' },
-      { studentId: 'EE-2024-005', name: 'Alexander Hayes', age: 23, department: 'Electrical Engineering' },
-      { studentId: 'EE-2024-019', name: 'Maya Lin', age: 20, department: 'Electrical Engineering' },
-      { studentId: 'EE-2024-033', name: 'Robert Zhao', age: 22, department: 'Electrical Engineering' },
-      { studentId: 'EE-2024-047', name: 'Clara Oswald', age: 21, department: 'Electrical Engineering' },
-      { studentId: 'ME-2024-008', name: 'Liam Gallagher', age: 22, department: 'Mechanical Engineering' },
-      { studentId: 'ME-2024-021', name: 'Lucas Bennett', age: 24, department: 'Mechanical Engineering' },
-      { studentId: 'ME-2024-036', name: 'Olivia Thorne', age: 20, department: 'Mechanical Engineering' },
-      { studentId: 'ME-2024-049', name: 'Daniel Craig', age: 23, department: 'Mechanical Engineering' },
-      { studentId: 'ADSE-2024-012', name: 'Amara Okafor', age: 24, department: 'ADSE' },
-      { studentId: 'ADSE-2024-027', name: 'Devin Vance', age: 21, department: 'ADSE' },
-      { studentId: 'ADSE-2024-041', name: 'Chloe Patel', age: 22, department: 'ADSE' },
-      { studentId: 'ADSE-2024-055', name: 'Ethan Wright', age: 20, department: 'ADSE' },
-      { studentId: 'MATH-2024-003', name: 'Tricia McMillan', age: 25, department: 'Mathematics' },
-      { studentId: 'MATH-2024-016', name: 'Isaac Newton', age: 22, department: 'Mathematics' },
-      { studentId: 'MATH-2024-029', name: 'Ada Lovelace', age: 21, department: 'Mathematics' },
-      { studentId: 'MATH-2024-042', name: 'Carl Gauss', age: 23, department: 'Mathematics' },
-      { studentId: 'ROB-2024-007', name: 'Julian Thorne', age: 26, department: 'Robotics' },
-      { studentId: 'ROB-2024-018', name: 'Penny Parker', age: 20, department: 'Robotics' },
-      { studentId: 'ROB-2024-031', name: 'Victor Stone', age: 22, department: 'Robotics' },
-      { studentId: 'ROB-2024-044', name: 'Arthur Pendelton', age: 24, department: 'Robotics' },
-    ];
-
-    try {
-      setError('');
-      setLoading(true);
-      await Promise.all(
-        mockStudents.map((student) =>
-          fetch(API_BASE_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${user.token}`,
-            },
-            body: JSON.stringify(student),
-          }).then(async (res) => {
-            if (!res.ok) {
-              const data = await res.json().catch(() => ({}));
-              if (res.status === 400 && data.error?.includes('already exists')) {
-                return null;
-              }
-              throw new Error(data.error || 'Failed to seed record');
-            }
-            return res.json();
-          })
-        )
-      );
-      setFilters((prev) => ({ ...prev }));
-      addToast('success', 'Mock data successfully seeded (existing records skipped)!');
-      addNotification('success', 'Seeded mock student directory database');
-    } catch (err: any) {
-      setError(err.message);
-      addToast('error', err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleClearFilters = () => {
     setFilters({
       studentId: '',
@@ -638,24 +573,7 @@ export default function App() {
           ) : currentPage === 'users' ? (
             <UserManagePage currentUser={user} theme={theme} addToast={addToast} />
           ) : currentPage === 'faculty-directory' ? (
-            <div className="space-y-6">
-              <div className={`flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b transition-colors duration-300 ${
-                theme === 'dark' ? 'border-zinc-900' : 'border-[#e5e2d9]'
-              }`}>
-                <div>
-                  <h1 className={`text-3xl font-bold tracking-tight flex items-center gap-2 ${
-                    theme === 'dark' ? 'text-zinc-100' : 'text-[#191919]'
-                  }`}>
-                    Faculty Staff Directory
-                    <Sparkles size={20} className={theme === 'dark' ? 'text-zinc-500' : 'text-zinc-400'} />
-                  </h1>
-                  <p className={theme === 'dark' ? 'text-zinc-500 text-sm mt-1' : 'text-zinc-500 text-sm mt-1'}>
-                    Inspect academic teaching staff, assigned departments, and active system roles.
-                  </p>
-                </div>
-              </div>
-              <FacultyDirectory currentUser={user} theme={theme} addToast={addToast} />
-            </div>
+            <FacultyDirectory currentUser={user} theme={theme} addToast={addToast} />
           ) : (
             <>
               {/* Banner area */}
@@ -680,18 +598,6 @@ export default function App() {
                   {/* Show admin actions conditionally */}
                   {(user.role === 'admin' || user.role === 'faculty') && (
                     <>
-                      {user.role === 'admin' && (
-                        <button
-                          onClick={handleSeedData}
-                          className={`text-xs border px-4 py-2 rounded-full transition-all cursor-pointer font-semibold ${
-                            theme === 'dark'
-                              ? 'text-zinc-400 hover:text-zinc-200 border-zinc-800'
-                              : 'text-[#cc5a37] hover:text-[#e05a47] border-[#e5e2d9] hover:border-[#cc5a37]'
-                          }`}
-                        >
-                          Seed Realistic Data
-                        </button>
-                      )}
                       {!showForm && !editingStudent && (
                         <LiquidMetalButton
                           label="Add Student"
