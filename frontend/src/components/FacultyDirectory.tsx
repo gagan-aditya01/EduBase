@@ -59,6 +59,87 @@ const COMMON_DEPARTMENTS = [
   'Robotics',
 ];
 
+const FALLBACK_COURSES = [
+  // --- Computer Science ---
+  { courseCode: 'CS101', title: 'C Programming & Logic Building', department: 'Computer Science', year: '1st Year', credits: 4 },
+  { courseCode: 'CS102', title: 'Web Technologies & Design', department: 'Computer Science', year: '1st Year', credits: 3 },
+  { courseCode: 'CS103', title: 'Digital Electronics & Logic', department: 'Computer Science', year: '1st Year', credits: 3 },
+  { courseCode: 'CS201', title: 'Data Structures & Algorithms', department: 'Computer Science', year: '2nd Year', credits: 4 },
+  { courseCode: 'CS202', title: 'Computer Networks & Protocols', department: 'Computer Science', year: '2nd Year', credits: 3 },
+  { courseCode: 'CS203', title: 'Object Oriented Programming in Java', department: 'Computer Science', year: '2nd Year', credits: 4 },
+  { courseCode: 'CS301', title: 'Operating Systems & Architecture', department: 'Computer Science', year: '3rd Year', credits: 3 },
+  { courseCode: 'CS302', title: 'Database Management Systems', department: 'Computer Science', year: '3rd Year', credits: 4 },
+  { courseCode: 'CS303', title: 'Software Engineering Principles', department: 'Computer Science', year: '3rd Year', credits: 3 },
+  { courseCode: 'CS401', title: 'Artificial Intelligence & ML', department: 'Computer Science', year: '4th Year', credits: 4 },
+  { courseCode: 'CS402', title: 'Cloud Computing & Distributed Systems', department: 'Computer Science', year: '4th Year', credits: 3 },
+  { courseCode: 'CS403', title: 'Cyber Security & Cryptography', department: 'Computer Science', year: '4th Year', credits: 3 },
+
+  // --- ADSE ---
+  { courseCode: 'ADSE101', title: 'Software Process Fundamentals', department: 'ADSE', year: '1st Year', credits: 3 },
+  { courseCode: 'ADSE102', title: 'Python Application Programming', department: 'ADSE', year: '1st Year', credits: 4 },
+  { courseCode: 'ADSE103', title: 'Mathematical Foundations for Engineering', department: 'ADSE', year: '1st Year', credits: 3 },
+  { courseCode: 'ADSE201', title: 'Agile Systems Development', department: 'ADSE', year: '2nd Year', credits: 3 },
+  { courseCode: 'ADSE202', title: 'Software Architecture & Patterns', department: 'ADSE', year: '2nd Year', credits: 4 },
+  { courseCode: 'ADSE203', title: 'UI/UX Engineering & Design', department: 'ADSE', year: '2nd Year', credits: 3 },
+  { courseCode: 'ADSE301', title: 'Enterprise DevOps & CI/CD Pipelines', department: 'ADSE', year: '3rd Year', credits: 4 },
+  { courseCode: 'ADSE302', title: 'Microservices & API Architecture', department: 'ADSE', year: '3rd Year', credits: 4 },
+  { courseCode: 'ADSE303', title: 'Software Quality Assurance & Testing', department: 'ADSE', year: '3rd Year', credits: 3 },
+  { courseCode: 'ADSE401', title: 'Cloud Native Application Design', department: 'ADSE', year: '4th Year', credits: 4 },
+  { courseCode: 'ADSE402', title: 'Big Data & Analytics Pipelines', department: 'ADSE', year: '4th Year', credits: 4 },
+  { courseCode: 'ADSE403', title: 'Enterprise Capstone Project', department: 'ADSE', year: '4th Year', credits: 6 },
+
+  // --- Mathematics ---
+  { courseCode: 'MATH101', title: 'Calculus & Analytical Geometry', department: 'Mathematics', year: '1st Year', credits: 4 },
+  { courseCode: 'MATH102', title: 'Linear Algebra & Matrices', department: 'Mathematics', year: '1st Year', credits: 4 },
+  { courseCode: 'MATH103', title: 'Vector Algebra & Coordinate Geometry', department: 'Mathematics', year: '1st Year', credits: 3 },
+  { courseCode: 'MATH201', title: 'Multivariable Calculus', department: 'Mathematics', year: '2nd Year', credits: 4 },
+  { courseCode: 'MATH202', title: 'Ordinary Differential Equations', department: 'Mathematics', year: '2nd Year', credits: 4 },
+  { courseCode: 'MATH203', title: 'Real Analysis & Sequences', department: 'Mathematics', year: '2nd Year', credits: 3 },
+  { courseCode: 'MATH301', title: 'Discrete Mathematics & Graph Theory', department: 'Mathematics', year: '3rd Year', credits: 3 },
+  { courseCode: 'MATH302', title: 'Numerical Analysis & Computation', department: 'Mathematics', year: '3rd Year', credits: 4 },
+  { courseCode: 'MATH303', title: 'Complex Variables & Transforms', department: 'Mathematics', year: '3rd Year', credits: 3 },
+  { courseCode: 'MATH401', title: 'Probability Theory & Applied Statistics', department: 'Mathematics', year: '4th Year', credits: 4 },
+  { courseCode: 'MATH402', title: 'Abstract Algebra & Group Theory', department: 'Mathematics', year: '4th Year', credits: 4 },
+  { courseCode: 'MATH403', title: 'Optimization Techniques & Operations Research', department: 'Mathematics', year: '4th Year', credits: 3 },
+
+  // --- Electrical Engineering ---
+  { courseCode: 'EE101', title: 'Basic Electrical Engineering', department: 'Electrical Engineering', year: '1st Year', credits: 3 },
+  { courseCode: 'EE102', title: 'Engineering Circuit Analysis', department: 'Electrical Engineering', year: '1st Year', credits: 4 },
+  { courseCode: 'EE201', title: 'Electromagnetic Field Theory', department: 'Electrical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'EE202', title: 'Signals & Systems Analysis', department: 'Electrical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'EE301', title: 'Linear Control Systems', department: 'Electrical Engineering', year: '3rd Year', credits: 3 },
+  { courseCode: 'EE302', title: 'Analog & Digital Electronics', department: 'Electrical Engineering', year: '3rd Year', credits: 4 },
+  { courseCode: 'EE401', title: 'Power Electronics & Drives', department: 'Electrical Engineering', year: '4th Year', credits: 4 },
+  { courseCode: 'EE402', title: 'Microprocessors & Embedded Systems', department: 'Electrical Engineering', year: '4th Year', credits: 4 },
+
+  // --- Mechanical Engineering ---
+  { courseCode: 'ME101', title: 'Engineering Mechanics & Statics', department: 'Mechanical Engineering', year: '1st Year', credits: 3 },
+  { courseCode: 'ME102', title: 'Engineering Graphics & 3D CAD', department: 'Mechanical Engineering', year: '1st Year', credits: 3 },
+  { courseCode: 'ME201', title: 'Engineering Thermodynamics', department: 'Mechanical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'ME202', title: 'Strength of Materials & Mechanics', department: 'Mechanical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'ME301', title: 'Fluid Mechanics & Machinery', department: 'Mechanical Engineering', year: '3rd Year', credits: 4 },
+  { courseCode: 'ME302', title: 'Manufacturing & Casting Technology', department: 'Mechanical Engineering', year: '3rd Year', credits: 3 },
+  { courseCode: 'ME401', title: 'Heat & Mass Transfer', department: 'Mechanical Engineering', year: '4th Year', credits: 4 },
+  { courseCode: 'ME402', title: 'Machine Element Design', department: 'Mechanical Engineering', year: '4th Year', credits: 4 },
+
+  // --- Robotics ---
+  { courseCode: 'ROB101', title: 'Introduction to Robotics & Automation', department: 'Robotics', year: '1st Year', credits: 3 },
+  { courseCode: 'ROB102', title: 'Embedded C Programming for Controllers', department: 'Robotics', year: '1st Year', credits: 3 },
+  { courseCode: 'ROB201', title: 'Sensors, Transducers & Actuators', department: 'Robotics', year: '2nd Year', credits: 4 },
+  { courseCode: 'ROB202', title: 'Microcontroller Architecture & Interfaces', department: 'Robotics', year: '2nd Year', credits: 4 },
+  { courseCode: 'ROB301', title: 'Robot Kinematics & Dynamics', department: 'Robotics', year: '3rd Year', credits: 4 },
+  { courseCode: 'ROB302', title: 'Mechatronics Systems Design', department: 'Robotics', year: '3rd Year', credits: 3 },
+  { courseCode: 'ROB401', title: 'Autonomous Navigation & Robot Operating System (ROS)', department: 'Robotics', year: '4th Year', credits: 4 },
+  { courseCode: 'ROB402', title: 'Computer Vision for Robotics', department: 'Robotics', year: '4th Year', credits: 4 },
+];
+
+const isDeptMatch = (cDept?: string, targetDept?: string) => {
+  if (!cDept || !targetDept) return false;
+  const c = cDept.trim().toLowerCase();
+  const t = targetDept.trim().toLowerCase();
+  return c === t || c.includes(t) || t.includes(c);
+};
+
 export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: FacultyDirectoryProps) {
   const [facultyUsers, setFacultyUsers] = useState<DBUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -91,7 +172,7 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
   const [deleteError, setDeleteError] = useState('');
   const [deleting, setDeleting] = useState(false);
-  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+  const [availableCourses, setAvailableCourses] = useState<any[]>(FALLBACK_COURSES);
   const [newFacultySubjects, setNewFacultySubjects] = useState<string[]>([]);
   const [editFacultySubjects, setEditFacultySubjects] = useState<string[]>([]);
 
@@ -856,7 +937,7 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
                       isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-[#f8f6f0] border-[#e5e2d9]'
                     }`}>
                       {availableCourses
-                        .filter((c) => c.department.toLowerCase() === newFacultyDept.toLowerCase())
+                        .filter((c) => isDeptMatch(c.department, newFacultyDept))
                         .map((course) => {
                           const isChecked = newFacultySubjects.includes(course.courseCode);
                           return (
@@ -1013,7 +1094,7 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
                       isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-[#f8f6f0] border-[#e5e2d9]'
                     }`}>
                       {availableCourses
-                        .filter((c) => c.department.toLowerCase() === editDept.toLowerCase())
+                        .filter((c) => isDeptMatch(c.department, editDept))
                         .map((course) => {
                           const isChecked = editFacultySubjects.includes(course.courseCode);
                           return (
