@@ -1,6 +1,6 @@
-# 🎓 EduBase - Full-Stack Student Management Portal
+# 🎓 EduBase - Full-Stack Student & Faculty Management Portal
 
-A modern, production-grade full-stack web application built with **Node.js, Express, MongoDB Atlas, React 18, TypeScript, Tailwind CSS, Framer Motion, and Docker**.
+A modern, production-grade full-stack web application built with **Node.js, Express, MongoDB Atlas, React 18, TypeScript, Tailwind CSS, Recharts, Framer Motion, and Docker**.
 
 [![Git Commit](https://img.shields.io/github/last-commit/gagan-aditya01/EduBase?style=flat-square&color=blue)](https://github.com/gagan-aditya01/EduBase.git)
 [![Docker Support](https://img.shields.io/badge/Docker-Supported-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/gagan-aditya01/EduBase.git)
@@ -12,9 +12,9 @@ A modern, production-grade full-stack web application built with **Node.js, Expr
 
 | Category | Technology |
 | :--- | :--- |
-| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Framer Motion, `@paper-design/shaders` |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Recharts, Framer Motion, `@paper-design/shaders` |
 | **Backend** | Node.js, Express 5, Mongoose, Dual JWT Auth, `bcryptjs`, `multer`, RAM Cache |
-| **Database** | MongoDB Atlas / MongoDB Local (Relational Mongoose `.populate()`, Compound Indexes) |
+| **Database** | MongoDB Atlas / MongoDB Local (Relational Mongoose `.populate()`, Aggregation Pipelines) |
 | **Testing** | Jest, Supertest (100% Passing Automated Integration Tests) |
 | **DevOps** | Docker, Docker Compose, Nginx |
 
@@ -22,42 +22,36 @@ A modern, production-grade full-stack web application built with **Node.js, Expr
 
 ## 🚀 Key Features & Concepts Implemented
 
-### 1. 🛡️ Dual-Token Authentication, OAuth 2.0 & RBAC
-- **Dual-Token Auth**: Access Tokens + Long-lived Refresh Tokens (`POST /api/v1/auth/refresh`) for silent session renewal.
-- **OAuth 2.0 Social Login**: Integrated **Google** & **GitHub** social single sign-on (`POST /api/v1/auth/social`).
-- **Role Permissions**: `Admin` (full CRUD, password management, soft-delete recovery) vs `Guest` (read-only access).
-- **Modern Animated Login**: `modern-animated-sign-in.tsx` with **EduBase** branding, orbiting tech icons, and social OAuth buttons.
-- **Welcome Splash & 3D Deck**: Post-login Apple-style stroke animation and 3D account manager deck flip.
+### 1. 🛡️ Fine-Grained Role-Based Access Control (RBAC) & OAuth 2.0
+- **Admin Role**: Full system control (Student & Faculty CRUD, faculty creation, user role management, soft-delete recovery, audit trails, and global enterprise analytics).
+- **Faculty Role**: Department-scoped workspace. Faculty can add students within their assigned department (*e.g. Computer Science*), view department-scoped analytics, and manage their profile. Restricted from editing/deleting students or accessing the global faculty directory.
+- **Guest Role**: Read-only directory access for public browsing.
+- **Dual-Token Session Auth**: Access Tokens + Long-lived Refresh Tokens (`POST /api/v1/auth/refresh`) for silent session renewal.
+- **Social Login**: Integrated **Google** & **GitHub** OAuth single sign-on (`POST /api/v1/auth/social`).
 
-### 2. 🗂️ Relational Data Modeling, Server-Side Pagination & API v2
-- **Mongoose Relational Joins**: Dedicated `Department` collection schema populated dynamically via `departmentRef` (`.populate('departmentRef', 'name code')`).
-- **Server-Side Pagination**: Supports `page` and `limit` query parameters with MongoDB `skip()` / `limit()` offset queries.
-- **API Versioning (v1 & v2)**: Legacy `/api/v1/students` and structured `/api/v2/students` with HATEOAS pagination links.
-- **Data Ownership (`createdBy`)**: Tracks and displays creator user badges on every record.
+### 2. 📊 Academic Analytics Engine & Stock Trend Chart
+- **Global Enterprise Analytics**: Real-time department student pie charts, faculty staff distribution, and interactive Stock Growth Area Chart with dynamic department filter (`All Departments`, `CS`, `EE`, `ME`, `ADSE`, `MATH`, `ROB`).
+- **Faculty Department Analytics Portal**: Dedicated department-scoped analytics engine restricting faculty view strictly to their assigned department's section breakdown pie chart and year-over-year enrolment growth.
+- **Interactive Pie Chart Hover Animations**: Custom Recharts `<Sector>` slice pop-out animations (`outerRadius + 14`) with solid, flicker-free label rendering.
 
-### 3. 🗄️ Soft Deletes & Admin Trash Recovery Console
+### 3. 👨‍🏫 Faculty Directory & Automated Credentials
+- **Faculty Management**: Admin console for creating faculty accounts with assigned department scoping (`POST /api/auth/faculty`).
+- **Automated Faculty ID & Password Rules**: Faculty accounts receive a unique 4-digit numeric ID (*e.g. `4001`*) and initial password set to reversed numeric ID (*e.g. `1004`*).
+- **KPI Summary Cards**: Top status cards displaying **Total Staff** count and **Active Staff** status.
+
+### 4. 🗂️ Relational Data Modeling & Auto Section Naming
+- **Mongoose Relational Joins**: Dedicated `Department` collection populated dynamically via `departmentRef` (`.populate('departmentRef', 'name code')`).
+- **Automated Section Code Generation**: Automatically formats sections as `{YearNumber}{ShortDept}` (*e.g., `3CS`, `2EE`, `4ME`*) based on joining year and department.
+- **Automated Student ID Format**: Generates serial registration IDs formatted as `{2-digit joining year}{5-digit serial}` (*e.g., `2361001`, `2462001`*).
+
+### 5. 🗄️ Soft Deletes & Admin Trash Recovery Console
 - **Soft Delete Protection**: Setting `isDeleted: true` and `deletedAt: Date` prevents accidental database data loss.
 - **Trash Bin Console**: Admin endpoints to list (`GET /trash/list`), restore (`PUT /restore`), or permanently purge (`DELETE /purge`) records.
 
-### 4. ⚡ High-Performance Caching, Aggregation Pipelines & SSE Stream
-- **MongoDB Aggregation Pipelines**: Multi-faceted analytics engine (`$group`, `$facet`, `$bucket`) powering department breakdown and age demographic metrics (`GET /api/v1/students/analytics/stats`).
-- **Real-Time Server-Sent Events (SSE)**: HTTP event stream (`GET /api/v1/students/stream`) pushing live record mutations directly to client UI.
-- **In-Memory RAM Cache Engine**: Custom TTL cache returning sub-millisecond responses (`X-Cache: HIT` / `MISS`) with automatic invalidation.
+### 6. ⚡ High-Performance Caching & Async Task Queue
+- **MongoDB Aggregation Pipelines**: Multi-faceted analytics engine (`$group`, `$facet`, `$bucket`) powering demographic metrics (`GET /api/v1/students/analytics/stats`).
+- **In-Memory RAM Cache Engine**: Custom TTL cache returning sub-millisecond responses (`X-Cache: HIT` / `MISS`) with automatic invalidation on record mutation.
 - **Async Background Task Queue**: Non-blocking queue engine offloading audit logging without delaying HTTP controller responses.
-- **Compound Database Indexes**: Optimized Mongoose indexes (`{ department: 1, age: -1 }`) and `.explain('executionStats')` benchmark route.
-
-### 5. 📜 Audit Trail, CI/CD Pipeline & Security Hardening
-- **Automated CI/CD Pipeline**: `.github/workflows/ci-cd.yml` running automated MongoDB container integration tests and production build checks on every push.
-- **Immutable Audit Log**: `AuditLog` collection recording `CREATE_STUDENT`, `UPDATE_STUDENT`, and `DELETE_STUDENT` actions.
-- **API Security & DDoS Guard**: `helmet` HTTP headers and `express-rate-limit` (max 100 requests per 15 mins).
-- **Input Validation Middleware**: Sanitizes `studentId`, `name`, `age` (16–90 range), and `department` fields.
-- **Human-Friendly Error Handler**: Converts technical database errors (`code 11000 duplicate key`, `CastError`, `ValidationError`) into readable messages.
-
-### 6. 📊 Data Export, Media Uploads & Aesthetics
-- **One-Click CSV Export**: Download filtered student directory data directly as a `.csv` file.
-- **Multer Upload Middleware**: Handles image/PDF file uploads up to 5MB served via `/uploads`.
-- **Liquid Metal Shader Buttons**: WebGL shader canvas action buttons.
-- **Tech Stack Marquee**: Continuous infinite auto-scrolling marquee using Embla AutoScroll.
 
 ---
 
@@ -78,7 +72,7 @@ cd EduBase
 # Install root dependencies (Express, Mongoose, Jest, Supertest, Multer)
 npm install
 
-# Install frontend dependencies (Vite, React, Tailwind, Framer Motion)
+# Install frontend dependencies (Vite, React, Tailwind, Framer Motion, Recharts)
 cd frontend
 npm install
 cd ..
@@ -134,6 +128,7 @@ npm test
 - `GET /api/unhandled-route`: Custom 404 Route Not Found Handler
 - `Validation Error Tests`: Duplicate ID, Negative Age, Age > 90 (400 Bad Request)
 - `Dual-Token & API v2 Tests`: Refresh Token Renewal, v2 HATEOAS Envelope, Trash Bin Console (200 OK)
+- `RBAC & Scoping Tests`: Faculty Department Creation Scoping & Admin-Only Audit Logs (200 OK / 403 Forbidden)
 
 ---
 
