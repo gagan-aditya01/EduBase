@@ -32,6 +32,26 @@ describe('Full-Stack Backend API Tests', () => {
   });
 
   afterAll(async () => {
+    try {
+      const User = require('../backend/src/models/userModel');
+      const Student = require('../backend/src/models/studentModel');
+      await User.deleteMany({
+        $or: [
+          { username: /FAC_CS/i },
+          { username: /^adm_/i },
+          { username: /^test_/i }
+        ]
+      });
+      await Student.deleteMany({
+        $or: [
+          { studentId: /FAC_CS/i },
+          { studentId: /^test_/i },
+          { createdBy: /FAC_CS/i }
+        ]
+      });
+    } catch (err) {
+      // Ignore
+    }
     await mongoose.connection.close();
   });
 
