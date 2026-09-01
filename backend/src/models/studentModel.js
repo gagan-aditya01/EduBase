@@ -33,6 +33,16 @@ const studentSchema = new mongoose.Schema(
       default: 'Admin',
       trim: true,
     },
+    year: {
+      type: String,
+      default: '3rd Year',
+      trim: true,
+    },
+    section: {
+      type: String,
+      default: '3CS B',
+      trim: true,
+    },
     // Concept 2: Soft Deletes & Recovery Console
     isDeleted: {
       type: Boolean,

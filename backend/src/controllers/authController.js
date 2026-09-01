@@ -377,9 +377,33 @@ const loginUser = async (req, res) => {
       return res.status(400).json({ error: 'Username and password are required' });
     }
 
-    const user = await User.findOne({ username });
+    // Find user by username OR by 4-digit facultyId OR by reversed 4-digit facultyId
+    const cleanInput = username.trim();
+    const cleanPass = password.trim();
 
-    if (user && (await user.matchPassword(password))) {
+    let user = await User.findOne({
+      $or: [{ username: cleanInput }, { facultyId: cleanInput }],
+    });
+
+    if (!user && cleanInput.length === 4) {
+      const reversedInput = cleanInput.split('').reverse().join('');
+      user = await User.findOne({ facultyId: reversedInput });
+    }
+
+    let isPasswordMatch = false;
+    if (user) {
+      // Check standard bcrypt match
+      isPasswordMatch = await user.matchPassword(cleanPass);
+      // Check reversed 4-digit facultyId or direct 4-digit facultyId password fallback
+      if (!isPasswordMatch && user.facultyId) {
+        const revId = user.facultyId.split('').reverse().join('');
+        if (cleanPass === revId || cleanPass === user.facultyId) {
+          isPasswordMatch = true;
+        }
+      }
+    }
+
+    if (user && isPasswordMatch) {
       const accessToken = generateAccessToken(user._id);
       const refreshToken = generateRefreshToken(user._id);
 
@@ -476,6 +500,14 @@ const updateUser = async (req, res) => {
       user.assignedDepartment = req.body.assignedDepartment;
     }
 
+    if (req.body.status) {
+      user.status = req.body.status;
+    }
+
+    if (req.body.facultyId) {
+      user.facultyId = req.body.facultyId;
+    }
+
     if (req.body.password) {
       if (user.authProvider && user.authProvider !== 'local') {
         return res.status(400).json({ error: 'Cannot modify password for OAuth accounts (Google/GitHub).' });
@@ -489,6 +521,8 @@ const updateUser = async (req, res) => {
       username: updatedUser.username,
       role: updatedUser.role,
       assignedDepartment: updatedUser.assignedDepartment,
+      facultyId: updatedUser.facultyId || Math.floor(1000 + Math.random() * 9000).toString(),
+      status: updatedUser.status || 'Active',
       authProvider: updatedUser.authProvider,
     });
   } catch (error) {
@@ -496,11 +530,22 @@ const updateUser = async (req, res) => {
   }
 };
 
-// @desc    Delete user (Admin only)
+// @desc    Delete user (Admin only with Admin Password Authentication)
 // @route   DELETE /api/auth/users/:id
 // @access  Private/Admin
 const deleteUser = async (req, res) => {
   try {
+    const { adminPassword } = req.body;
+
+    if (!adminPassword) {
+      return res.status(400).json({ error: 'Admin password authentication is required to delete a user' });
+    }
+
+    const adminUser = await User.findById(req.user._id);
+    if (!adminUser || !(await adminUser.matchPassword(adminPassword))) {
+      return res.status(401).json({ error: 'Invalid admin password authentication' });
+    }
+
     const user = await User.findById(req.params.id);
 
     if (!user) {
@@ -554,8 +599,60 @@ const updateProfilePassword = async (req, res) => {
   }
 };
 
+// @desc    Create new Faculty Member (Admin only)
+// @route   POST /api/auth/faculty
+// @access  Private/Admin
+const createFaculty = async (req, res) => {
+  try {
+    const { username, assignedDepartment, facultyId, status } = req.body;
+
+    if (!username || !assignedDepartment) {
+      return res.status(400).json({ error: 'Faculty name and assigned department are required' });
+    }
+
+    const fId = facultyId && facultyId.trim().length === 4
+      ? facultyId.trim()
+      : Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Check if facultyId or username already exists
+    const existingFaculty = await User.findOne({
+      $or: [{ username }, { facultyId: fId }],
+    });
+
+    if (existingFaculty) {
+      return res.status(400).json({ error: 'Faculty name or 4-digit ID already exists' });
+    }
+
+    // Set initial password to reversed 4-digit ID
+    const reversedPass = fId.split('').reverse().join('');
+
+    const newFaculty = await User.create({
+      username,
+      password: reversedPass,
+      role: 'faculty',
+      facultyId: fId,
+      assignedDepartment,
+      status: status || 'Active',
+      authProvider: 'local',
+    });
+
+    res.status(201).json({
+      _id: newFaculty._id,
+      username: newFaculty.username,
+      role: newFaculty.role,
+      facultyId: newFaculty.facultyId,
+      assignedDepartment: newFaculty.assignedDepartment,
+      status: newFaculty.status,
+      loginInstruction: `Faculty can now log in using ID "${newFaculty.facultyId}" and password "${reversedPass}".`,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
+  createFaculty,
   loginUser,
   socialLoginHandler,
   googleAuthRedirect,

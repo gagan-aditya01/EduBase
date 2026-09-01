@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const {
   registerUser,
+  createFaculty,
   loginUser,
   socialLoginHandler,
   googleAuthRedirect,
@@ -17,6 +18,7 @@ const {
 const { protect, admin, facultyOrAdmin } = require('../middlewares/authMiddleware');
 
 router.post('/register', registerUser);
+router.post('/faculty', protect, admin, createFaculty);
 router.post('/login', loginUser);
 router.post('/social', socialLoginHandler);
 

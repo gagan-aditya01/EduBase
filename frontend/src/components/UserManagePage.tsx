@@ -14,6 +14,8 @@ interface DBUser {
   _id: string;
   username: string;
   role: 'admin' | 'guest' | 'faculty';
+  facultyId?: string;
+  status?: 'Active' | 'Inactive';
   assignedDepartment?: string;
   authProvider?: 'local' | 'google' | 'github';
   createdAt?: string;
@@ -346,7 +348,7 @@ export function UserManagePage({ currentUser, theme = 'dark', addToast }: UserMa
                     </div>
                     <div>
                       <h3 className="font-bold text-base tracking-tight truncate max-w-[240px]">{selectedUser.username}</h3>
-                      <p className="text-[11px] text-zinc-500 font-mono">ID: {selectedUser._id}</p>
+                      <p className="text-[11px] text-zinc-400 font-mono font-bold">Faculty ID: {selectedUser.facultyId || '4821'}</p>
                     </div>
                   </div>
 

@@ -23,6 +23,16 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
+    facultyId: {
+      type: String,
+      default: () => Math.floor(1000 + Math.random() * 9000).toString(),
+      trim: true,
+    },
+    status: {
+      type: String,
+      enum: ['Active', 'Inactive'],
+      default: 'Active',
+    },
     refreshToken: {
       type: String,
       default: null,

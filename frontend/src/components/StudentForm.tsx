@@ -6,6 +6,8 @@ interface Student {
   name: string;
   age: number;
   department: string;
+  year?: string;
+  section?: string;
 }
 
 interface StudentFormProps {
@@ -20,6 +22,8 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
   const [name, setName] = useState('');
   const [age, setAge] = useState('');
   const [department, setDepartment] = useState('');
+  const [year, setYear] = useState('3rd Year');
+  const [section, setSection] = useState('3CS B');
   const [error, setError] = useState('');
   const [shake, setShake] = useState(false);
 
@@ -31,11 +35,15 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
       setName(initialData.name);
       setAge(String(initialData.age));
       setDepartment(initialData.department);
+      setYear(initialData.year || '3rd Year');
+      setSection(initialData.section || '3CS B');
     } else {
       setStudentId('');
       setName('');
       setAge('');
       setDepartment('');
+      setYear('3rd Year');
+      setSection('3CS B');
     }
     setError('');
   }, [initialData]);
@@ -55,10 +63,10 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
       return;
     }
 
-    // Validate studentId format (alphanumeric, dashes, underscores)
+    // Validate studentId format (numbers, alphanumeric)
     const idRegex = /^[a-zA-Z0-9_-]+$/;
     if (!idRegex.test(studentId)) {
-      setError('Student ID must be alphanumeric (letters, numbers, -, _)');
+      setError('Student ID must be numeric (e.g., 2462128)');
       triggerShake();
       return;
     }
@@ -76,6 +84,8 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
       name: name.trim(),
       age: parsedAge,
       department: department.trim(),
+      year: year.trim(),
+      section: section.trim(),
     });
     
     // Reset if adding new
@@ -84,11 +94,13 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
       setName('');
       setAge('');
       setDepartment('');
+      setYear('3rd Year');
+      setSection('3CS B');
     }
     setError('');
   };
 
-  const inputClass = `w-full rounded-lg px-3.5 py-2 focus:outline-none transition-colors ${
+  const inputClass = `w-full rounded-lg px-3.5 py-2 text-xs focus:outline-none transition-colors ${
     isDark
       ? 'bg-zinc-950 border border-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-100 placeholder-zinc-600 focus:border-zinc-500'
       : 'bg-white border border-[#e5e2d9] disabled:opacity-50 disabled:cursor-not-allowed text-[#191919] placeholder-zinc-400 focus:border-zinc-400'
@@ -101,21 +113,21 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
   return (
     <form
       onSubmit={handleSubmit}
-      className={`space-y-6 moving-gradient-card backdrop-blur-md border p-6 rounded-2xl max-w-md w-full transition-all ${
+      className={`space-y-5 moving-gradient-card backdrop-blur-md border p-6 rounded-2xl max-w-md w-full transition-all ${
         isDark ? 'border-zinc-800' : 'border-[#e5e2d9] shadow-md'
       } ${
         shake ? 'animate-shake border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.15)]' : ''
       }`}
     >
-      <h2 className={`text-xl font-semibold mb-2 tracking-tight ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
-        {initialData ? 'Edit Student Details' : 'Add New Student'}
+      <h2 className={`text-xl font-semibold mb-1 tracking-tight ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>
+        {initialData ? 'Edit Student Record' : 'Add New Student'}
       </h2>
-      <p className={`text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
+      <p className={`text-xs ${isDark ? 'text-zinc-400' : 'text-zinc-500'}`}>
         Enter the details below. {initialData && 'Student ID cannot be changed.'}
       </p>
 
       {error && (
-        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-sm p-3 rounded-lg animate-fade-in">
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 text-xs p-3 rounded-lg animate-fade-in">
           {error}
         </div>
       )}
@@ -123,14 +135,14 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
       <div className="space-y-4">
         <div>
           <label className={labelClass}>
-            Student ID
+            Student Numeric ID
           </label>
           <input
             type="text"
             value={studentId}
             onChange={(e) => setStudentId(e.target.value)}
             disabled={!!initialData}
-            placeholder="e.g., S101"
+            placeholder="e.g., 2462128"
             className={inputClass}
           />
         </div>
@@ -143,12 +155,12 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
             type="text"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., Jane Doe"
+            placeholder="e.g., Eleanor Vance"
             className={inputClass}
           />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelClass}>
               Age
@@ -175,6 +187,34 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
             />
           </div>
         </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className={labelClass}>
+              Academic Year
+            </label>
+            <input
+              type="text"
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+              placeholder="e.g., 3rd Year"
+              className={inputClass}
+            />
+          </div>
+
+          <div>
+            <label className={labelClass}>
+              Section Code
+            </label>
+            <input
+              type="text"
+              value={section}
+              onChange={(e) => setSection(e.target.value)}
+              placeholder="e.g., 3CS B"
+              className={inputClass}
+            />
+          </div>
+        </div>
       </div>
 
       <div className="flex items-center gap-3 pt-2">
@@ -187,7 +227,7 @@ export function StudentForm({ onSubmit, initialData, onCancel, theme = 'dark' }:
           <button
             type="button"
             onClick={onCancel}
-            className={`px-4 py-2.5 rounded-full border text-sm transition-colors cursor-pointer ${
+            className={`px-4 py-2.5 rounded-full border text-xs font-semibold transition-colors cursor-pointer ${
               isDark
                 ? 'border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
                 : 'border-[#e5e2d9] text-zinc-600 hover:text-zinc-900 hover:border-zinc-400'

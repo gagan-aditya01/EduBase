@@ -26,6 +26,8 @@ interface Student {
   name: string;
   age: number;
   department: string;
+  year?: string;
+  section?: string;
   createdBy?: string;
 }
 
@@ -34,9 +36,8 @@ interface User {
   username: string;
   role: 'admin' | 'guest' | 'faculty';
   assignedDepartment?: string;
+  facultyId?: string;
 }
-
-
 
 const API_BASE_URL = 'http://localhost:5050/api/students';
 
@@ -165,8 +166,14 @@ export default function App() {
     return () => clearTimeout(timer);
   }, [filters, user]);
 
-  const handleAuthSuccess = (token: string, username: string, role: 'admin' | 'guest') => {
-    const newUser: User = { token, username, role };
+  const handleAuthSuccess = (
+    token: string,
+    username: string,
+    role: 'admin' | 'guest' | 'faculty',
+    assignedDepartment?: string,
+    facultyId?: string
+  ) => {
+    const newUser: User = { token, username, role, assignedDepartment, facultyId };
     setUser(newUser);
     localStorage.setItem('edubase_user', JSON.stringify(newUser));
     setShowWelcomeSplash(true);
@@ -331,13 +338,28 @@ export default function App() {
       { studentId: 'CS-2024-001', name: 'Eleanor Vance', age: 20, department: 'Computer Science' },
       { studentId: 'CS-2024-014', name: 'Marcus Sterling', age: 22, department: 'Computer Science' },
       { studentId: 'CS-2024-032', name: 'Sophia Chen', age: 21, department: 'Computer Science' },
+      { studentId: 'CS-2024-045', name: 'David Miller', age: 23, department: 'Computer Science' },
+      { studentId: 'CS-2024-058', name: 'Hannah Abbott', age: 19, department: 'Computer Science' },
       { studentId: 'EE-2024-005', name: 'Alexander Hayes', age: 23, department: 'Electrical Engineering' },
       { studentId: 'EE-2024-019', name: 'Maya Lin', age: 20, department: 'Electrical Engineering' },
+      { studentId: 'EE-2024-033', name: 'Robert Zhao', age: 22, department: 'Electrical Engineering' },
+      { studentId: 'EE-2024-047', name: 'Clara Oswald', age: 21, department: 'Electrical Engineering' },
       { studentId: 'ME-2024-008', name: 'Liam Gallagher', age: 22, department: 'Mechanical Engineering' },
+      { studentId: 'ME-2024-021', name: 'Lucas Bennett', age: 24, department: 'Mechanical Engineering' },
+      { studentId: 'ME-2024-036', name: 'Olivia Thorne', age: 20, department: 'Mechanical Engineering' },
+      { studentId: 'ME-2024-049', name: 'Daniel Craig', age: 23, department: 'Mechanical Engineering' },
       { studentId: 'ADSE-2024-012', name: 'Amara Okafor', age: 24, department: 'ADSE' },
-      { studentId: 'ADSE-2024-045', name: 'Devin Sterling', age: 21, department: 'ADSE' },
+      { studentId: 'ADSE-2024-027', name: 'Devin Vance', age: 21, department: 'ADSE' },
+      { studentId: 'ADSE-2024-041', name: 'Chloe Patel', age: 22, department: 'ADSE' },
+      { studentId: 'ADSE-2024-055', name: 'Ethan Wright', age: 20, department: 'ADSE' },
       { studentId: 'MATH-2024-003', name: 'Tricia McMillan', age: 25, department: 'Mathematics' },
+      { studentId: 'MATH-2024-016', name: 'Isaac Newton', age: 22, department: 'Mathematics' },
+      { studentId: 'MATH-2024-029', name: 'Ada Lovelace', age: 21, department: 'Mathematics' },
+      { studentId: 'MATH-2024-042', name: 'Carl Gauss', age: 23, department: 'Mathematics' },
       { studentId: 'ROB-2024-007', name: 'Julian Thorne', age: 26, department: 'Robotics' },
+      { studentId: 'ROB-2024-018', name: 'Penny Parker', age: 20, department: 'Robotics' },
+      { studentId: 'ROB-2024-031', name: 'Victor Stone', age: 22, department: 'Robotics' },
+      { studentId: 'ROB-2024-044', name: 'Arthur Pendelton', age: 24, department: 'Robotics' },
     ];
 
     try {
