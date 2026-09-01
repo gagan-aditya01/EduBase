@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { BookOpen, CheckCircle2, AlertCircle, Sparkles, GraduationCap } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { BookOpen, CheckCircle2, AlertCircle, Sparkles, GraduationCap, Download, TrendingUp, Award } from 'lucide-react';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
 import { TranscriptModal } from './TranscriptModal';
 import {
@@ -161,26 +161,82 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
     ? Array.from(new Set(availableCourses.map((c) => getSectionFromCourseCode(c.courseCode))))
     : SECTIONS_LIST;
 
-  // Filter available courses matching the selected section year (e.g. 4MATH -> 4th Year courses only)
+  // Filter available courses matching the selected section (dept + year e.g. 4MATH -> MATH401-403)
   const filterCoursesForSection = (sec: string, courses: any[]) => {
     if (!sec) return courses;
     const yearDigit = sec.match(/^\d+/)?.[0];
-    if (!yearDigit) return courses;
+    const deptCode = sec.replace(/^\d+/, '').toUpperCase();
 
     const filtered = courses.filter((c) => {
+      const codeUpper = (c.courseCode || '').toUpperCase();
+      const matchesDept = !deptCode || codeUpper.startsWith(deptCode);
+
+      let matchesYear = false;
       if (c.year) {
         const yDigit = c.year.match(/\d+/)?.[0];
-        if (yDigit === yearDigit) return true;
+        if (yDigit === yearDigit) matchesYear = true;
       }
       const codeMatch = c.courseCode.match(/[A-Z]+([1-4])\d{2}/);
-      if (codeMatch && codeMatch[1] === yearDigit) return true;
-      return false;
+      if (codeMatch && codeMatch[1] === yearDigit) matchesYear = true;
+
+      return matchesDept && matchesYear;
     });
 
     return filtered.length > 0 ? filtered : courses;
   };
 
   const scopedCoursesForSection = filterCoursesForSection(selectedSection, availableCourses);
+
+  // Compute live Class Performance Analytics for selected section gradebook
+  const performanceStats = useMemo(() => {
+    if (gradeRows.length === 0) return { avgScore: 0, passRate: 0, gradesCount: {} };
+    let totalScore = 0;
+    let passed = 0;
+    const counts: Record<string, number> = { O: 0, 'A+': 0, A: 0, 'B+': 0, B: 0, C: 0, P: 0, F: 0 };
+
+    gradeRows.forEach((r) => {
+      totalScore += r.totalWeightedScore;
+      if (r.letterGrade !== 'F') passed++;
+      counts[r.letterGrade] = (counts[r.letterGrade] || 0) + 1;
+    });
+
+    return {
+      avgScore: Math.round((totalScore / gradeRows.length) * 10) / 10,
+      passRate: Math.round((passed / gradeRows.length) * 100),
+      gradesCount: counts,
+    };
+  }, [gradeRows]);
+
+  // Export Section Gradebook spreadsheet to CSV file
+  const exportGradebookCSV = () => {
+    if (gradeRows.length === 0) return;
+
+    const headers = ['Registration ID', 'Student Name', 'Department', 'Section', 'Assign 1 (20)', 'Midterm (50)', 'Assign 2 (20)', 'EndSem (100)', 'Total Weighted %', 'Letter Grade', 'Grade Point'];
+
+    const rows = gradeRows.map((r) => [
+      `"${r.studentId}"`,
+      `"${r.name}"`,
+      `"${r.department}"`,
+      `"${r.section}"`,
+      r.assignment1,
+      r.midterm,
+      r.assignment2,
+      r.endSem,
+      r.totalWeightedScore.toFixed(1),
+      `"${r.letterGrade}"`,
+      r.gradePoint.toFixed(1),
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((row) => row.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `Gradebook_${selectedCourse}_${selectedSection}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   // Fetch fresh profile from MongoDB and strictly scope available courses
   useEffect(() => {
@@ -479,17 +535,71 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
             </Select>
           </div>
 
-          <div className="mt-4">
+          <div className="pt-4 flex items-center gap-2">
+            <button
+              onClick={exportGradebookCSV}
+              disabled={gradeRows.length === 0}
+              className={`px-3 py-2 rounded-full text-[11.5px] font-bold flex items-center gap-1.5 cursor-pointer transition-all border ${
+                isDark
+                  ? 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-200'
+                  : 'bg-white hover:bg-zinc-100 border-[#e5e2d9] text-zinc-800 shadow-sm'
+              }`}
+              title="Export Section Gradebook to CSV"
+            >
+              <Download size={13} />
+              <span>Export CSV</span>
+            </button>
+
             <LiquidMetalButton
-              label={saving ? 'Saving...' : 'Save & Publish Marks'}
+              label={saving ? "Saving..." : "Save & Publish Marks"}
               onClick={handleSaveAllGrades}
               width={155}
               fontSize={11.5}
-              theme={theme}
             />
           </div>
         </div>
       </div>
+
+      {/* Class Performance Analytics Summary Bar */}
+      {gradeRows.length > 0 && (
+        <div className={`p-4 rounded-2xl border grid grid-cols-2 md:grid-cols-4 gap-4 items-center ${
+          isDark ? 'bg-zinc-900/40 border-zinc-800/80' : 'bg-[#fcfbf9] border-[#e5e2d9]'
+        }`}>
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-xl border ${
+              isDark ? 'bg-zinc-800/60 border-zinc-700 text-emerald-400' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
+            }`}>
+              <TrendingUp size={18} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Class Average</span>
+              <span className="text-base font-mono font-black">{performanceStats.avgScore}%</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className={`p-2.5 rounded-xl border ${
+              isDark ? 'bg-zinc-800/60 border-zinc-700 text-teal-400' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
+            }`}>
+              <Award size={18} />
+            </div>
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Pass Rate</span>
+              <span className="text-base font-mono font-black">{performanceStats.passRate}%</span>
+            </div>
+          </div>
+
+          <div className="col-span-2 flex items-center justify-end gap-1.5 flex-wrap">
+            {Object.entries(performanceStats.gradesCount).map(([grade, count]) => (
+              count > 0 && (
+                <span key={grade} className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border ${getGradeBadgeColor(grade)}`}>
+                  {grade}: {count}
+                </span>
+              )
+            ))}
+          </div>
+        </div>
+      )}
 
       {errorMsg && (
         <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs flex items-center gap-2">
