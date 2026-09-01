@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-import { BookOpen, CheckCircle2, AlertCircle, Sparkles, GraduationCap, Download, TrendingUp, Award, AlertTriangle } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertCircle, Sparkles, GraduationCap, Download, TrendingUp, Award, AlertTriangle, Search, X } from 'lucide-react';
 import { LiquidMetalButton } from './ui/liquid-metal-button';
 import { TranscriptModal } from './TranscriptModal';
 import {
@@ -164,6 +164,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
   const [successMsg, setSuccessMsg] = useState('');
   const [transcriptStudent, setTranscriptStudent] = useState<any>(null);
   const [gradeFilter, setGradeFilter] = useState<string>('ALL');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Allowed sections: For Faculty, filter sections to ONLY match their assigned subjects. For Admin, show all.
   const activeRole = userProfile?.role || currentUser.role;
@@ -217,14 +218,27 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
     };
   }, [gradeRows]);
 
-  // Filter gradeRows by grade tier or Failures Only
+  // Filter gradeRows by grade tier or Failures Only + Search Query
   const filteredGradeRows = useMemo(() => {
-    if (gradeFilter === 'ALL') return gradeRows;
+    let list = gradeRows;
+
     if (gradeFilter === 'FAILURES' || gradeFilter === 'F') {
-      return gradeRows.filter((r) => r.letterGrade === 'F');
+      list = list.filter((r) => r.letterGrade === 'F');
+    } else if (gradeFilter !== 'ALL') {
+      list = list.filter((r) => r.letterGrade === gradeFilter);
     }
-    return gradeRows.filter((r) => r.letterGrade === gradeFilter);
-  }, [gradeRows, gradeFilter]);
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      list = list.filter(
+        (r) =>
+          r.name.toLowerCase().includes(q) ||
+          r.studentId.toLowerCase().includes(q)
+      );
+    }
+
+    return list;
+  }, [gradeRows, gradeFilter, searchQuery]);
   const exportGradebookCSV = () => {
     if (gradeRows.length === 0) return;
 
@@ -617,36 +631,65 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
         </div>
       </div>
 
-      {/* Class Performance Analytics Summary Bar */}
+            {/* Class Performance Analytics & Search Bar */}
       {gradeRows.length > 0 && (
-        <div className={`p-4 rounded-2xl border grid grid-cols-2 md:grid-cols-4 gap-4 items-center ${
-          isDark ? 'bg-zinc-900/40 border-zinc-800/80' : 'bg-[#fcfbf9] border-[#e5e2d9]'
-        }`}>
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl border ${
-              isDark ? 'bg-zinc-800/60 border-zinc-700 text-emerald-400' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
-            }`}>
-              <TrendingUp size={18} />
+        <div className="space-y-3">
+          <div className={`p-4 rounded-2xl border flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+            isDark ? 'bg-zinc-900/40 border-zinc-800/80' : 'bg-[#fcfbf9] border-[#e5e2d9]'
+          }`}>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl border ${
+                  isDark ? 'bg-zinc-800/60 border-zinc-700 text-emerald-400' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
+                }`}>
+                  <TrendingUp size={18} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Class Average</span>
+                  <span className="text-base font-mono font-black">{performanceStats.avgScore}%</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className={`p-2.5 rounded-xl border ${
+                  isDark ? 'bg-zinc-800/60 border-zinc-700 text-teal-400' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
+                }`}>
+                  <Award size={18} />
+                </div>
+                <div>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Pass Rate</span>
+                  <span className="text-base font-mono font-black">{performanceStats.passRate}%</span>
+                </div>
+              </div>
             </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Class Average</span>
-              <span className="text-base font-mono font-black">{performanceStats.avgScore}%</span>
+
+            {/* Search Student by Name or Reg ID */}
+            <div className="relative w-full md:w-72">
+              <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search student or Reg ID..."
+                className={`w-full pl-9 pr-8 py-2 rounded-2xl text-xs font-medium border outline-none transition-all ${
+                  isDark
+                    ? 'bg-zinc-950 border-zinc-800 text-zinc-100 placeholder-zinc-500 focus:border-zinc-700'
+                    : 'bg-white border-[#e5e2d9] text-[#191919] placeholder-zinc-400 focus:border-[#cc5a37]'
+                }`}
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-200 cursor-pointer"
+                >
+                  <X size={14} />
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className={`p-2.5 rounded-xl border ${
-              isDark ? 'bg-zinc-800/60 border-zinc-700 text-teal-400' : 'bg-white border-[#e5e2d9] text-[#cc5a37]'
-            }`}>
-              <Award size={18} />
-            </div>
-            <div>
-              <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Pass Rate</span>
-              <span className="text-base font-mono font-black">{performanceStats.passRate}%</span>
-            </div>
-          </div>
-
-          <div className="col-span-2 flex items-center justify-end gap-1.5 flex-wrap">
+          {/* Dynamic Clickable Grade Badges Bar */}
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
             <button
               onClick={() => setGradeFilter('ALL')}
               className={`px-2.5 py-1 rounded-xl text-[11px] font-mono font-bold border transition-all cursor-pointer ${
