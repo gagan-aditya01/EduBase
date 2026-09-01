@@ -450,7 +450,7 @@ export default function App() {
                   <SidebarLink
                     link={{
                       label: 'Gradebook Console',
-                      icon: <BookOpen size={18} className={theme === 'dark' ? 'text-indigo-400' : 'text-indigo-600'} />,
+                      icon: <BookOpen size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
                       onClick: () => setCurrentPage('gradebook'),
                     }}
                   />

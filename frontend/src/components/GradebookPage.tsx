@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { BookOpen, Save, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { BookOpen, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
+import { LiquidMetalButton } from './ui/liquid-metal-button';
 import {
   Select,
   SelectContent,
@@ -348,14 +349,14 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
 
   const getGradeBadgeColor = (grade: string) => {
     switch (grade) {
-      case 'O': return 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30';
-      case 'A+': return 'bg-teal-500/15 text-teal-400 border-teal-500/30';
-      case 'A': return 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30';
-      case 'B+': return 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30';
-      case 'B': return 'bg-blue-500/15 text-blue-400 border-blue-500/30';
-      case 'C': return 'bg-amber-500/15 text-amber-400 border-amber-500/30';
-      case 'P': return 'bg-purple-500/15 text-purple-400 border-purple-500/30';
-      default: return 'bg-red-500/15 text-red-400 border-red-500/30';
+      case 'O': return isDark ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'A+': return isDark ? 'bg-teal-500/15 text-teal-400 border-teal-500/30' : 'bg-teal-50 text-teal-700 border-teal-200';
+      case 'A': return isDark ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200';
+      case 'B+': return isDark ? 'bg-zinc-800 text-zinc-200 border-zinc-700' : 'bg-zinc-100 text-zinc-800 border-zinc-300';
+      case 'B': return isDark ? 'bg-zinc-800/80 text-zinc-300 border-zinc-700/80' : 'bg-zinc-50 text-zinc-700 border-zinc-200';
+      case 'C': return isDark ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'P': return isDark ? 'bg-orange-500/15 text-orange-400 border-orange-500/30' : 'bg-orange-50 text-orange-700 border-orange-200';
+      default: return isDark ? 'bg-red-500/15 text-red-400 border-red-500/30' : 'bg-red-50 text-red-700 border-red-200';
     }
   };
 
@@ -366,7 +367,9 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
         isDark ? 'bg-zinc-900/60 border-zinc-800' : 'bg-white border-[#e5e2d9]'
       }`}>
         <div className="flex items-center gap-3.5">
-          <div className="p-3 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+          <div className={`p-3 rounded-2xl border ${
+            isDark ? 'bg-zinc-800/60 border-zinc-700 text-zinc-200' : 'bg-[#f5f2eb] border-[#e5e2d9] text-[#cc5a37]'
+          }`}>
             <BookOpen size={24} />
           </div>
           <div>
@@ -374,18 +377,20 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
               isDark ? 'text-zinc-100' : 'text-[#191919]'
             }`}>
               Faculty Gradebook & Evaluation Console
-              <Sparkles size={18} className="text-indigo-400" />
+              <Sparkles size={18} className={isDark ? 'text-zinc-400' : 'text-[#cc5a37]'} />
             </h1>
-            <p className="text-xs text-zinc-500 mt-1">
+            <p className={isDark ? 'text-xs text-zinc-400 mt-1' : 'text-xs text-zinc-650 mt-1'}>
               Continuous Assessment Matrix • Assignment I (20) • Midterm (50) • Assignment II (20) • EndSem (100)
             </p>
           </div>
         </div>
 
-        {/* Section & Subject Filters */}
+        {/* Section & Subject Filters + Liquid Metal Button */}
         <div className="flex items-center gap-3">
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">Section</label>
+            <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${
+              isDark ? 'text-zinc-400' : 'text-zinc-650'
+            }`}>Section</label>
             <Select value={selectedSection} onValueChange={(val) => setSelectedSection(val)}>
               <SelectTrigger className={`w-28 rounded-2xl text-xs font-mono font-bold ${
                 isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
@@ -401,7 +406,9 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
           </div>
 
           <div>
-            <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1">Subject</label>
+            <label className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${
+              isDark ? 'text-zinc-400' : 'text-zinc-650'
+            }`}>Subject</label>
             <Select
               value={selectedCourse}
               onValueChange={(val) => {
@@ -417,7 +424,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
               <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
                 {availableCourses.map((c) => (
                   <SelectItem key={c.courseCode} value={c.courseCode} className="text-xs font-medium cursor-pointer">
-                    <span className="font-mono font-bold text-indigo-400 mr-1.5">{c.courseCode}</span>
+                    <span className={`font-mono font-bold mr-1.5 ${isDark ? 'text-zinc-300' : 'text-[#cc5a37]'}`}>{c.courseCode}</span>
                     {c.title}
                   </SelectItem>
                 ))}
@@ -425,18 +432,14 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
             </Select>
           </div>
 
-          <button
-            onClick={handleSaveAllGrades}
-            disabled={saving || gradeRows.length === 0}
-            className={`mt-4 px-5 py-2.5 rounded-2xl font-bold text-xs flex items-center gap-2 cursor-pointer shadow-lg transition-all ${
-              gradeRows.length > 0 && !saving
-                ? 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-500/20'
-                : 'bg-zinc-800 text-zinc-500 cursor-not-allowed border border-zinc-800'
-            }`}
-          >
-            <Save size={14} />
-            {saving ? 'Saving Marks...' : 'Save & Publish Marks'}
-          </button>
+          <div className="mt-4">
+            <LiquidMetalButton
+              label={saving ? 'Saving Marks...' : 'Save & Publish Marks'}
+              onClick={handleSaveAllGrades}
+              width={190}
+              theme={theme}
+            />
+          </div>
         </div>
       </div>
 
@@ -491,9 +494,9 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                 </tr>
               ) : (
                 gradeRows.map((r) => (
-                  <tr key={r.studentId} className={isDark ? 'hover:bg-zinc-800/30' : 'hover:bg-[#fbfaf7]'}>
-                    <td className="p-4 font-mono font-bold text-zinc-300">{r.studentId}</td>
-                    <td className="p-4 font-bold text-zinc-100">{r.name}</td>
+                  <tr key={r.studentId} className={isDark ? 'hover:bg-zinc-800/30' : 'hover:bg-[#f8f6f0]'}>
+                    <td className={`p-4 font-mono font-bold ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>{r.studentId}</td>
+                    <td className={`p-4 font-bold ${isDark ? 'text-zinc-100' : 'text-[#191919]'}`}>{r.name}</td>
 
                     {/* Assign 1 */}
                     <td className="p-3 text-center">
@@ -505,7 +508,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         onChange={(e) => handleMarkChange(r.studentId, 'assignment1', e.target.value)}
                         onFocus={(e) => e.target.select()}
                         className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
+                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
                         }`}
                       />
                     </td>
@@ -520,7 +523,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         onChange={(e) => handleMarkChange(r.studentId, 'midterm', e.target.value)}
                         onFocus={(e) => e.target.select()}
                         className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
+                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
                         }`}
                       />
                     </td>
@@ -535,7 +538,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         onChange={(e) => handleMarkChange(r.studentId, 'assignment2', e.target.value)}
                         onFocus={(e) => e.target.select()}
                         className={`w-16 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
+                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
                         }`}
                       />
                     </td>
@@ -550,13 +553,13 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                         onChange={(e) => handleMarkChange(r.studentId, 'endSem', e.target.value)}
                         onFocus={(e) => e.target.select()}
                         className={`w-20 text-center font-mono font-bold rounded-xl py-1.5 px-2 border focus:outline-none ${
-                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-indigo-500' : 'bg-white border-[#e5e2d9] text-[#191919]'
+                          isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-100 focus:border-zinc-500' : 'bg-[#fcfbf9] border-[#e5e2d9] text-[#191919] focus:border-[#cc5a37]'
                         }`}
                       />
                     </td>
 
                     {/* Weighted % */}
-                    <td className="p-4 text-center font-mono font-bold text-indigo-400">
+                    <td className={`p-4 text-center font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-[#cc5a37]'}`}>
                       {r.totalWeightedScore.toFixed(1)}%
                     </td>
 
@@ -568,7 +571,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                     </td>
 
                     {/* Grade Point */}
-                    <td className="p-4 text-center font-mono font-bold text-zinc-200">
+                    <td className={`p-4 text-center font-mono font-bold ${isDark ? 'text-zinc-200' : 'text-[#191919]'}`}>
                       {r.gradePoint.toFixed(1)}
                     </td>
                   </tr>
