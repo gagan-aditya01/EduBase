@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, CheckSquare, Square, ChevronLeft, ChevronRight, Edit2, Trash2, Key, Lock, Filter, X, CheckCircle2, ArrowUpDown } from 'lucide-react';
+import { Search, CheckSquare, Square, ChevronLeft, ChevronRight, Edit2, Trash2, Key, Lock, Filter, X, CheckCircle2, ArrowUpDown, Users, UserCheck } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -339,6 +339,55 @@ export function FacultyDirectory({ currentUser, theme = 'dark', addToast }: Facu
             onClick={handleOpenAddDrawer}
           />
         )}
+      </div>
+
+      {/* Top Faculty KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {/* Total Faculty Staff Card */}
+        <div className={`border p-5 rounded-2xl flex items-center gap-4 backdrop-blur-sm transition-all duration-300 ${
+          isDark ? 'bg-zinc-900/30 border-zinc-800/80' : 'bg-[#f5f2eb] border-[#e5e2d9] shadow-sm'
+        }`}>
+          <div className={`border p-3 rounded-xl ${
+            isDark ? 'bg-zinc-900 border-zinc-800 text-indigo-400' : 'bg-indigo-50 border-indigo-200 text-indigo-600'
+          }`}>
+            <Users size={20} />
+          </div>
+          <div>
+            <span className={`block text-xs font-semibold uppercase tracking-wider ${
+              isDark ? 'text-zinc-500' : 'text-[#cc5a37]'
+            }`}>
+              Total Staff
+            </span>
+            <span className={`text-2xl font-bold tracking-tight ${
+              isDark ? 'text-zinc-100' : 'text-[#191919]'
+            }`}>
+              {facultyUsers.length}
+            </span>
+          </div>
+        </div>
+
+        {/* Active Faculty Staff Card */}
+        <div className={`border p-5 rounded-2xl flex items-center gap-4 backdrop-blur-sm transition-all duration-300 ${
+          isDark ? 'bg-zinc-900/30 border-zinc-800/80' : 'bg-[#f5f2eb] border-[#e5e2d9] shadow-sm'
+        }`}>
+          <div className={`border p-3 rounded-xl ${
+            isDark ? 'bg-zinc-900 border-zinc-800 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-600'
+          }`}>
+            <UserCheck size={20} />
+          </div>
+          <div>
+            <span className={`block text-xs font-semibold uppercase tracking-wider ${
+              isDark ? 'text-zinc-500' : 'text-[#cc5a37]'
+            }`}>
+              Active Staff
+            </span>
+            <span className={`text-2xl font-bold tracking-tight ${
+              isDark ? 'text-zinc-100' : 'text-[#191919]'
+            }`}>
+              {facultyUsers.filter((f) => (f.status || 'Active') === 'Active').length}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Radix UI Filter & Sort Bar */}
