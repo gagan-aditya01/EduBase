@@ -446,14 +446,38 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
 
   const getGradeBadgeColor = (grade: string) => {
     switch (grade) {
-      case 'O': return isDark ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30' : 'bg-emerald-50 text-emerald-700 border-emerald-200';
-      case 'A+': return isDark ? 'bg-teal-500/15 text-teal-400 border-teal-500/30' : 'bg-teal-50 text-teal-700 border-teal-200';
-      case 'A': return isDark ? 'bg-cyan-500/15 text-cyan-400 border-cyan-500/30' : 'bg-cyan-50 text-cyan-700 border-cyan-200';
-      case 'B+': return isDark ? 'bg-zinc-800 text-zinc-200 border-zinc-700' : 'bg-zinc-100 text-zinc-800 border-zinc-300';
-      case 'B': return isDark ? 'bg-zinc-800/80 text-zinc-300 border-zinc-700/80' : 'bg-zinc-50 text-zinc-700 border-zinc-200';
-      case 'C': return isDark ? 'bg-amber-500/15 text-amber-400 border-amber-500/30' : 'bg-amber-50 text-amber-700 border-amber-200';
-      case 'P': return isDark ? 'bg-orange-500/15 text-orange-400 border-orange-500/30' : 'bg-orange-50 text-orange-700 border-orange-200';
-      default: return isDark ? 'bg-red-500/15 text-red-400 border-red-500/30' : 'bg-red-50 text-red-700 border-red-200';
+      case 'O':
+        return isDark
+          ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-bold'
+          : 'bg-emerald-100/90 text-emerald-900 border-emerald-300 font-bold';
+      case 'A+':
+        return isDark
+          ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/20 font-bold'
+          : 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold';
+      case 'A':
+        return isDark
+          ? 'bg-zinc-800 text-zinc-200 border-zinc-700 font-bold'
+          : 'bg-[#f0ede6] text-zinc-900 border-[#d8d4c8] font-bold';
+      case 'B+':
+        return isDark
+          ? 'bg-zinc-800/80 text-zinc-300 border-zinc-700/80 font-medium'
+          : 'bg-[#f5f2eb] text-zinc-800 border-[#e5e2d9] font-semibold';
+      case 'B':
+        return isDark
+          ? 'bg-zinc-850 text-zinc-400 border-zinc-800 font-medium'
+          : 'bg-[#f8f6f0] text-zinc-700 border-[#e5e2d9] font-medium';
+      case 'C':
+        return isDark
+          ? 'bg-amber-500/15 text-amber-400 border-amber-500/30 font-bold'
+          : 'bg-amber-100/80 text-amber-900 border-amber-300 font-bold';
+      case 'P':
+        return isDark
+          ? 'bg-stone-500/15 text-stone-300 border-stone-500/30 font-bold'
+          : 'bg-[#eae6dd] text-zinc-800 border-[#d0cbbe] font-bold';
+      default:
+        return isDark
+          ? 'bg-red-500/15 text-red-400 border-red-500/30 font-bold'
+          : 'bg-red-100/90 text-red-900 border-red-300 font-bold';
     }
   };
 

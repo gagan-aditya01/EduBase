@@ -102,12 +102,40 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
   };
 
   const getAcademicStanding = (cgpa: number) => {
-    if (cgpa >= 8.5) return { text: 'First Class with Distinction', color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' };
-    if (cgpa >= 7.0) return { text: 'First Class', color: 'text-teal-400 bg-teal-500/10 border-teal-500/30' };
-    if (cgpa >= 6.0) return { text: 'Second Class Upper', color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/30' };
-    if (cgpa >= 5.0) return { text: 'Second Class', color: 'text-amber-400 bg-amber-500/10 border-amber-500/30' };
-    if (cgpa >= 4.0) return { text: 'Pass Division', color: 'text-purple-400 bg-purple-500/10 border-purple-500/30' };
-    return { text: 'Re-evaluation Required', color: 'text-red-400 bg-red-500/10 border-red-500/30' };
+    if (cgpa >= 8.5) {
+      return {
+        text: 'First Class with Distinction',
+        color: isDark ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30 font-bold' : 'text-emerald-900 bg-emerald-100/90 border-emerald-300 font-bold',
+      };
+    }
+    if (cgpa >= 7.0) {
+      return {
+        text: 'First Class',
+        color: isDark ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20 font-bold' : 'text-emerald-800 bg-emerald-50 border-emerald-200 font-bold',
+      };
+    }
+    if (cgpa >= 6.0) {
+      return {
+        text: 'Second Class Upper',
+        color: isDark ? 'text-zinc-200 bg-zinc-800 border-zinc-700 font-bold' : 'text-zinc-900 bg-[#f0ede6] border-[#d8d4c8] font-bold',
+      };
+    }
+    if (cgpa >= 5.0) {
+      return {
+        text: 'Second Class',
+        color: isDark ? 'text-zinc-300 bg-zinc-850 border-zinc-700 font-medium' : 'text-zinc-800 bg-[#f5f2eb] border-[#e5e2d9] font-medium',
+      };
+    }
+    if (cgpa >= 4.0) {
+      return {
+        text: 'Pass Division',
+        color: isDark ? 'text-amber-400 bg-amber-500/10 border-amber-500/30 font-bold' : 'text-amber-900 bg-amber-100/80 border-amber-300 font-bold',
+      };
+    }
+    return {
+      text: 'Re-evaluation Required',
+      color: isDark ? 'text-red-400 bg-red-500/10 border-red-500/30 font-bold' : 'text-red-900 bg-red-100/90 border-red-300 font-bold',
+    };
   };
 
   return createPortal(
