@@ -35,6 +35,80 @@ interface GradebookPageProps {
   addToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
+const FALLBACK_COURSES = [
+  // --- Computer Science ---
+  { courseCode: 'CS101', title: 'C Programming & Logic Building', department: 'Computer Science', year: '1st Year', credits: 4 },
+  { courseCode: 'CS102', title: 'Web Technologies & Design', department: 'Computer Science', year: '1st Year', credits: 3 },
+  { courseCode: 'CS103', title: 'Digital Electronics & Logic', department: 'Computer Science', year: '1st Year', credits: 3 },
+  { courseCode: 'CS201', title: 'Data Structures & Algorithms', department: 'Computer Science', year: '2nd Year', credits: 4 },
+  { courseCode: 'CS202', title: 'Computer Networks & Protocols', department: 'Computer Science', year: '2nd Year', credits: 3 },
+  { courseCode: 'CS203', title: 'Object Oriented Programming in Java', department: 'Computer Science', year: '2nd Year', credits: 4 },
+  { courseCode: 'CS301', title: 'Operating Systems & Architecture', department: 'Computer Science', year: '3rd Year', credits: 3 },
+  { courseCode: 'CS302', title: 'Database Management Systems', department: 'Computer Science', year: '3rd Year', credits: 4 },
+  { courseCode: 'CS303', title: 'Software Engineering Principles', department: 'Computer Science', year: '3rd Year', credits: 3 },
+  { courseCode: 'CS401', title: 'Artificial Intelligence & ML', department: 'Computer Science', year: '4th Year', credits: 4 },
+  { courseCode: 'CS402', title: 'Cloud Computing & Distributed Systems', department: 'Computer Science', year: '4th Year', credits: 3 },
+  { courseCode: 'CS403', title: 'Cyber Security & Cryptography', department: 'Computer Science', year: '4th Year', credits: 3 },
+
+  // --- ADSE ---
+  { courseCode: 'ADSE101', title: 'Software Process Fundamentals', department: 'ADSE', year: '1st Year', credits: 3 },
+  { courseCode: 'ADSE102', title: 'Python Application Programming', department: 'ADSE', year: '1st Year', credits: 4 },
+  { courseCode: 'ADSE103', title: 'Mathematical Foundations for Engineering', department: 'ADSE', year: '1st Year', credits: 3 },
+  { courseCode: 'ADSE201', title: 'Agile Systems Development', department: 'ADSE', year: '2nd Year', credits: 3 },
+  { courseCode: 'ADSE202', title: 'Software Architecture & Patterns', department: 'ADSE', year: '2nd Year', credits: 4 },
+  { courseCode: 'ADSE203', title: 'UI/UX Engineering & Design', department: 'ADSE', year: '2nd Year', credits: 3 },
+  { courseCode: 'ADSE301', title: 'Enterprise DevOps & CI/CD Pipelines', department: 'ADSE', year: '3rd Year', credits: 4 },
+  { courseCode: 'ADSE302', title: 'Microservices & API Architecture', department: 'ADSE', year: '3rd Year', credits: 4 },
+  { courseCode: 'ADSE303', title: 'Software Quality Assurance & Testing', department: 'ADSE', year: '3rd Year', credits: 3 },
+  { courseCode: 'ADSE401', title: 'Cloud Native Application Design', department: 'ADSE', year: '4th Year', credits: 4 },
+  { courseCode: 'ADSE402', title: 'Big Data & Analytics Pipelines', department: 'ADSE', year: '4th Year', credits: 4 },
+  { courseCode: 'ADSE403', title: 'Enterprise Capstone Project', department: 'ADSE', year: '4th Year', credits: 6 },
+
+  // --- Mathematics ---
+  { courseCode: 'MATH101', title: 'Calculus & Analytical Geometry', department: 'Mathematics', year: '1st Year', credits: 4 },
+  { courseCode: 'MATH102', title: 'Linear Algebra & Matrices', department: 'Mathematics', year: '1st Year', credits: 4 },
+  { courseCode: 'MATH103', title: 'Vector Algebra & Coordinate Geometry', department: 'Mathematics', year: '1st Year', credits: 3 },
+  { courseCode: 'MATH201', title: 'Multivariable Calculus', department: 'Mathematics', year: '2nd Year', credits: 4 },
+  { courseCode: 'MATH202', title: 'Ordinary Differential Equations', department: 'Mathematics', year: '2nd Year', credits: 4 },
+  { courseCode: 'MATH203', title: 'Real Analysis & Sequences', department: 'Mathematics', year: '2nd Year', credits: 3 },
+  { courseCode: 'MATH301', title: 'Discrete Mathematics & Graph Theory', department: 'Mathematics', year: '3rd Year', credits: 3 },
+  { courseCode: 'MATH302', title: 'Numerical Analysis & Computation', department: 'Mathematics', year: '3rd Year', credits: 4 },
+  { courseCode: 'MATH303', title: 'Complex Variables & Transforms', department: 'Mathematics', year: '3rd Year', credits: 3 },
+  { courseCode: 'MATH401', title: 'Probability Theory & Applied Statistics', department: 'Mathematics', year: '4th Year', credits: 4 },
+  { courseCode: 'MATH402', title: 'Abstract Algebra & Group Theory', department: 'Mathematics', year: '4th Year', credits: 4 },
+  { courseCode: 'MATH403', title: 'Optimization Techniques & Operations Research', department: 'Mathematics', year: '4th Year', credits: 3 },
+
+  // --- Electrical Engineering ---
+  { courseCode: 'EE101', title: 'Basic Electrical Engineering', department: 'Electrical Engineering', year: '1st Year', credits: 3 },
+  { courseCode: 'EE102', title: 'Engineering Circuit Analysis', department: 'Electrical Engineering', year: '1st Year', credits: 4 },
+  { courseCode: 'EE201', title: 'Electromagnetic Field Theory', department: 'Electrical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'EE202', title: 'Signals & Systems Analysis', department: 'Electrical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'EE301', title: 'Linear Control Systems', department: 'Electrical Engineering', year: '3rd Year', credits: 3 },
+  { courseCode: 'EE302', title: 'Analog & Digital Electronics', department: 'Electrical Engineering', year: '3rd Year', credits: 4 },
+  { courseCode: 'EE401', title: 'Power Electronics & Drives', department: 'Electrical Engineering', year: '4th Year', credits: 4 },
+  { courseCode: 'EE402', title: 'Microprocessors & Embedded Systems', department: 'Electrical Engineering', year: '4th Year', credits: 4 },
+
+  // --- Mechanical Engineering ---
+  { courseCode: 'ME101', title: 'Engineering Mechanics & Statics', department: 'Mechanical Engineering', year: '1st Year', credits: 3 },
+  { courseCode: 'ME102', title: 'Engineering Graphics & 3D CAD', department: 'Mechanical Engineering', year: '1st Year', credits: 3 },
+  { courseCode: 'ME201', title: 'Engineering Thermodynamics', department: 'Mechanical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'ME202', title: 'Strength of Materials & Mechanics', department: 'Mechanical Engineering', year: '2nd Year', credits: 4 },
+  { courseCode: 'ME301', title: 'Fluid Mechanics & Machinery', department: 'Mechanical Engineering', year: '3rd Year', credits: 4 },
+  { courseCode: 'ME302', title: 'Manufacturing & Casting Technology', department: 'Mechanical Engineering', year: '3rd Year', credits: 3 },
+  { courseCode: 'ME401', title: 'Heat & Mass Transfer', department: 'Mechanical Engineering', year: '4th Year', credits: 4 },
+  { courseCode: 'ME402', title: 'Machine Element Design', department: 'Mechanical Engineering', year: '4th Year', credits: 4 },
+
+  // --- Robotics ---
+  { courseCode: 'ROB101', title: 'Introduction to Robotics & Automation', department: 'Robotics', year: '1st Year', credits: 3 },
+  { courseCode: 'ROB102', title: 'Embedded C Programming for Controllers', department: 'Robotics', year: '1st Year', credits: 3 },
+  { courseCode: 'ROB201', title: 'Sensors, Transducers & Actuators', department: 'Robotics', year: '2nd Year', credits: 4 },
+  { courseCode: 'ROB202', title: 'Microcontroller Architecture & Interfaces', department: 'Robotics', year: '2nd Year', credits: 4 },
+  { courseCode: 'ROB301', title: 'Robot Kinematics & Dynamics', department: 'Robotics', year: '3rd Year', credits: 4 },
+  { courseCode: 'ROB302', title: 'Mechatronics Systems Design', department: 'Robotics', year: '3rd Year', credits: 3 },
+  { courseCode: 'ROB401', title: 'Autonomous Navigation & Robot Operating System (ROS)', department: 'Robotics', year: '4th Year', credits: 4 },
+  { courseCode: 'ROB402', title: 'Computer Vision for Robotics', department: 'Robotics', year: '4th Year', credits: 4 },
+];
+
 const SECTIONS_LIST = ['3CS', '2CS', '4CS', '1CS', '3EE', '2EE', '3ME', '2ME', '3ADSE', '2ADSE', '3MATH', '3ROB'];
 
 const getSectionFromCourseCode = (code: string) => {
@@ -45,20 +119,43 @@ const getSectionFromCourseCode = (code: string) => {
 };
 
 export function GradebookPage({ currentUser, theme = 'dark', addToast }: GradebookPageProps) {
-  const [selectedSection, setSelectedSection] = useState('3CS');
-  const [selectedCourse, setSelectedCourse] = useState('CS301');
-  const [availableCourses, setAvailableCourses] = useState<any[]>([]);
+  const isDark = theme === 'dark';
+  const isFaculty = currentUser.role === 'faculty';
+  const userDept = currentUser.assignedDepartment || 'Computer Science';
+  const userSubjects = currentUser.assignedSubjects || [];
+
+  // Filter initial available courses for Faculty vs Admin
+  const getInitialCourses = () => {
+    if (isFaculty) {
+      if (userSubjects.length > 0) {
+        const filtered = FALLBACK_COURSES.filter((c) => userSubjects.includes(c.courseCode));
+        if (filtered.length > 0) return filtered;
+      }
+      const deptFiltered = FALLBACK_COURSES.filter((c) => c.department.toLowerCase().includes(userDept.toLowerCase()));
+      if (deptFiltered.length > 0) return deptFiltered;
+    }
+    return FALLBACK_COURSES;
+  };
+
+  const initialList = getInitialCourses();
+  const initialDefaultCode = initialList[0]?.courseCode || 'CS301';
+  const initialDefaultSection = getSectionFromCourseCode(initialDefaultCode);
+
+  const [selectedSection, setSelectedSection] = useState(initialDefaultSection);
+  const [selectedCourse, setSelectedCourse] = useState(initialDefaultCode);
+  const [availableCourses, setAvailableCourses] = useState<any[]>(initialList);
   const [gradeRows, setGradeRows] = useState<StudentGradeRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const isDark = theme === 'dark';
-  const isFaculty = currentUser.role === 'faculty';
-  const userDept = currentUser.assignedDepartment || 'Computer Science';
+  // Allowed sections: For Faculty, filter sections to match their courses. For Admin, show all.
+  const allowedSections = isFaculty
+    ? Array.from(new Set(availableCourses.map((c) => getSectionFromCourseCode(c.courseCode))))
+    : SECTIONS_LIST;
 
-  // Fetch available courses and scope to Faculty assigned subjects
+  // Fetch available courses from server
   useEffect(() => {
     const fetchCourses = async () => {
       try {
@@ -66,28 +163,27 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
           headers: { Authorization: `Bearer ${currentUser.token}` },
         });
         const data = await res.json();
-        if (Array.isArray(data)) {
+        if (Array.isArray(data) && data.length > 0) {
           let filteredCourses = data;
           if (isFaculty) {
-            const userSubjects = currentUser.assignedSubjects || [];
             if (userSubjects.length > 0) {
               filteredCourses = data.filter((c) => userSubjects.includes(c.courseCode));
             } else {
-              filteredCourses = data.filter((c) => c.department.toLowerCase() === userDept.toLowerCase());
+              filteredCourses = data.filter((c) => c.department.toLowerCase().includes(userDept.toLowerCase()));
             }
           }
 
           const activeList = filteredCourses.length > 0 ? filteredCourses : data;
           setAvailableCourses(activeList);
 
-          if (activeList.length > 0) {
+          if (activeList.length > 0 && !activeList.some((c) => c.courseCode === selectedCourse)) {
             const defaultCode = activeList[0].courseCode;
             setSelectedCourse(defaultCode);
             setSelectedSection(getSectionFromCourseCode(defaultCode));
           }
         }
       } catch (err) {
-        // Fallback
+        // Fallback already active
       }
     };
     fetchCourses();
@@ -246,7 +342,7 @@ export function GradebookPage({ currentUser, theme = 'dark', addToast }: Gradebo
                 <SelectValue placeholder="Section" />
               </SelectTrigger>
               <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
-                {SECTIONS_LIST.map((sec) => (
+                {allowedSections.map((sec) => (
                   <SelectItem key={sec} value={sec} className="text-xs font-mono font-bold cursor-pointer">{sec}</SelectItem>
                 ))}
               </SelectContent>
