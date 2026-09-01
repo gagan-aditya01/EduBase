@@ -78,7 +78,8 @@ const getStudents = async (req, res) => {
   try {
     const { studentId, name, age, minAge, maxAge, department, createdBy, search, page, limit } = req.query;
 
-    const cacheKey = `students_${JSON.stringify(req.query)}`;
+    const userId = req.user ? req.user._id : 'anon';
+    const cacheKey = `students_${userId}_${JSON.stringify(req.query)}`;
     const cachedData = memoryCache.get(cacheKey);
     if (cachedData) {
       res.setHeader('X-Cache', 'HIT');
@@ -87,13 +88,6 @@ const getStudents = async (req, res) => {
 
     // Filter out soft-deleted items
     const filter = { isDeleted: { $ne: true } };
-
-    // Faculty Department Scoping Guard
-    if (req.user && req.user.role === 'faculty') {
-      if (req.user.assignedDepartment) {
-        filter.department = new RegExp(`^${req.user.assignedDepartment.trim()}$`, 'i');
-      }
-    }
 
     if (search) {
       const searchRegex = new RegExp(search.trim(), 'i');
@@ -108,6 +102,11 @@ const getStudents = async (req, res) => {
     if (name) filter.name = { $regex: new RegExp(name.trim(), 'i') };
     if (department) filter.department = { $regex: new RegExp(department.trim(), 'i') };
     if (createdBy) filter.createdBy = { $regex: new RegExp(createdBy.trim(), 'i') };
+
+    // Mandatory Faculty Department Isolation Guard (Overrides any query params for Faculty)
+    if (req.user && req.user.role === 'faculty' && req.user.assignedDepartment) {
+      filter.department = new RegExp(`^${req.user.assignedDepartment.trim()}$`, 'i');
+    }
 
     if (age) {
       filter.age = Number(age);
