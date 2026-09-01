@@ -1,60 +1,60 @@
-# 🎓 EduBase ERP - Enterprise Multi-Tenant University ERP Platform
+# 🎓 EduBase ERP - Enterprise Academic Management Portal
 
-EduBase is a high-throughput, microservices-ready Enterprise University Resource Planning (ERP) platform designed for multi-department academic governance, complex gradebook evaluation, and real-time student self-service telemetry. Built on **Node.js, Express 5, MongoDB Atlas, React 18, TypeScript, Tailwind CSS, Recharts, Framer Motion, and Docker**.
+EduBase is a full-stack Enterprise Resource Planning (ERP) platform built for universities and higher education institutions. It streamlines student lifecycle management, faculty administration, section gradebooks, and academic analytics within a secure, multi-tenant environment.
+
+Built with **React 18, TypeScript, Node.js, Express, MongoDB Atlas, Tailwind CSS, Recharts, Framer Motion, and Docker**.
 
 [![Git Commit](https://img.shields.io/github/last-commit/gagan-aditya01/EduBase?style=flat-square&color=blue)](https://github.com/gagan-aditya01/EduBase.git)
-[![Docker Support](https://img.shields.io/badge/Docker-Enterprise_Ready-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/gagan-aditya01/EduBase.git)
+[![Docker Support](https://img.shields.io/badge/Docker-Supported-2496ED?style=flat-square&logo=docker&logoColor=white)](https://github.com/gagan-aditya01/EduBase.git)
 [![Automated Tests](https://img.shields.io/badge/Jest-100%25_Passing-brightgreen?style=flat-square&logo=jest)](https://github.com/gagan-aditya01/EduBase.git)
 
 ---
 
-## 🌟 Technology Stack & Infrastructure
+## 🛠️ Technology Stack
 
-| Layer | System Components & Frameworks |
+| Architecture Layer | Technologies & Frameworks |
 | :--- | :--- |
-| **Frontend Architecture** | React 18, TypeScript, Vite, Vanilla CSS Design System, Tailwind CSS, Recharts, Framer Motion, `@paper-design/shaders` |
-| **Backend Engine** | Node.js Runtime, Express 5 Framework, Mongoose ORM, Dual-Token JWT Security (`bcryptjs`), Async Task Queue, SSE Telemetry |
-| **Database Architecture** | MongoDB Atlas / Local MongoDB (Relational Mongoose `.populate()`, Multi-Faceted Aggregation Pipelines) |
-| **Performance & Caching** | User-Isolated In-Memory Cache Engine (`X-Cache: HIT/MISS` headers with automatic cache invalidation) |
-| **Quality Assurance** | Jest Test Suite, Supertest API Automation (100% End-to-End Integration Passing Coverage) |
-| **Containerization** | Docker, Docker Compose, Nginx Container Networking |
+| **Frontend** | React 18, TypeScript, Vite, Tailwind CSS, Recharts, Framer Motion, `@paper-design/shaders` |
+| **Backend API** | Node.js, Express 5, Mongoose ORM, Dual-Token JWT Authentication (`bcryptjs`), Multer |
+| **Database** | MongoDB Atlas (Relational Data Modeling via `.populate()`, Multi-Stage Aggregations) |
+| **Performance & Caching** | User-Isolated Memory Caching (`X-Cache` Headers), Non-Blocking Event Queues, SSE Streams |
+| **Testing & CI/CD** | Jest, Supertest Automated Integration Suite (100% Endpoint Coverage) |
+| **DevOps & Containers** | Docker, Docker Compose, Nginx Reverse Proxy |
 
 ---
 
-## ⚡ Key Enterprise ERP System Modules & Technical Capabilities
+## ✨ System Modules & Features
 
-### 1. 🎓 Student Self-Service Telemetry & Transcript Engine
-- **Reverse-Algorithmic Authentication**: Secure student authentication using Registration ID (*e.g., `231001`*) and reverse-string password verification against MongoDB `Student` records with priority routing over standard user tables.
-- **Active Enrolment Dashboard**: Dynamic curriculum course matching engine cross-referencing student department and academic year to render active enrolled subjects (*e.g., `CS401`, `CS402`, `CS403`*).
-- **Strict Completed Academic Years Evaluation**: Enforces `courseYear < studentYear` relational boundary. Evaluates marks exclusively for completed academic years (*e.g., 3rd-year students access 1st & 2nd-year SGPA sheets only*).
-- **Vector-Rendered Certified PDF Transcripts**: Dynamic client-side transcript generator producing official university transcripts with cumulative CGPA computation (`totalGradePointsWeighted / totalCredits`).
+### 🎓 Student Self-Service Portal
+- **Student Authentication**: Secure sign-in using Registration ID and reverse-ID security credentials.
+- **Active Academic Dashboard**: Displays profile metadata, cumulative CGPA status, and currently enrolled curriculum courses.
+- **Academic Performance Sheets**: Displays year-wise mark sheets (1st Year, 2nd Year, 3rd Year) with calculated Year SGPA for completed academic years.
+- **Official Certified Transcripts**: One-click generation of printable university academic transcripts with PDF export capabilities.
 
-### 2. 👨‍🏫 Faculty Academic Gradebook & Evaluation Engine
-- **Fine-Grained Department Scoping & Query Isolation**: Department-level isolation enforcing regex boundaries (`new RegExp('^Department$', 'i')`) so faculty members access student records and analytics exclusively within their assigned department.
-- **Weighted 100-Point Assessment Formula**:
-  $$\text{Weighted Score \%} = \left(\frac{\text{Assign 1}}{20} \times 10\right) + \left(\frac{\text{Midterm}}{50} \times 20\right) + \left(\frac{\text{Assign 2}}{20} \times 10\right) + \left(\frac{\text{EndSem}}{100} \times 60\right)$$
-- **Automated Letter Grade Mapping**: Instant letter grade resolution (`O`, `A+`, `A`, `B+`, `B`, `C`, `P`, `F`) and 10-point grade scale calculation.
-- **Live Performance Analytics Bar**: Real-time evaluation metrics displaying class average, pass rate percentage, and interactive grade distribution badges (`O` to `F`).
+### 👨‍🏫 Faculty Academic Console
+- **Department-Scoped Workspace**: Department isolation restricting faculty members strictly to students and analytics within their assigned department.
+- **Gradebook Evaluation Engine**: Section-based gradebook supporting weighted evaluation (*Assignment 1, Midterm, Assignment 2, End-Semester*) with automatic letter grade resolution (`O`, `A+`, `A`, `B+`, `B`, `C`, `P`, `F`).
+- **Live Class Performance Analytics**: Real-time evaluation summary featuring class average scores, pass rate percentages, and dynamic grade distribution badges.
 
-### 3. 🛡️ Enterprise Security, Audit Trails & Governance
-- **Immutable System Audit Event Stream**: Asynchronous event queue (`BackgroundQueue`) logging all user authentications, student mutations, faculty creations, and security operations to an append-only audit trail.
-- **Non-Destructive Soft-Delete & Admin Recovery**: System-wide soft deletion (`isDeleted: true`, `deletedAt: Date`) with Admin Trash Bin console for one-click record restoration or permanent database purging.
-- **Automated Faculty Provisioning & 4-Digit Identity Generation**: Admin console generating faculty accounts with auto-assigned 4-digit IDs (*e.g. `4008`*) and reverse-ID initial passwords.
-- **User-Isolated High-Performance RAM Cache**: Custom TTL memory cache tagged with `userId` to eliminate cross-session data leaks while maintaining sub-millisecond API responses.
+### 🛡️ Administrator ERP Governance
+- **Faculty Directory Management**: Complete faculty staff management console supporting account creation, department assignment, and automated 4-digit numeric ID generation.
+- **System Audit Trail**: Real-time audit logging tracking user sign-ins, profile edits, mark submissions, and security events.
+- **Soft Delete & Data Recovery**: Non-destructive record protection with an Admin Trash Console for restoring or permanently purging records.
+- **Batch CSV Data Import**: Drag-and-drop CSV importer with automated data validation and error handling.
 
-### 4. 📊 Multi-Faceted MongoDB Aggregation Analytics
-- **Multi-Pipeline Demographics Engine**: Executes multi-stage Aggregation Pipelines (`$facet`, `$group`, `$bucket`) delivering real-time department enrolment ratios, age distribution buckets, and section performance charts.
-- **Real-Time Server-Sent Events (SSE)**: SSE event pipeline broadcasting live student registration and evaluation events to connected client sessions without polling overhead.
+### 📊 Enterprise Analytics & Reporting
+- **Real-Time Analytics Dashboard**: Visual analytics powered by MongoDB aggregation pipelines, featuring department enrolment distributions, age demographics, and academic trend charts.
+- **Real-Time Event Telemetry**: Server-Sent Events (SSE) broadcasting live student updates and grade submissions across active user sessions.
 
 ---
 
-## 🛠️ Local Development & Deployment
+## 🚀 Local Installation & Setup
 
 ### Prerequisites
-- **Node.js**: v18+ or v20+
-- **MongoDB**: MongoDB Atlas Cluster URI or local instance (`mongodb://localhost:27017/edubase`)
+- **Node.js**: v18.0.0 or higher
+- **MongoDB**: MongoDB Atlas Cluster URI or local MongoDB server (`mongodb://localhost:27017/edubase`)
 
-### 1. Clone & Install
+### 1. Clone Repository & Install Dependencies
 ```bash
 git clone https://github.com/gagan-aditya01/EduBase.git
 cd EduBase
@@ -62,14 +62,14 @@ cd EduBase
 # Install backend dependencies
 npm install
 
-# Install frontend client dependencies
+# Install frontend dependencies
 cd frontend
 npm install
 cd ..
 ```
 
 ### 2. Environment Configuration
-Create `backend/.env`:
+Create a `.env` file inside `backend/`:
 ```env
 PORT=5050
 MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/edubase?retryWrites=true&w=majority
@@ -77,35 +77,35 @@ JWT_SECRET=supersecretkey123
 JWT_REFRESH_SECRET=supersecretrefreshkey456
 ```
 
-### 3. Launch Development Instance
+### 3. Start Development Servers
 ```bash
-# Terminal 1: Backend ERP API Server (Port 5050)
+# Start Backend API Server (Port 5050)
 node backend/src/server.js
 
-# Terminal 2: Frontend Vite React App (Port 5173)
+# Start Frontend Dev Server (Port 5173)
 cd frontend
 npm run dev
 ```
 
 ---
 
-## 🐳 Containerized Deployment (Docker & Docker Compose)
+## 🐳 Running with Docker
 
-Deploy the multi-container production stack (**Node.js Backend + Vite Frontend Client + Local MongoDB Atlas Mirror**) using Docker Compose:
+Deploy the complete stack (**Backend API, React Frontend, Local MongoDB**) using Docker Compose:
 
 ```bash
 docker-compose up --build
 ```
 
-- **ERP Frontend Web Client**: `http://localhost:3000`
-- **ERP REST API Service**: `http://localhost:5050`
-- **MongoDB Database Container**: `localhost:27017`
+- **Frontend Client**: `http://localhost:3000`
+- **Backend API Service**: `http://localhost:5050`
+- **MongoDB Instance**: `localhost:27017`
 
 ---
 
-## 🧪 Integration Testing Suite
+## 🧪 Automated Testing
 
-Execute the Jest + Supertest API integration suite:
+Execute the Jest + Supertest automated API integration test suite:
 
 ```bash
 npm test
