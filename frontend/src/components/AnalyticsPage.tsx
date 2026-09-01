@@ -90,12 +90,14 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
   const overall = data?.overall?.[0] || { totalStudents: 0, avgAge: 0, minAge: 0, maxAge: 0 };
   
   // Student Pie Chart Data
-  const studentPieData = (data?.departmentBreakdown || []).map((item) => ({
-    name: item._id || 'Unassigned',
-    shortCode: DEPT_SHORT_CODES[item._id] || item._id,
-    value: item.count,
-    color: DEPT_COLORS[item._id] || '#6366f1',
-  }));
+  const studentPieData = (data?.departmentBreakdown || [])
+    .filter((item) => item._id && DEPT_SHORT_CODES[item._id])
+    .map((item) => ({
+      name: item._id,
+      shortCode: DEPT_SHORT_CODES[item._id] || item._id,
+      value: item.count,
+      color: DEPT_COLORS[item._id] || '#6366f1',
+    }));
 
   // Faculty/Teacher Pie Chart Data
   const rawFacultyDept = data?.facultyDepartmentBreakdown && data.facultyDepartmentBreakdown.length > 0
@@ -270,8 +272,8 @@ export function AnalyticsPage({ currentUser, theme = 'dark' }: AnalyticsPageProp
               />
               <Legend
                 formatter={(value) => (
-                  <span className={`text-xs font-bold px-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                    {DEPT_SHORT_CODES[value] ? `${DEPT_SHORT_CODES[value]} (${value})` : value}
+                  <span className={`text-xs font-semibold px-1.5 ${isDark ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                    {DEPT_SHORT_CODES[value] ? `${DEPT_SHORT_CODES[value]}` : value}
                   </span>
                 )}
               />
