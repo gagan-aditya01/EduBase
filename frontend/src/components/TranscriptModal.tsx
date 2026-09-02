@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { GraduationCap, Download, X, Award, BookOpen, Sparkles, FileText, Building2 } from 'lucide-react';
+import { GraduationCap, Download, X, Award, BookOpen, Sparkles, FileText, Building2, CheckCircle2 } from 'lucide-react';
 
 interface TranscriptModalProps {
   student: {
@@ -67,15 +67,15 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
       ? `<tr><td colspan="9" style="text-align: center; padding: 20px; color: #6b7280;">No subject marks published yet.</td></tr>`
       : grades.map((g: any) => `
         <tr>
-          <td style="padding: 10px 12px; font-family: monospace; font-weight: 700; color: #111827; border-bottom: 1px solid #e5e7eb;">${g.courseCode}</td>
-          <td style="padding: 10px 12px; font-weight: 500; color: #1f2937; border-bottom: 1px solid #e5e7eb;">${g.courseTitle}</td>
-          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.assignment1}</td>
-          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.midterm}</td>
-          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.assignment2}</td>
-          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.endSem}</td>
-          <td style="padding: 10px 12px; text-align: center; font-family: monospace; font-weight: 700; color: #059669; border-bottom: 1px solid #e5e7eb;">${typeof g.totalWeightedScore === 'number' ? g.totalWeightedScore.toFixed(1) : g.totalWeightedScore}%</td>
-          <td style="padding: 10px 12px; text-align: center; font-family: monospace; font-weight: 800; border-bottom: 1px solid #e5e7eb;">${g.letterGrade}</td>
-          <td style="padding: 10px 12px; text-align: center; font-family: monospace; font-weight: 700; border-bottom: 1px solid #e5e7eb;">${typeof g.gradePoint === 'number' ? g.gradePoint.toFixed(1) : g.gradePoint}</td>
+          <td style="padding: 8px 6px; font-family: monospace; font-weight: 700; color: #111827; border-bottom: 1px solid #e5e7eb;">${g.courseCode}</td>
+          <td style="padding: 8px 6px; font-weight: 600; color: #1f2937; border-bottom: 1px solid #e5e7eb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${g.courseTitle}</td>
+          <td style="padding: 8px 4px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.assignment1}</td>
+          <td style="padding: 8px 4px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.midterm}</td>
+          <td style="padding: 8px 4px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.assignment2}</td>
+          <td style="padding: 8px 4px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.endSem}</td>
+          <td style="padding: 8px 4px; text-align: center; font-family: monospace; font-weight: 800; color: #111827; border-bottom: 1px solid #e5e7eb;">${typeof g.totalWeightedScore === 'number' ? g.totalWeightedScore.toFixed(1) : g.totalWeightedScore}%</td>
+          <td style="padding: 8px 4px; text-align: center; font-family: monospace; font-weight: 900; border-bottom: 1px solid #e5e7eb;">${g.letterGrade}</td>
+          <td style="padding: 8px 4px; text-align: center; font-family: monospace; font-weight: 700; border-bottom: 1px solid #e5e7eb;">${typeof g.gradePoint === 'number' ? g.gradePoint.toFixed(1) : g.gradePoint}</td>
         </tr>
       `).join('');
 
@@ -85,10 +85,13 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
         <head>
           <meta charset="utf-8" />
           <title>Official Academic Transcript - ${student.name} (${student.studentId})</title>
+          <link rel="preconnect" href="https://fonts.googleapis.com">
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+          <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
           <style>
             @page {
               size: A4 portrait;
-              margin: 12mm;
+              margin: 8mm;
             }
             @media print {
               body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -99,57 +102,64 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
               color: #111827;
               background: #ffffff;
               margin: 0;
-              padding: 24px;
-              font-size: 12px;
+              padding: 0;
+              font-size: 11.5px;
               line-height: 1.4;
+            }
+            .transcript-container {
+              width: 100%;
+              max-width: 100%;
+              box-sizing: border-box;
             }
             .transcript-border {
               border: 2px solid #111827;
-              padding: 28px;
+              padding: 22px 24px;
               border-radius: 4px;
+              width: 100%;
+              box-sizing: border-box;
             }
             .header-box {
               text-align: center;
               border-bottom: 2px solid #111827;
-              padding-bottom: 16px;
-              margin-bottom: 20px;
+              padding-bottom: 14px;
+              margin-bottom: 18px;
             }
             .uni-title {
-              font-size: 22px;
+              font-size: 20px;
               font-weight: 900;
               text-transform: uppercase;
-              letter-spacing: 1.5px;
+              letter-spacing: 1px;
               color: #111827;
-              margin: 0 0 4px 0;
+              margin: 0 0 3px 0;
             }
             .uni-sub {
-              font-size: 10px;
+              font-size: 9.5px;
               font-weight: 700;
               text-transform: uppercase;
-              letter-spacing: 2px;
-              color: #6b7280;
-              margin: 0 0 12px 0;
+              letter-spacing: 1.5px;
+              color: #4b5563;
+              margin: 0 0 10px 0;
             }
             .doc-heading {
               display: inline-block;
-              font-size: 12px;
+              font-size: 11px;
               font-weight: 800;
               text-transform: uppercase;
-              letter-spacing: 2px;
+              letter-spacing: 1.5px;
               color: #ffffff;
               background: #111827;
-              padding: 4px 16px;
+              padding: 3px 14px;
               border-radius: 20px;
             }
             .details-table {
               width: 100%;
               border-collapse: collapse;
-              margin-bottom: 20px;
-              background: #f9fafb;
+              margin-bottom: 18px;
+              background: #fafafa;
               border: 1px solid #e5e7eb;
             }
             .details-table td {
-              padding: 10px 14px;
+              padding: 8px 12px;
               width: 50%;
               vertical-align: top;
               border-bottom: 1px solid #e5e7eb;
@@ -158,148 +168,170 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
               border-bottom: none;
             }
             .field-label {
-              font-size: 9.5px;
+              font-size: 9px;
               font-weight: 700;
               text-transform: uppercase;
               letter-spacing: 1px;
               color: #6b7280;
               display: block;
-              margin-bottom: 3px;
+              margin-bottom: 2px;
             }
             .field-value {
-              font-size: 13px;
+              font-size: 12.5px;
               font-weight: 700;
               color: #111827;
             }
             .stat-badge {
               display: inline-block;
-              padding: 3px 8px;
-              background: #ecfdf5;
-              color: #047857;
-              border: 1px solid #a7f3d0;
+              padding: 2px 8px;
+              background: #f3f4f6;
+              color: #111827;
+              border: 1px solid #d1d5db;
               border-radius: 4px;
               font-weight: 700;
-              font-size: 11px;
+              font-size: 10.5px;
             }
             .grades-table {
               width: 100%;
+              table-layout: fixed;
               border-collapse: collapse;
-              margin-bottom: 24px;
-              font-size: 11px;
+              margin-bottom: 20px;
+              font-size: 10.5px;
+              border: 1px solid #e5e7eb;
             }
             .grades-table th {
               background: #f3f4f6;
-              color: #374151;
-              padding: 10px 12px;
+              color: #111827;
+              padding: 8px 4px;
               text-align: left;
-              font-size: 10px;
+              font-size: 9.5px;
               font-weight: 800;
               text-transform: uppercase;
               letter-spacing: 0.5px;
               border-bottom: 2px solid #d1d5db;
+              border-right: 1px solid #e5e7eb;
+            }
+            .grades-table th:last-child {
+              border-right: none;
+            }
+            .grades-table td {
+              border-right: 1px solid #f3f4f6;
+            }
+            .grades-table td:last-child {
+              border-right: none;
             }
             .grades-table th.center, .grades-table td.center {
               text-align: center;
             }
             .footer-box {
-              margin-top: 36px;
-              padding-top: 16px;
+              margin-top: 24px;
+              padding-top: 14px;
               border-top: 1px solid #e5e7eb;
               display: flex;
               justify-content: space-between;
               align-items: flex-end;
             }
             .cert-text {
-              font-size: 10px;
-              color: #6b7280;
+              font-size: 9.5px;
+              color: #4b5563;
               line-height: 1.5;
             }
             .sig-box {
-              text-align: center;
-            }
-            .sig-line {
-              width: 180px;
-              border-top: 1.5px solid #111827;
-              margin-bottom: 6px;
-            }
-            .sig-title {
-              font-size: 10px;
-              font-weight: 800;
-              text-transform: uppercase;
-              letter-spacing: 1px;
-              color: #111827;
+              text-align: right;
             }
           </style>
         </head>
         <body>
-          <div class="transcript-border">
-            <div class="header-box">
-              <h1 class="uni-title">EduBase Institute of Technology</h1>
-              <p class="uni-sub">Recognized by AICTE & UGC &bull; Official Academic Record</p>
-              <div class="doc-heading">Transcript of Academic Record</div>
-            </div>
-
-            <table class="details-table">
-              <tr>
-                <td>
-                  <span class="field-label">Student Name</span>
-                  <span class="field-value">${student.name}</span>
-                </td>
-                <td>
-                  <span class="field-label">Registration ID</span>
-                  <span class="field-value" style="font-family: monospace;">${student.studentId}</span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class="field-label">Department</span>
-                  <span class="field-value">${student.department}</span>
-                </td>
-                <td>
-                  <span class="field-label">Academic Enrolment</span>
-                  <span class="field-value">${student.section || 'N/A'} &bull; ${student.year || '3rd Year'}</span>
-                </td>
-              </tr>
-              <tr>
-                <td>
-                  <span class="field-label">Cumulative CGPA</span>
-                  <span class="field-value" style="font-size: 16px; font-family: monospace; color: #059669;">${cgpa} <span style="font-size: 11px; color: #6b7280; font-weight: normal;">/ 10.0</span></span>
-                </td>
-                <td>
-                  <span class="field-label">Academic Standing</span>
-                  <span class="stat-badge">${standingText}</span>
-                </td>
-              </tr>
-            </table>
-
-            <table class="grades-table">
-              <thead>
-                <tr>
-                  <th>Course Code</th>
-                  <th>Subject Title</th>
-                  <th class="center">Assign 1 (20)</th>
-                  <th class="center">Midterm (50)</th>
-                  <th class="center">Assign 2 (20)</th>
-                  <th class="center">EndSem (100)</th>
-                  <th class="center">Weighted %</th>
-                  <th class="center">Grade</th>
-                  <th class="center">Point</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${rowsHTML}
-              </tbody>
-            </table>
-
-            <div class="footer-box">
-              <div class="cert-text">
-                <strong>Verified & Certified Official Grade Record</strong><br />
-                Issued Date: ${issueDate}<br />
-                Document Verification ID: <code>EDU-${student.studentId}-${Date.now().toString().slice(-6)}</code>
+          <div class="transcript-container">
+            <div class="transcript-border">
+              <div class="header-box">
+                <h1 class="uni-title">EduBase Institute of Technology</h1>
+                <p class="uni-sub">Recognized by AICTE & UGC &bull; Official Academic Record</p>
+                <div class="doc-heading">Transcript of Academic Record</div>
               </div>
-              <div class="sig-box">
-                <div class="sig-line"></div>
-                <div class="sig-title">Controller of Examinations</div>
+
+              <table class="details-table">
+                <tr>
+                  <td>
+                    <span class="field-label">Student Name</span>
+                    <span class="field-value">${student.name}</span>
+                  </td>
+                  <td>
+                    <span class="field-label">Registration ID</span>
+                    <span class="field-value" style="font-family: monospace;">${student.studentId}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="field-label">Department</span>
+                    <span class="field-value">${student.department}</span>
+                  </td>
+                  <td>
+                    <span class="field-label">Academic Enrolment</span>
+                    <span class="field-value">${student.section || 'N/A'} &bull; ${student.year || '3rd Year'}</span>
+                  </td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="field-label">Cumulative CGPA</span>
+                    <span class="field-value" style="font-size: 15px; font-family: monospace; font-weight: 900; color: #111827;">${cgpa} <span style="font-size: 11px; color: #6b7280; font-weight: normal;">/ 10.0</span></span>
+                  </td>
+                  <td>
+                    <span class="field-label">Academic Standing</span>
+                    <span class="stat-badge">${standingText}</span>
+                  </td>
+                </tr>
+              </table>
+
+              <table class="grades-table">
+                <colgroup>
+                  <col style="width: 12%;" />
+                  <col style="width: 28%;" />
+                  <col style="width: 9%;" />
+                  <col style="width: 9%;" />
+                  <col style="width: 9%;" />
+                  <col style="width: 9%;" />
+                  <col style="width: 10%;" />
+                  <col style="width: 7%;" />
+                  <col style="width: 7%;" />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th>Course Code</th>
+                    <th>Subject Title</th>
+                    <th class="center">Assign 1 (20)</th>
+                    <th class="center">Midterm (50)</th>
+                    <th class="center">Assign 2 (20)</th>
+                    <th class="center">EndSem (100)</th>
+                    <th class="center">Weighted %</th>
+                    <th class="center">Grade</th>
+                    <th class="center">Point</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rowsHTML}
+                </tbody>
+              </table>
+
+              <div class="footer-box">
+                <div class="cert-text">
+                  <strong>Verified & Certified Official Grade Record</strong><br />
+                  Issued Date: ${issueDate}<br />
+                  Document Verification ID: <code>EDU-${student.studentId}-${Date.now().toString().slice(-6)}</code>
+                </div>
+                <div class="sig-box">
+                  <div style="font-family: 'Dancing Script', cursive, Georgia, serif; font-size: 26px; font-weight: 700; color: #1e3a8a; font-style: italic; margin-bottom: -4px; padding-right: 8px; transform: rotate(-2deg);">
+                    Gagan Aditya
+                  </div>
+                  <div style="width: 190px; border-top: 1.5px solid #111827; margin-left: auto; margin-bottom: 4px;"></div>
+                  <div style="font-size: 11px; font-weight: 900; text-transform: uppercase; color: #111827; letter-spacing: 0.5px;">Gagan Aditya</div>
+                  <div style="font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280;">Controller of Examinations</div>
+                  <div style="margin-top: 4px;">
+                    <span style="display: inline-block; font-size: 8px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; padding: 2px 6px; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; border-radius: 4px;">
+                      ✓ Digitally Certified & Verified Signature
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -318,13 +350,13 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
     if (cgpa >= 8.5) {
       return {
         text: 'First Class with Distinction',
-        color: isDark ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30 font-bold' : 'text-emerald-900 bg-emerald-100/90 border-emerald-300 font-bold',
+        color: isDark ? 'text-zinc-100 bg-zinc-800 border-zinc-700 font-bold' : 'text-zinc-900 bg-zinc-100 border-zinc-300 font-bold',
       };
     }
     if (cgpa >= 7.0) {
       return {
         text: 'First Class',
-        color: isDark ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/20 font-bold' : 'text-emerald-800 bg-emerald-50 border-emerald-200 font-bold',
+        color: isDark ? 'text-zinc-200 bg-zinc-850 border-zinc-700 font-bold' : 'text-zinc-900 bg-zinc-100 border-zinc-300 font-bold',
       };
     }
     if (cgpa >= 6.0) {
@@ -342,7 +374,7 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
     if (cgpa >= 4.0) {
       return {
         text: 'Pass Division',
-        color: isDark ? 'text-amber-400 bg-amber-500/10 border-amber-500/30 font-bold' : 'text-amber-900 bg-amber-100/80 border-amber-300 font-bold',
+        color: isDark ? 'text-zinc-300 bg-zinc-800 border-zinc-700 font-bold' : 'text-zinc-900 bg-zinc-100 border-zinc-300 font-bold',
       };
     }
     return {
@@ -428,7 +460,7 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
                   <p className="uni-sub text-[11px] text-zinc-400 uppercase tracking-widest mt-0.5">
                     Recognized by AICTE & UGC • Official Academic Record
                   </p>
-                  <div className="doc-title text-xs font-bold uppercase tracking-widest text-[#cc5a37] mt-3">
+                  <div className="doc-heading text-xs font-bold uppercase tracking-widest text-[#cc5a37] mt-3">
                     Transcript of Academic Record
                   </div>
                 </div>
@@ -462,12 +494,12 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
                   }`}>
                     <div>
                       <span className="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Cumulative CGPA</span>
-                      <span className={`text-2xl font-mono font-black ${isDark ? 'text-emerald-400' : 'text-[#cc5a37]'}`}>
+                      <span className={`text-2xl font-mono font-black ${isDark ? 'text-zinc-100' : 'text-zinc-900'}`}>
                         {transcriptData?.cgpa ? transcriptData.cgpa.toFixed(2) : '0.00'}
                       </span>
                       <span className="text-[10px] text-zinc-500 block">on 10.0 Point Scale</span>
                     </div>
-                    <Award size={28} className={isDark ? 'text-emerald-400/80' : 'text-[#cc5a37]'} />
+                    <Award size={28} className={isDark ? 'text-zinc-400' : 'text-zinc-600'} />
                   </div>
 
                   <div className={`p-4 rounded-2xl border flex items-center justify-between ${
@@ -535,7 +567,7 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
                             <td className="p-3 text-center font-mono">{g.midterm}</td>
                             <td className="p-3 text-center font-mono">{g.assignment2}</td>
                             <td className="p-3 text-center font-mono">{g.endSem}</td>
-                            <td className={`p-3 text-center font-mono font-bold ${isDark ? 'text-emerald-400' : 'text-[#cc5a37]'}`}>
+                            <td className="p-3 text-center font-mono font-bold text-zinc-200">
                               {g.totalWeightedScore.toFixed(1)}%
                             </td>
                             <td className="p-3 text-center font-mono font-bold">{g.letterGrade}</td>
@@ -555,8 +587,13 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
                     <span>Issued Date: {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                   </div>
                   <div className="text-right">
-                    <div className="w-32 border-b border-zinc-500 mb-1" />
-                    <span className="font-bold uppercase tracking-wider">Controller of Examinations</span>
+                    <div className="font-serif text-lg font-bold text-blue-500 italic mb-0.5 tracking-wide">Gagan Aditya</div>
+                    <div className="w-36 border-b border-zinc-500 mb-1 ml-auto" />
+                    <span className="font-bold uppercase tracking-wider text-zinc-300 block">Gagan Aditya</span>
+                    <span className="text-[9px] uppercase tracking-wider text-zinc-500 block">Controller of Examinations</span>
+                    <span className="inline-flex items-center gap-1 text-[8px] font-bold text-blue-400 bg-blue-500/10 border border-blue-500/30 px-1.5 py-0.5 rounded mt-1">
+                      <CheckCircle2 size={9} /> Digitally Certified Signature
+                    </span>
                   </div>
                 </div>
               </div>
