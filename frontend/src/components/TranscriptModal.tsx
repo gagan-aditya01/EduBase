@@ -48,48 +48,261 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
   }, [student.studentId]);
 
   const handlePrintPDF = () => {
-    if (!printRef.current) return;
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const content = printRef.current.innerHTML;
+    const cgpa = transcriptData?.cgpa ? transcriptData.cgpa.toFixed(2) : '0.00';
+    const grades = transcriptData?.grades || [];
+    const issueDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+    let standingText = 'First Class with Distinction';
+    if (parseFloat(cgpa) >= 8.5) standingText = 'First Class with Distinction';
+    else if (parseFloat(cgpa) >= 7.0) standingText = 'First Class';
+    else if (parseFloat(cgpa) >= 6.0) standingText = 'Second Class Upper';
+    else if (parseFloat(cgpa) >= 5.0) standingText = 'Second Class';
+    else if (parseFloat(cgpa) >= 4.0) standingText = 'Pass Division';
+    else standingText = 'Re-evaluation Required';
+
+    const rowsHTML = grades.length === 0
+      ? `<tr><td colspan="9" style="text-align: center; padding: 20px; color: #6b7280;">No subject marks published yet.</td></tr>`
+      : grades.map((g: any) => `
+        <tr>
+          <td style="padding: 10px 12px; font-family: monospace; font-weight: 700; color: #111827; border-bottom: 1px solid #e5e7eb;">${g.courseCode}</td>
+          <td style="padding: 10px 12px; font-weight: 500; color: #1f2937; border-bottom: 1px solid #e5e7eb;">${g.courseTitle}</td>
+          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.assignment1}</td>
+          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.midterm}</td>
+          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.assignment2}</td>
+          <td style="padding: 10px 12px; text-align: center; font-family: monospace; border-bottom: 1px solid #e5e7eb;">${g.endSem}</td>
+          <td style="padding: 10px 12px; text-align: center; font-family: monospace; font-weight: 700; color: #059669; border-bottom: 1px solid #e5e7eb;">${typeof g.totalWeightedScore === 'number' ? g.totalWeightedScore.toFixed(1) : g.totalWeightedScore}%</td>
+          <td style="padding: 10px 12px; text-align: center; font-family: monospace; font-weight: 800; border-bottom: 1px solid #e5e7eb;">${g.letterGrade}</td>
+          <td style="padding: 10px 12px; text-align: center; font-family: monospace; font-weight: 700; border-bottom: 1px solid #e5e7eb;">${typeof g.gradePoint === 'number' ? g.gradePoint.toFixed(1) : g.gradePoint}</td>
+        </tr>
+      `).join('');
 
     printWindow.document.write(`
       <!DOCTYPE html>
-      <html>
+      <html lang="en">
         <head>
+          <meta charset="utf-8" />
           <title>Official Academic Transcript - ${student.name} (${student.studentId})</title>
           <style>
+            @page {
+              size: A4 portrait;
+              margin: 12mm;
+            }
             @media print {
-              @page { size: A4; margin: 15mm; }
               body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             }
+            * { box-sizing: border-box; }
             body {
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
               color: #111827;
               background: #ffffff;
               margin: 0;
               padding: 24px;
+              font-size: 12px;
+              line-height: 1.4;
             }
-            .header { text-align: center; border-bottom: 2px solid #111827; padding-bottom: 16px; margin-bottom: 24px; }
-            .uni-name { font-size: 22px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #000000; }
-            .uni-sub { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #4b5563; margin-top: 4px; }
-            .doc-title { font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; margin-top: 12px; color: #cc5a37; }
-            .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; background: #f9fafb; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb; margin-bottom: 24px; }
-            .info-item { font-size: 12px; }
-            .info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; color: #6b7280; }
-            .info-val { font-weight: 700; color: #111827; margin-top: 2px; }
-            table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 11px; }
-            th { background: #f3f4f6; text-align: left; padding: 8px 12px; font-weight: 700; text-transform: uppercase; border-bottom: 1.5px solid #d1d5db; }
-            td { padding: 8px 12px; border-bottom: 1px solid #e5e7eb; }
-            .summary-box { display: flex; justify-content: space-between; background: #f3f4f6; padding: 16px; border-radius: 8px; border: 1px solid #d1d5db; }
-            .cgpa-val { font-size: 20px; font-weight: 800; color: #cc5a37; }
-            .footer-sig { margin-top: 40px; display: flex; justify-content: space-between; align-items: flex-end; pt-8; border-top: 1px dashed #9ca3af; }
-            .sig-line { border-top: 1px solid #000; width: 160px; text-align: center; font-size: 10px; font-weight: 700; padding-top: 4px; }
+            .transcript-border {
+              border: 2px solid #111827;
+              padding: 28px;
+              border-radius: 4px;
+            }
+            .header-box {
+              text-align: center;
+              border-bottom: 2px solid #111827;
+              padding-bottom: 16px;
+              margin-bottom: 20px;
+            }
+            .uni-title {
+              font-size: 22px;
+              font-weight: 900;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
+              color: #111827;
+              margin: 0 0 4px 0;
+            }
+            .uni-sub {
+              font-size: 10px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+              color: #6b7280;
+              margin: 0 0 12px 0;
+            }
+            .doc-heading {
+              display: inline-block;
+              font-size: 12px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+              color: #ffffff;
+              background: #111827;
+              padding: 4px 16px;
+              border-radius: 20px;
+            }
+            .details-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 20px;
+              background: #f9fafb;
+              border: 1px solid #e5e7eb;
+            }
+            .details-table td {
+              padding: 10px 14px;
+              width: 50%;
+              vertical-align: top;
+              border-bottom: 1px solid #e5e7eb;
+            }
+            .details-table tr:last-child td {
+              border-bottom: none;
+            }
+            .field-label {
+              font-size: 9.5px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              color: #6b7280;
+              display: block;
+              margin-bottom: 3px;
+            }
+            .field-value {
+              font-size: 13px;
+              font-weight: 700;
+              color: #111827;
+            }
+            .stat-badge {
+              display: inline-block;
+              padding: 3px 8px;
+              background: #ecfdf5;
+              color: #047857;
+              border: 1px solid #a7f3d0;
+              border-radius: 4px;
+              font-weight: 700;
+              font-size: 11px;
+            }
+            .grades-table {
+              width: 100%;
+              border-collapse: collapse;
+              margin-bottom: 24px;
+              font-size: 11px;
+            }
+            .grades-table th {
+              background: #f3f4f6;
+              color: #374151;
+              padding: 10px 12px;
+              text-align: left;
+              font-size: 10px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              border-bottom: 2px solid #d1d5db;
+            }
+            .grades-table th.center, .grades-table td.center {
+              text-align: center;
+            }
+            .footer-box {
+              margin-top: 36px;
+              padding-top: 16px;
+              border-top: 1px solid #e5e7eb;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-end;
+            }
+            .cert-text {
+              font-size: 10px;
+              color: #6b7280;
+              line-height: 1.5;
+            }
+            .sig-box {
+              text-align: center;
+            }
+            .sig-line {
+              width: 180px;
+              border-top: 1.5px solid #111827;
+              margin-bottom: 6px;
+            }
+            .sig-title {
+              font-size: 10px;
+              font-weight: 800;
+              text-transform: uppercase;
+              letter-spacing: 1px;
+              color: #111827;
+            }
           </style>
         </head>
         <body>
-          ${content}
+          <div class="transcript-border">
+            <div class="header-box">
+              <h1 class="uni-title">EduBase Institute of Technology</h1>
+              <p class="uni-sub">Recognized by AICTE & UGC &bull; Official Academic Record</p>
+              <div class="doc-heading">Transcript of Academic Record</div>
+            </div>
+
+            <table class="details-table">
+              <tr>
+                <td>
+                  <span class="field-label">Student Name</span>
+                  <span class="field-value">${student.name}</span>
+                </td>
+                <td>
+                  <span class="field-label">Registration ID</span>
+                  <span class="field-value" style="font-family: monospace;">${student.studentId}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="field-label">Department</span>
+                  <span class="field-value">${student.department}</span>
+                </td>
+                <td>
+                  <span class="field-label">Academic Enrolment</span>
+                  <span class="field-value">${student.section || 'N/A'} &bull; ${student.year || '3rd Year'}</span>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <span class="field-label">Cumulative CGPA</span>
+                  <span class="field-value" style="font-size: 16px; font-family: monospace; color: #059669;">${cgpa} <span style="font-size: 11px; color: #6b7280; font-weight: normal;">/ 10.0</span></span>
+                </td>
+                <td>
+                  <span class="field-label">Academic Standing</span>
+                  <span class="stat-badge">${standingText}</span>
+                </td>
+              </tr>
+            </table>
+
+            <table class="grades-table">
+              <thead>
+                <tr>
+                  <th>Course Code</th>
+                  <th>Subject Title</th>
+                  <th class="center">Assign 1 (20)</th>
+                  <th class="center">Midterm (50)</th>
+                  <th class="center">Assign 2 (20)</th>
+                  <th class="center">EndSem (100)</th>
+                  <th class="center">Weighted %</th>
+                  <th class="center">Grade</th>
+                  <th class="center">Point</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rowsHTML}
+              </tbody>
+            </table>
+
+            <div class="footer-box">
+              <div class="cert-text">
+                <strong>Verified & Certified Official Grade Record</strong><br />
+                Issued Date: ${issueDate}<br />
+                Document Verification ID: <code>EDU-${student.studentId}-${Date.now().toString().slice(-6)}</code>
+              </div>
+              <div class="sig-box">
+                <div class="sig-line"></div>
+                <div class="sig-title">Controller of Examinations</div>
+              </div>
+            </div>
+          </div>
         </body>
       </html>
     `);
@@ -98,7 +311,7 @@ export const TranscriptModal: React.FC<TranscriptModalProps> = ({ student, onClo
     printWindow.focus();
     setTimeout(() => {
       printWindow.print();
-    }, 500);
+    }, 400);
   };
 
   const getAcademicStanding = (cgpa: number) => {
