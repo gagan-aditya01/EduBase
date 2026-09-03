@@ -27,10 +27,10 @@ jobs:
           cache: 'npm'
 
       - name: Install Root Dependencies
-        run: npm ci
+        run: npm install
 
       - name: Install Frontend Dependencies
-        run: cd frontend && npm ci
+        run: cd frontend && npm install
 
       - name: Run Automated Jest API Tests
         env:
