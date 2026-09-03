@@ -315,4 +315,106 @@ describe('Full-Stack Backend API Tests', () => {
       expect(Array.isArray(res.body)).toBe(true);
     });
   });
+
+  describe('Phase 7: Attendance Module & Continuous Time Slot Tests', () => {
+    let csFacultyToken = '';
+    const facultyUser = `fac_att_${Date.now()}`;
+
+    beforeAll(async () => {
+      // 1. Create a faculty user for Computer Science
+      const regRes = await request(app)
+        .post('/api/auth/register')
+        .send({ username: facultyUser, password: 'password123', role: 'faculty' });
+
+      csFacultyToken = regRes.body.token;
+
+      await request(app)
+        .put(`/api/auth/users/${regRes.body._id}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'faculty', assignedDepartment: 'Computer Science' });
+    });
+
+    it('POST /api/v1/attendance with valid 2-hour continuous block (10-12) should succeed', async () => {
+      const res = await request(app)
+        .post('/api/v1/attendance')
+        .set('Authorization', `Bearer ${csFacultyToken}`)
+        .send({
+          date: '2026-09-02',
+          department: 'Computer Science',
+          slot: '10-12',
+          records: [
+            { studentId: 'S101', studentName: 'Test Student 1', status: 'Present' },
+            { studentId: 'S102', studentName: 'Test Student 2', status: 'Absent' },
+          ],
+        });
+
+      expect(res.statusCode).toEqual(201);
+      expect(res.body).toHaveProperty('slot', '10-12');
+      expect(res.body).toHaveProperty('slotHours', 2);
+    });
+
+    it('POST /api/v1/attendance with cross-lunch block (10-3) should be rejected (400 Bad Request)', async () => {
+      const res = await request(app)
+        .post('/api/v1/attendance')
+        .set('Authorization', `Bearer ${csFacultyToken}`)
+        .send({
+          date: '2026-09-02',
+          department: 'Computer Science',
+          slot: '10-3',
+          records: [
+            { studentId: 'S101', studentName: 'Test Student 1', status: 'Present' },
+          ],
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.error).toContain('Invalid time slot');
+    });
+
+    it('POST /api/v1/attendance for future dates should be rejected (400 Bad Request)', async () => {
+      const res = await request(app)
+        .post('/api/v1/attendance')
+        .set('Authorization', `Bearer ${csFacultyToken}`)
+        .send({
+          date: '2099-12-31',
+          department: 'Computer Science',
+          slot: '10-11',
+          records: [
+            { studentId: 'S101', studentName: 'Test Student 1', status: 'Present' },
+          ],
+        });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.error).toContain('Cannot mark or submit attendance for future dates');
+    });
+
+    it('POST /api/v1/attendance for non-assigned department should be rejected (403 Forbidden)', async () => {
+      const res = await request(app)
+        .post('/api/v1/attendance')
+        .set('Authorization', `Bearer ${csFacultyToken}`)
+        .send({
+          date: '2026-09-02',
+          department: 'Electrical Engineering',
+          slot: '2-4',
+          records: [
+            { studentId: 'S201', studentName: 'EE Student', status: 'Present' },
+          ],
+        });
+
+      expect(res.statusCode).toEqual(403);
+      expect(res.body.error).toContain('Access Denied');
+    });
+
+    it('GET /api/v1/attendance/my-summary should return student overall percentage & hours breakdown', async () => {
+      const res = await request(app)
+        .get('/api/v1/attendance/my-summary?studentId=S101')
+        .set('Authorization', `Bearer ${csFacultyToken}`);
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toHaveProperty('studentId', 'S101');
+      expect(res.body).toHaveProperty('totalConductedHours', 2);
+      expect(res.body).toHaveProperty('totalPresentHours', 2);
+      expect(res.body).toHaveProperty('overallPercentage', 100);
+      expect(res.body).toHaveProperty('isExamEligible', true);
+    });
+  });
 });

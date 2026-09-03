@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { StudentForm } from './components/StudentForm';
 import { StudentList } from './components/StudentList';
-import { Sparkles, Database, GraduationCap, LogOut, Key, LayoutDashboard, BarChart3, ShieldAlert, Users, UserCheck, UploadCloud } from 'lucide-react';
+import { Sparkles, Database, GraduationCap, LogOut, Key, LayoutDashboard, BarChart3, ShieldAlert, Users, UserCheck, UploadCloud, CheckSquare, CalendarCheck, BookOpen } from 'lucide-react';
 import { Sidebar, SidebarBody, SidebarLink } from './components/ui/sidebar';
 import { LiquidMetalButton } from './components/ui/liquid-metal-button';
 import { FloatingPathsBackground } from './components/ui/floating-paths';
@@ -23,7 +23,9 @@ import { CsvImporterModal } from './components/CsvImporterModal';
 import { GradebookPage } from './components/GradebookPage';
 import { StudentHome } from './components/StudentHome';
 import { StudentMarksPage } from './components/StudentMarksPage';
-import { BookOpen, Home, Award } from 'lucide-react';
+import { FacultyAttendancePage } from './components/FacultyAttendancePage';
+import { StudentAttendancePage } from './components/StudentAttendancePage';
+import { Home, Award } from 'lucide-react';
 
 interface Student {
   studentId: string;
@@ -487,6 +489,13 @@ export default function App() {
                         onClick: () => setCurrentPage('student-marks'),
                       }}
                     />
+                    <SidebarLink
+                      link={{
+                        label: 'My Attendance',
+                        icon: <CalendarCheck size={18} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />,
+                        onClick: () => setCurrentPage('student-attendance'),
+                      }}
+                    />
                   </>
                 ) : (
                   <>
@@ -509,11 +518,30 @@ export default function App() {
                     )}
 
                     {(user.role === 'admin' || user.role === 'faculty') && (
+                      <>
+                        <SidebarLink
+                          link={{
+                            label: 'Gradebook Console',
+                            icon: <BookOpen size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
+                            onClick: () => setCurrentPage('gradebook'),
+                          }}
+                        />
+                        <SidebarLink
+                          link={{
+                            label: 'Mark Attendance',
+                            icon: <CheckSquare size={18} className={theme === 'dark' ? 'text-[#cc5a37]' : 'text-[#cc5a37]'} />,
+                            onClick: () => setCurrentPage('faculty-attendance'),
+                          }}
+                        />
+                      </>
+                    )}
+
+                    {user.role === 'guest' && (
                       <SidebarLink
                         link={{
-                          label: 'Gradebook Console',
-                          icon: <BookOpen size={18} className={theme === 'dark' ? 'text-zinc-400' : 'text-zinc-650'} />,
-                          onClick: () => setCurrentPage('gradebook'),
+                          label: 'My Attendance',
+                          icon: <CalendarCheck size={18} className={theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'} />,
+                          onClick: () => setCurrentPage('student-attendance'),
                         }}
                       />
                     )}
@@ -672,6 +700,10 @@ export default function App() {
             <StudentHome user={user} theme={theme} />
           ) : currentPage === 'student-marks' ? (
             <StudentMarksPage user={user} theme={theme} />
+          ) : currentPage === 'student-attendance' ? (
+            <StudentAttendancePage user={user} theme={theme} />
+          ) : currentPage === 'faculty-attendance' ? (
+            <FacultyAttendancePage user={user} theme={theme} addToast={addToast} />
           ) : currentPage === 'analytics' ? (
             <AnalyticsPage currentUser={user} theme={theme} />
           ) : currentPage === 'gradebook' ? (
