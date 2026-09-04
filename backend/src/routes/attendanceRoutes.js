@@ -5,10 +5,12 @@ const {
   getDepartmentStudents,
   getStudentSummary,
   getAttendanceRecords,
+  seedAttendance,
 } = require('../controllers/attendanceController');
-const { protect } = require('../middlewares/authMiddleware');
+const { protect, admin } = require('../middlewares/authMiddleware');
 
 router.post('/', protect, markAttendance);
+router.post('/seed', protect, admin, seedAttendance);
 router.get('/students/:department', protect, getDepartmentStudents);
 router.get('/my-summary', protect, getStudentSummary);
 router.get('/records', protect, getAttendanceRecords);

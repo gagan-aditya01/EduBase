@@ -536,29 +536,106 @@ const seedRealisticData = async (req, res) => {
       ],
     });
 
-    const realisticStudents = [
-      { studentId: 'CS-2024-001', name: 'Eleanor Vance', age: 20, department: 'Computer Science', createdBy: 'dr.sarah.jenkins@edubase.edu' },
-      { studentId: 'CS-2024-014', name: 'Marcus Sterling', age: 22, department: 'Computer Science', createdBy: 'dr.sarah.jenkins@edubase.edu' },
-      { studentId: 'CS-2024-032', name: 'Sophia Chen', age: 21, department: 'Computer Science', createdBy: 'dr.sarah.jenkins@edubase.edu' },
-      { studentId: 'EE-2024-005', name: 'Alexander Hayes', age: 23, department: 'Electrical Engineering', createdBy: 'prof.michael.chen@edubase.edu' },
-      { studentId: 'EE-2024-019', name: 'Maya Lin', age: 20, department: 'Electrical Engineering', createdBy: 'prof.michael.chen@edubase.edu' },
-      { studentId: 'ME-2024-008', name: 'Liam Gallagher', age: 22, department: 'Mechanical Engineering', createdBy: 'dr.elena.rostova@edubase.edu' },
-      { studentId: 'ADSE-2024-012', name: 'Amara Okafor', age: 24, department: 'ADSE', createdBy: 'prof.marcus.vance@edubase.edu' },
-      { studentId: 'ADSE-2024-045', name: 'Devin Sterling', age: 21, department: 'ADSE', createdBy: 'prof.marcus.vance@edubase.edu' },
-      { studentId: 'MATH-2024-003', name: 'Tricia McMillan', age: 25, department: 'Mathematics', createdBy: 'yashureddy4044@gmail.com' },
-      { studentId: 'ROB-2024-007', name: 'Julian Thorne', age: 26, department: 'Robotics', createdBy: 'yashureddy4044@gmail.com' },
+    const firstNames = ['Aarav', 'Ananya', 'Rohan', 'Priya', 'Aditya', 'Sneha', 'Vikram', 'Neha', 'Karan', 'Kavya', 'Rahul', 'Pooja', 'Siddharth', 'Divya', 'Varun', 'Ishita', 'Arjun', 'Meera', 'Gautam', 'Rhea', 'Marcus', 'Sophia', 'Alexander', 'Maya', 'Liam', 'Amara', 'Julian', 'Eleanor', 'Devin', 'Tricia'];
+    const lastNames = ['Sharma', 'Verma', 'Patel', 'Reddy', 'Rao', 'Nair', 'Iyer', 'Gupta', 'Singh', 'Chowdhury', 'Joshi', 'Deshmukh', 'Sterling', 'Vance', 'Chen', 'Hayes', 'Gallagher', 'Okafor', 'Thorne', 'McMillan'];
+
+    const departments = [
+      { name: 'Computer Science', prefix: 'CS', sections: ['1CS', '2CS', '3CS', '4CS'] },
+      { name: 'ADSE', prefix: 'ADSE', sections: ['1ADSE', '2ADSE', '3ADSE', '4ADSE'] },
+      { name: 'Mathematics', prefix: 'MATH', sections: ['1MATH', '2MATH', '3MATH', '4MATH'] },
+      { name: 'Electrical Engineering', prefix: 'EE', sections: ['1EE', '2EE', '3EE', '4EE'] },
+      { name: 'Mechanical Engineering', prefix: 'ME', sections: ['1ME', '2ME', '3ME', '4ME'] },
+      { name: 'Robotics', prefix: 'ROB', sections: ['1ROB', '2ROB', '3ROB', '4ROB'] },
     ];
 
-    for (const student of realisticStudents) {
-      await Student.findOneAndUpdate(
-        { studentId: student.studentId },
-        { ...student, isDeleted: false },
-        { upsert: true, new: true }
-      );
+    const bulkOps = [];
+    let count = 0;
+
+    for (const dept of departments) {
+      for (let i = 1; i <= 50; i++) {
+        count++;
+        const numStr = String(i).padStart(3, '0');
+        const sId = `${dept.prefix}-2024-${numStr}`;
+        const fn = firstNames[(i + count) % firstNames.length];
+        const ln = lastNames[(i * 3 + count) % lastNames.length];
+        const name = `${fn} ${ln}`;
+        const age = 18 + (i % 5);
+        const section = dept.sections[(i - 1) % dept.sections.length];
+
+        bulkOps.push({
+          updateOne: {
+            filter: { studentId: sId },
+            update: {
+              $set: {
+                studentId: sId,
+                name,
+                age,
+                department: dept.name,
+                section,
+                year: '3rd Year',
+                createdBy: 'admin@edubase.edu',
+                isDeleted: false,
+              },
+            },
+            upsert: true,
+          },
+        });
+      }
     }
 
+    await Student.bulkWrite(bulkOps);
     memoryCache.clearPattern('students_');
-    res.json({ message: 'Realistic academic student directory seeded successfully' });
+
+    // Also trigger realistic attendance seeding for all students
+    const Attendance = require('../models/attendanceModel');
+    const allStudents = await Student.find({ isDeleted: false });
+
+    const dates = [
+      '2026-08-25', '2026-08-26', '2026-08-27', '2026-08-28', '2026-08-31',
+      '2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04'
+    ];
+    const slots = [
+      { slot: '10-11', slotHours: 1 },
+      { slot: '11-12', slotHours: 1 },
+      { slot: '2-3', slotHours: 1 },
+      { slot: '3-4', slotHours: 1 }
+    ];
+
+    for (const dept of departments) {
+      const deptStudents = allStudents.filter(s => s.department === dept.name);
+
+      for (const dateStr of dates) {
+        for (const slotObj of slots) {
+          const recordsPayload = deptStudents.map((s, idx) => {
+            const charCodeSum = s.studentId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const dateNum = parseInt(dateStr.replace(/-/g, ''), 10);
+            const slotHash = slotObj.slot === '10-11' ? 1 : slotObj.slot === '11-12' ? 2 : slotObj.slot === '2-3' ? 3 : 4;
+            const pseudoRandom = (charCodeSum + dateNum + slotHash + idx * 7) % 100;
+            const status = pseudoRandom < 84 ? 'Present' : 'Absent';
+            return {
+              studentId: s.studentId,
+              studentName: s.name,
+              status
+            };
+          });
+
+          await Attendance.findOneAndUpdate(
+            { date: dateStr, department: dept.name, slot: slotObj.slot },
+            {
+              date: dateStr,
+              department: dept.name,
+              slot: slotObj.slot,
+              slotHours: slotObj.slotHours,
+              recordedBy: 'system.seeder@edubase.edu',
+              records: recordsPayload
+            },
+            { upsert: true, new: true }
+          );
+        }
+      }
+    }
+
+    res.json({ message: `Realistic academic student directory (300 students across 6 departments) & historical attendance records seeded successfully.` });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

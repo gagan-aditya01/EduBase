@@ -219,12 +219,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
               </h1>
             </div>
           </div>
-          {isAdmin ? (
-            <div className="px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center gap-2 shrink-0">
-              <Filter size={14} />
-              <span>Admin Read-Only Inspection</span>
-            </div>
-          ) : (
+          {!isAdmin && (
             <div className="px-3.5 py-1.5 rounded-full border border-[#cc5a37]/30 bg-[#cc5a37]/10 text-[#cc5a37] text-xs font-bold flex items-center gap-2 shrink-0">
               <Filter size={14} />
               <span>Assigned Department: {selectedDept}</span>

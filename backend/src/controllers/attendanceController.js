@@ -268,9 +268,80 @@ const getAttendanceRecords = async (req, res) => {
   }
 };
 
+// @desc    Seed realistic attendance data for all students
+// @route   POST /api/v1/attendance/seed
+// @access  Private/Admin
+const seedAttendance = async (req, res) => {
+  try {
+    const students = await Student.find({ isDeleted: false });
+    if (!students || students.length === 0) {
+      return res.status(400).json({ error: 'No active students found to seed attendance.' });
+    }
+
+    const dates = [
+      '2026-08-25', '2026-08-26', '2026-08-27', '2026-08-28', '2026-08-31',
+      '2026-09-01', '2026-09-02', '2026-09-03', '2026-09-04'
+    ];
+    const slots = [
+      { slot: '10-11', slotHours: 1 },
+      { slot: '11-12', slotHours: 1 },
+      { slot: '2-3', slotHours: 1 },
+      { slot: '3-4', slotHours: 1 }
+    ];
+
+    // Group students by department
+    const depts = [...new Set(students.map(s => s.department))];
+
+    let createdCount = 0;
+
+    for (const dept of depts) {
+      const deptStudents = students.filter(s => s.department === dept);
+
+      for (const dateStr of dates) {
+        for (const slotObj of slots) {
+          const recordsPayload = deptStudents.map((s, idx) => {
+            // Seed a realistic ~82% attendance rate with variance per student ID hash
+            const charCodeSum = s.studentId.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const dateNum = parseInt(dateStr.replace(/-/g, ''), 10);
+            const slotHash = slotObj.slot === '10-11' ? 1 : slotObj.slot === '11-12' ? 2 : slotObj.slot === '2-3' ? 3 : 4;
+            const pseudoRandom = (charCodeSum + dateNum + slotHash + idx * 7) % 100;
+            
+            // 85% chance present, 15% absent
+            const status = pseudoRandom < 85 ? 'Present' : 'Absent';
+            return {
+              studentId: s.studentId,
+              studentName: s.name,
+              status
+            };
+          });
+
+          await Attendance.findOneAndUpdate(
+            { date: dateStr, department: dept, slot: slotObj.slot },
+            {
+              date: dateStr,
+              department: dept,
+              slot: slotObj.slot,
+              slotHours: slotObj.slotHours,
+              recordedBy: 'system.seeder@edubase.edu',
+              records: recordsPayload
+            },
+            { upsert: true, new: true }
+          );
+          createdCount++;
+        }
+      }
+    }
+
+    res.json({ message: `Successfully seeded realistic attendance records across ${students.length} students across ${createdCount} sessions.` });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 module.exports = {
   markAttendance,
   getDepartmentStudents,
   getStudentSummary,
   getAttendanceRecords,
+  seedAttendance,
 };
