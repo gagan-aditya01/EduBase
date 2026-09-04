@@ -64,7 +64,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
   const [selectedSection, setSelectedSection] = useState(availableSections[0] || '1CS');
   const [selectedSlot, setSelectedSlot] = useState('10-11');
   const [students, setStudents] = useState<Student[]>([]);
-  const [attendanceMap, setAttendanceMap] = useState<Record<string, 'Present' | 'Absent' | 'Late'>>({});
+  const [attendanceMap, setAttendanceMap] = useState<Record<string, 'Present' | 'Absent'>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -99,7 +99,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         setStudents(sectionStudents);
 
         // Default all to Present
-        const initialMap: Record<string, 'Present' | 'Absent' | 'Late'> = {};
+        const initialMap: Record<string, 'Present' | 'Absent'> = {};
         sectionStudents.forEach((s) => {
           initialMap[s.studentId] = 'Present';
         });
@@ -113,9 +113,9 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         if (existingRes.ok) {
           const recordsData = await existingRes.json();
           if (recordsData.length > 0 && recordsData[0].records) {
-            recordsData[0].records.forEach((r: { studentId: string; status: 'Present' | 'Absent' | 'Late' }) => {
+            recordsData[0].records.forEach((r: { studentId: string; status: 'Present' | 'Absent' }) => {
               if (initialMap[r.studentId] !== undefined) {
-                initialMap[r.studentId] = r.status;
+                initialMap[r.studentId] = r.status === 'Absent' ? 'Absent' : 'Present';
               }
             });
           }
@@ -132,12 +132,12 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
     fetchRosterAndExistingRecord();
   }, [selectedDate, userDept, selectedSection, selectedSlot, user]);
 
-  const toggleStatus = (studentId: string, status: 'Present' | 'Absent' | 'Late') => {
+  const toggleStatus = (studentId: string, status: 'Present' | 'Absent') => {
     setAttendanceMap((prev) => ({ ...prev, [studentId]: status }));
   };
 
   const handleMarkAll = (status: 'Present' | 'Absent') => {
-    const updated: Record<string, 'Present' | 'Absent' | 'Late'> = {};
+    const updated: Record<string, 'Present' | 'Absent'> = {};
     students.forEach((s) => {
       updated[s.studentId] = status;
     });
@@ -189,7 +189,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
   };
 
   const currentSlotInfo = TIME_SLOTS.find((s) => s.value === selectedSlot);
-  const presentCount = Object.values(attendanceMap).filter((s) => s === 'Present' || s === 'Late').length;
+  const presentCount = Object.values(attendanceMap).filter((s) => s === 'Present').length;
   const absentCount = Object.values(attendanceMap).filter((s) => s === 'Absent').length;
 
   return (
@@ -366,7 +366,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
                         <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl border bg-zinc-900/60 border-zinc-800">
                           <button
                             onClick={() => toggleStatus(student.studentId, 'Present')}
-                            className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                            className={`px-3.5 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
                               status === 'Present'
                                 ? 'bg-emerald-500 text-white shadow-md'
                                 : 'text-zinc-500 hover:text-zinc-300'
@@ -376,19 +376,8 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
                             Present
                           </button>
                           <button
-                            onClick={() => toggleStatus(student.studentId, 'Late')}
-                            className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
-                              status === 'Late'
-                                ? 'bg-amber-500 text-white shadow-md'
-                                : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
-                          >
-                            <AlertCircle size={12} />
-                            Late
-                          </button>
-                          <button
                             onClick={() => toggleStatus(student.studentId, 'Absent')}
-                            className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                            className={`px-3.5 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
                               status === 'Absent'
                                 ? 'bg-red-500 text-white shadow-md'
                                 : 'text-zinc-500 hover:text-zinc-300'
