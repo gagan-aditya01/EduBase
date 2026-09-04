@@ -1,11 +1,19 @@
 import { useState, useEffect } from 'react';
-import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, Save, Users, Sparkles, Filter } from 'lucide-react';
+import { Calendar, Clock, CheckCircle2, XCircle, AlertCircle, Save, Layers, Sparkles, Filter } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from './ui/interfaces-select';
 
 interface Student {
   _id: string;
   studentId: string;
   name: string;
   department: string;
+  section?: string;
 }
 
 interface User {
@@ -21,44 +29,45 @@ interface FacultyAttendancePageProps {
   addToast?: (type: 'success' | 'error' | 'info', message: string) => void;
 }
 
-const DEPARTMENTS = [
-  'Computer Science',
-  'Information Technology',
-  'Electronics & Communication',
-  'Mechanical Engineering',
-  'Civil Engineering',
-  'Electrical Engineering',
-];
+// Department to Section Map
+const DEPARTMENT_SECTIONS: Record<string, string[]> = {
+  'Computer Science': ['1CS', '2CS', '3CS', '4CS'],
+  'ADSE': ['1ADSE', '2ADSE', '3ADSE', '4ADSE'],
+  'Mathematics': ['1MATH', '2MATH', '3MATH', '4MATH'],
+  'Electrical Engineering': ['1EE', '2EE', '3EE', '4EE'],
+  'Mechanical Engineering': ['1ME', '2ME', '3ME', '4ME'],
+  'Robotics': ['1ROB', '2ROB', '3ROB', '4ROB'],
+};
+
+const ALL_SECTIONS = ['1CS', '2CS', '3CS', '4CS', '1ADSE', '2ADSE', '3ADSE', '4ADSE', '1MATH', '2MATH', '3MATH', '4MATH', '1EE', '2EE', '3EE', '4EE', '1ME', '2ME', '3ME', '4ME', '1ROB', '2ROB', '3ROB', '4ROB'];
 
 const TIME_SLOTS = [
-  { value: '10-11', label: '10:00 AM - 11:00 AM (Morning Period 1 - 1 Hr)', hours: 1, session: 'morning' },
-  { value: '11-12', label: '11:00 AM - 12:00 PM (Morning Period 2 - 1 Hr)', hours: 1, session: 'morning' },
-  { value: '10-12', label: '10:00 AM - 12:00 PM (Continuous Block - 2 Hrs)', hours: 2, session: 'morning-block' },
-  { value: '2-3', label: '02:00 PM - 03:00 PM (Afternoon Period 1 - 1 Hr)', hours: 1, session: 'afternoon' },
-  { value: '3-4', label: '03:00 PM - 04:00 PM (Afternoon Period 2 - 1 Hr)', hours: 1, session: 'afternoon' },
-  { value: '2-4', label: '02:00 PM - 04:00 PM (Continuous Block - 2 Hrs)', hours: 2, session: 'afternoon-block' },
+  { value: '10-11', label: '10:00 AM - 11:00 AM', detail: 'Morning Period 1 (1 Hr)', hours: 1 },
+  { value: '11-12', label: '11:00 AM - 12:00 PM', detail: 'Morning Period 2 (1 Hr)', hours: 1 },
+  { value: '10-12', label: '10:00 AM - 12:00 PM', detail: 'Continuous Morning Block (2 Hrs)', hours: 2 },
+  { value: '2-3', label: '02:00 PM - 03:00 PM', detail: 'Afternoon Period 1 (1 Hr)', hours: 1 },
+  { value: '3-4', label: '03:00 PM - 04:00 PM', detail: 'Afternoon Period 2 (1 Hr)', hours: 1 },
+  { value: '2-4', label: '02:00 PM - 04:00 PM', detail: 'Continuous Afternoon Block (2 Hrs)', hours: 2 },
 ];
 
 export function FacultyAttendancePage({ user, theme = 'dark', addToast }: FacultyAttendancePageProps) {
   const isDark = theme === 'dark';
 
-  const defaultDept = user.role === 'faculty' && user.assignedDepartment
-    ? user.assignedDepartment
-    : DEPARTMENTS[0];
+  const userDept = user.assignedDepartment || 'Computer Science';
+  const availableSections = user.role === 'faculty' && user.assignedDepartment
+    ? (DEPARTMENT_SECTIONS[user.assignedDepartment] || ['1CS', '2CS', '3CS', '4CS'])
+    : ALL_SECTIONS;
 
   const todayStr = new Date().toISOString().split('T')[0];
 
   const selectedDate = todayStr;
-  const [selectedDept, setSelectedDept] = useState(defaultDept);
+  const [selectedSection, setSelectedSection] = useState(availableSections[0] || '1CS');
   const [selectedSlot, setSelectedSlot] = useState('10-11');
   const [students, setStudents] = useState<Student[]>([]);
   const [attendanceMap, setAttendanceMap] = useState<Record<string, 'Present' | 'Absent' | 'Late'>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-
-  // Lock department selection for Faculty role
-  const isDeptLocked = user.role === 'faculty' && !!user.assignedDepartment;
 
   // 1. Fetch roster & existing attendance
   useEffect(() => {
@@ -67,8 +76,8 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         setLoading(true);
         setError('');
 
-        // Fetch Department Roster
-        const rosterRes = await fetch(`http://localhost:5050/api/v1/attendance/students/${encodeURIComponent(selectedDept)}`, {
+        // Fetch Roster by Department
+        const rosterRes = await fetch(`http://localhost:5050/api/v1/attendance/students/${encodeURIComponent(userDept)}`, {
           headers: { Authorization: `Bearer ${user.token}` },
         });
 
@@ -77,18 +86,27 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
           throw new Error(data.error || 'Failed to fetch department roster');
         }
 
-        const rosterData: Student[] = await rosterRes.json();
-        setStudents(rosterData);
+        const allDeptStudents: Student[] = await rosterRes.json();
+
+        // Filter by section if available
+        const sectionStudents = allDeptStudents.filter((s) => {
+          if (s.section) {
+            return s.section.toLowerCase() === selectedSection.toLowerCase();
+          }
+          return true;
+        });
+
+        setStudents(sectionStudents);
 
         // Default all to Present
         const initialMap: Record<string, 'Present' | 'Absent' | 'Late'> = {};
-        rosterData.forEach((s) => {
+        sectionStudents.forEach((s) => {
           initialMap[s.studentId] = 'Present';
         });
 
         // Check if attendance already exists for this Date + Dept + Slot
         const existingRes = await fetch(
-          `http://localhost:5050/api/v1/attendance/records?date=${selectedDate}&department=${encodeURIComponent(selectedDept)}&slot=${selectedSlot}`,
+          `http://localhost:5050/api/v1/attendance/records?date=${selectedDate}&department=${encodeURIComponent(userDept)}&slot=${selectedSlot}`,
           { headers: { Authorization: `Bearer ${user.token}` } }
         );
 
@@ -96,7 +114,9 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
           const recordsData = await existingRes.json();
           if (recordsData.length > 0 && recordsData[0].records) {
             recordsData[0].records.forEach((r: { studentId: string; status: 'Present' | 'Absent' | 'Late' }) => {
-              initialMap[r.studentId] = r.status;
+              if (initialMap[r.studentId] !== undefined) {
+                initialMap[r.studentId] = r.status;
+              }
             });
           }
         }
@@ -110,7 +130,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
     };
 
     fetchRosterAndExistingRecord();
-  }, [selectedDate, selectedDept, selectedSlot, user]);
+  }, [selectedDate, userDept, selectedSection, selectedSlot, user]);
 
   const toggleStatus = (studentId: string, status: 'Present' | 'Absent' | 'Late') => {
     setAttendanceMap((prev) => ({ ...prev, [studentId]: status }));
@@ -148,7 +168,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         },
         body: JSON.stringify({
           date: selectedDate,
-          department: selectedDept,
+          department: userDept,
           slot: selectedSlot,
           records: recordsPayload,
         }),
@@ -159,7 +179,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         throw new Error(data.error || 'Failed to submit attendance');
       }
 
-      if (addToast) addToast('success', `Attendance successfully recorded for ${selectedDept} (${selectedSlot})`);
+      if (addToast) addToast('success', `Attendance successfully recorded for Section ${selectedSection} (${selectedSlot})`);
     } catch (err: any) {
       setError(err.message);
       if (addToast) addToast('error', err.message);
@@ -185,77 +205,80 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
               <h1 className="text-2xl font-bold tracking-tight">Faculty Attendance Console</h1>
             </div>
             <p className="text-xs text-zinc-500 mt-1">
-              Mark period-wise daily attendance for department rosters with continuous block validation.
+              Mark period-wise daily attendance for department section rosters with continuous block validation.
             </p>
           </div>
-          {isDeptLocked && (
-            <div className="px-3.5 py-1.5 rounded-full border border-[#cc5a37]/30 bg-[#cc5a37]/10 text-[#cc5a37] text-xs font-bold flex items-center gap-2 shrink-0">
-              <Filter size={14} />
-              <span>Restricted Scope: {user.assignedDepartment}</span>
-            </div>
-          )}
+          <div className="px-3.5 py-1.5 rounded-full border border-[#cc5a37]/30 bg-[#cc5a37]/10 text-[#cc5a37] text-xs font-bold flex items-center gap-2 shrink-0">
+            <Filter size={14} />
+            <span>Assigned Department: {userDept}</span>
+          </div>
         </div>
       </div>
 
-      {/* Control Panel: Date, Department, Slot Selectors */}
+      {/* Control Panel: Date, Section, Slot Selectors matching Interface Design System */}
       <div className={`p-6 rounded-3xl border backdrop-blur-md grid grid-cols-1 md:grid-cols-3 gap-5 ${
-        isDark ? 'bg-zinc-950/50 border-zinc-850' : 'bg-white/60 border-[#e5e2d9]'
+        isDark ? 'bg-zinc-950/50 border-zinc-800' : 'bg-white/60 border-[#e5e2d9]'
       }`}>
-        {/* Today's Auto-Synced Date Badge */}
+        {/* Date Display */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
             <Calendar size={12} />
-            Today's Date (Auto-Synced)
+            Attendance Date
           </label>
-          <div className={`w-full px-3.5 py-2 rounded-2xl border text-xs font-bold flex items-center gap-2 ${
-            isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-[#e5e2d9] text-zinc-900'
+          <div className={`w-full h-10 px-3.5 rounded-2xl border text-xs font-bold flex items-center justify-between ${
+            isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
           }`}>
-            <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-            <span>{new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+            <span className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>{new Date().toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+            </span>
+            <span className="text-[10px] font-mono text-zinc-500 uppercase">Today</span>
           </div>
         </div>
 
-        {/* Department Selector */}
+        {/* Section Selector */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
-            <Users size={12} />
-            Department Roster
+            <Layers size={12} />
+            Select Section Roster
           </label>
-          <select
-            value={selectedDept}
-            disabled={isDeptLocked}
-            onChange={(e) => setSelectedDept(e.target.value)}
-            className={`w-full px-3.5 py-2 rounded-2xl border text-xs font-semibold focus:outline-none transition-colors disabled:opacity-75 ${
-              isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-100' : 'bg-white border-[#e5e2d9] text-zinc-900'
-            }`}
-          >
-            {DEPARTMENTS.map((dept) => (
-              <option key={dept} value={dept}>
-                {dept}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedSection} onValueChange={(val) => setSelectedSection(val)}>
+            <SelectTrigger className={`w-full h-10 rounded-2xl text-xs font-bold ${
+              isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+            }`}>
+              <SelectValue placeholder="Select Section" />
+            </SelectTrigger>
+            <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+              {availableSections.map((sec) => (
+                <SelectItem key={sec} value={sec} className="text-xs font-bold cursor-pointer">
+                  Section {sec} ({userDept})
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Slot / Continuous Block Selector */}
+        {/* Time Slot Selector */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
             <Clock size={12} />
-            Time Slot / Block
+            Select Time Slot / Block
           </label>
-          <select
-            value={selectedSlot}
-            onChange={(e) => setSelectedSlot(e.target.value)}
-            className={`w-full px-3.5 py-2 rounded-2xl border text-xs font-semibold focus:outline-none transition-colors ${
-              isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-100 focus:border-zinc-700' : 'bg-white border-[#e5e2d9] text-zinc-900'
-            }`}
-          >
-            {TIME_SLOTS.map((s) => (
-              <option key={s.value} value={s.value}>
-                {s.label}
-              </option>
-            ))}
-          </select>
+          <Select value={selectedSlot} onValueChange={(val) => setSelectedSlot(val)}>
+            <SelectTrigger className={`w-full h-10 rounded-2xl text-xs font-bold ${
+              isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+            }`}>
+              <SelectValue placeholder="Select Time Slot" />
+            </SelectTrigger>
+            <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+              {TIME_SLOTS.map((s) => (
+                <SelectItem key={s.value} value={s.value} className="text-xs font-medium cursor-pointer">
+                  <span className="font-bold">{s.label}</span>
+                  <span className="text-[10px] text-zinc-500 ml-2">({s.detail})</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -268,21 +291,23 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
 
       {/* Main Roster Workspace */}
       <div className={`p-6 rounded-3xl border backdrop-blur-xl space-y-6 ${
-        isDark ? 'bg-zinc-950/70 border-zinc-850' : 'bg-white/80 border-[#e5e2d9]'
+        isDark ? 'bg-zinc-950/70 border-zinc-800' : 'bg-white/80 border-[#e5e2d9]'
       }`}>
         {/* Roster Controls & Counters */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/10 dark:border-zinc-850">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800/20">
           <div className="flex items-center gap-3">
-            <span className="text-sm font-bold tracking-tight">Roster Status ({students.length} Students)</span>
+            <span className="text-sm font-bold tracking-tight">
+              Section {selectedSection} Roster ({students.length} Students)
+            </span>
             <div className="flex items-center gap-2 text-xs font-bold">
-              <span className="px-2.5 py-0.5 rounded-full bg-green-500/10 text-green-500 border border-green-500/20">
+              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                 Present: {presentCount}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-500 border border-red-500/20">
+              <span className="px-2.5 py-0.5 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">
                 Absent: {absentCount}
               </span>
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                Hours: {currentSlotInfo?.hours}h
+              <span className="px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                Session: {currentSlotInfo?.hours}h Block
               </span>
             </div>
           </div>
@@ -310,40 +335,40 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         {/* Students Table */}
         {loading ? (
           <div className="py-12 text-center text-xs text-zinc-500 font-mono">
-            Loading department roster...
+            Loading Section {selectedSection} roster...
           </div>
         ) : students.length === 0 ? (
           <div className="py-12 text-center text-xs text-zinc-500 font-mono">
-            No students found in {selectedDept}.
+            No students found in Section {selectedSection} for {userDept}.
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className={`border-b text-[10px] uppercase font-bold tracking-wider ${
-                  isDark ? 'border-zinc-850 text-zinc-500' : 'border-[#e5e2d9] text-zinc-600'
+                  isDark ? 'border-zinc-800 text-zinc-500' : 'border-[#e5e2d9] text-zinc-600'
                 }`}>
                   <th className="py-3 px-4">Student ID</th>
                   <th className="py-3 px-4">Name</th>
-                  <th className="py-3 px-4">Department</th>
+                  <th className="py-3 px-4">Section</th>
                   <th className="py-3 px-4 text-right">Attendance Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800/10 dark:divide-zinc-850/60">
+              <tbody className="divide-y divide-zinc-800/30">
                 {students.map((student) => {
                   const status = attendanceMap[student.studentId] || 'Present';
                   return (
-                    <tr key={student._id} className="hover:bg-zinc-500/5 transition-colors">
-                      <td className="py-3.5 px-4 font-mono font-bold">{student.studentId}</td>
+                    <tr key={student._id} className="hover:bg-zinc-800/20 transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">{student.studentId}</td>
                       <td className="py-3.5 px-4 font-semibold">{student.name}</td>
-                      <td className="py-3.5 px-4 text-zinc-500">{student.department}</td>
+                      <td className="py-3.5 px-4 font-mono text-zinc-400">{student.section || selectedSection}</td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl border bg-zinc-900/40 border-zinc-800">
+                        <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl border bg-zinc-900/60 border-zinc-800">
                           <button
                             onClick={() => toggleStatus(student.studentId, 'Present')}
                             className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
                               status === 'Present'
-                                ? 'bg-green-500 text-white shadow-md'
+                                ? 'bg-emerald-500 text-white shadow-md'
                                 : 'text-zinc-500 hover:text-zinc-300'
                             }`}
                           >
@@ -383,16 +408,16 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         )}
 
         {/* Submit Attendance Button */}
-        <div className="pt-4 border-t border-zinc-800/10 dark:border-zinc-850 flex justify-end">
+        <div className="pt-4 border-t border-zinc-800/20 flex justify-end">
           <button
             onClick={handleSaveAttendance}
             disabled={saving || loading || students.length === 0}
             className={`px-6 py-2.5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-50 transition-all ${
-              isDark ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500' : 'bg-[#cc5a37] hover:bg-[#e05a47]'
+              isDark ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-[#cc5a37] hover:bg-[#e05a47]'
             }`}
           >
             <Save size={14} />
-            <span>{saving ? 'Submitting...' : `Save Attendance (${selectedSlot})`}</span>
+            <span>{saving ? 'Submitting...' : `Save Attendance (${selectedSection} • ${selectedSlot})`}</span>
           </button>
         </div>
       </div>
