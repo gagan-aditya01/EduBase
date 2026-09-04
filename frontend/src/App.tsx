@@ -528,7 +528,7 @@ export default function App() {
                         />
                         <SidebarLink
                           link={{
-                            label: 'Mark Attendance',
+                            label: user.role === 'admin' ? 'Attendance' : 'Mark Attendance',
                             icon: <CheckSquare size={18} className={theme === 'dark' ? 'text-[#cc5a37]' : 'text-[#cc5a37]'} />,
                             onClick: () => setCurrentPage('faculty-attendance'),
                           }}
