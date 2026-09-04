@@ -392,6 +392,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
                   <th className="py-3 px-4">Student ID</th>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Section</th>
+                  <th className="py-3 px-4">Current Attendance</th>
                   {isAdmin ? (
                     <th className="py-3 px-4 text-right">Overall Cumulative Attendance</th>
                   ) : (
@@ -410,6 +411,20 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
                       <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">{student.studentId}</td>
                       <td className="py-3.5 px-4 font-semibold">{student.name}</td>
                       <td className="py-3.5 px-4 font-mono text-zinc-400">{student.section || selectedSection}</td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2.5 py-0.5 rounded-lg text-xs font-mono font-bold border ${
+                            isEligible
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                              : 'bg-red-500/10 text-red-400 border-red-500/30'
+                          }`}>
+                            {pct}%
+                          </span>
+                          <span className="text-[10px] text-zinc-500 font-mono">
+                            ({student.totalPresentHours || 0}/{student.totalConductedHours || 0} hrs)
+                          </span>
+                        </div>
+                      </td>
                       <td className="py-3.5 px-4 text-right">
                         {isAdmin ? (
                           <div className="inline-flex items-center gap-3">
