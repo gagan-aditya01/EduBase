@@ -29,7 +29,13 @@ const markAttendance = async (req, res) => {
       });
     }
 
-    // 2. Enforce Faculty Department Scoping
+    // 2. Admin & Guest Read-Only Guard & Faculty Department Scoping
+    if (req.user && req.user.role === 'admin') {
+      return res.status(403).json({
+        error: 'Access Denied: Administrators have read-only inspection access to student attendance and cannot mark or modify attendance records.',
+      });
+    }
+
     if (req.user && req.user.role === 'faculty') {
       const assignedDept = (req.user.assignedDepartment || '').trim().toLowerCase();
       const targetDept = department.trim().toLowerCase();

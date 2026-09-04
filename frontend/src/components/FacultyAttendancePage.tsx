@@ -39,8 +39,6 @@ const DEPARTMENT_SECTIONS: Record<string, string[]> = {
   'Robotics': ['1ROB', '2ROB', '3ROB', '4ROB'],
 };
 
-const ALL_SECTIONS = ['1CS', '2CS', '3CS', '4CS', '1ADSE', '2ADSE', '3ADSE', '4ADSE', '1MATH', '2MATH', '3MATH', '4MATH', '1EE', '2EE', '3EE', '4EE', '1ME', '2ME', '3ME', '4ME', '1ROB', '2ROB', '3ROB', '4ROB'];
-
 const TIME_SLOTS = [
   { value: '10-11', label: '10:00 AM - 11:00 AM', detail: 'Morning Period 1 (1 Hr)', hours: 1 },
   { value: '11-12', label: '11:00 AM - 12:00 PM', detail: 'Morning Period 2 (1 Hr)', hours: 1 },
@@ -52,11 +50,13 @@ const TIME_SLOTS = [
 
 export function FacultyAttendancePage({ user, theme = 'dark', addToast }: FacultyAttendancePageProps) {
   const isDark = theme === 'dark';
+  const isAdmin = user.role === 'admin';
 
-  const userDept = user.assignedDepartment || 'Computer Science';
+  const [selectedDept, setSelectedDept] = useState(user.assignedDepartment || 'Computer Science');
+
   const availableSections = user.role === 'faculty' && user.assignedDepartment
     ? (DEPARTMENT_SECTIONS[user.assignedDepartment] || ['1CS', '2CS', '3CS', '4CS'])
-    : ALL_SECTIONS;
+    : (DEPARTMENT_SECTIONS[selectedDept] || ['1CS', '2CS', '3CS', '4CS']);
 
   const todayStr = new Date().toISOString().split('T')[0];
 
@@ -69,6 +69,14 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  // Update selectedSection if department changes
+  useEffect(() => {
+    const newSecs = DEPARTMENT_SECTIONS[selectedDept] || ['1CS', '2CS', '3CS', '4CS'];
+    if (!newSecs.includes(selectedSection)) {
+      setSelectedSection(newSecs[0]);
+    }
+  }, [selectedDept]);
+
   // 1. Fetch roster & existing attendance
   useEffect(() => {
     const fetchRosterAndExistingRecord = async () => {
@@ -77,7 +85,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         setError('');
 
         // Fetch Roster by Department
-        const rosterRes = await fetch(`http://localhost:5050/api/v1/attendance/students/${encodeURIComponent(userDept)}`, {
+        const rosterRes = await fetch(`http://localhost:5050/api/v1/attendance/students/${encodeURIComponent(selectedDept)}`, {
           headers: { Authorization: `Bearer ${user.token}` },
         });
 
@@ -106,7 +114,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
 
         // Check if attendance already exists for this Date + Dept + Slot
         const existingRes = await fetch(
-          `http://localhost:5050/api/v1/attendance/records?date=${selectedDate}&department=${encodeURIComponent(userDept)}&slot=${selectedSlot}`,
+          `http://localhost:5050/api/v1/attendance/records?date=${selectedDate}&department=${encodeURIComponent(selectedDept)}&slot=${selectedSlot}`,
           { headers: { Authorization: `Bearer ${user.token}` } }
         );
 
@@ -130,7 +138,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
     };
 
     fetchRosterAndExistingRecord();
-  }, [selectedDate, userDept, selectedSection, selectedSlot, user]);
+  }, [selectedDate, selectedDept, selectedSection, selectedSlot, user]);
 
   const toggleStatus = (studentId: string, status: 'Present' | 'Absent') => {
     setAttendanceMap((prev) => ({ ...prev, [studentId]: status }));
@@ -168,7 +176,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
         },
         body: JSON.stringify({
           date: selectedDate,
-          department: userDept,
+          department: selectedDept,
           slot: selectedSlot,
           records: recordsPayload,
         }),
@@ -202,21 +210,34 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
           <div>
             <div className="flex items-center gap-2">
               <Sparkles size={20} className="text-[#cc5a37]" />
-              <h1 className="text-2xl font-bold tracking-tight">Faculty Attendance Console</h1>
+              <h1 className="text-2xl font-bold tracking-tight">
+                {isAdmin ? 'System Attendance Inspector (Read-Only)' : 'Faculty Attendance Console'}
+              </h1>
             </div>
             <p className="text-xs text-zinc-500 mt-1">
-              Mark period-wise daily attendance for department section rosters with continuous block validation.
+              {isAdmin
+                ? 'Inspect daily attendance records across all departments and sections. (Read-Only Mode)'
+                : 'Mark period-wise daily attendance for department section rosters with continuous block validation.'}
             </p>
           </div>
-          <div className="px-3.5 py-1.5 rounded-full border border-[#cc5a37]/30 bg-[#cc5a37]/10 text-[#cc5a37] text-xs font-bold flex items-center gap-2 shrink-0">
-            <Filter size={14} />
-            <span>Assigned Department: {userDept}</span>
-          </div>
+          {isAdmin ? (
+            <div className="px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center gap-2 shrink-0">
+              <Filter size={14} />
+              <span>Admin Read-Only Inspection</span>
+            </div>
+          ) : (
+            <div className="px-3.5 py-1.5 rounded-full border border-[#cc5a37]/30 bg-[#cc5a37]/10 text-[#cc5a37] text-xs font-bold flex items-center gap-2 shrink-0">
+              <Filter size={14} />
+              <span>Assigned Department: {selectedDept}</span>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Control Panel: Date, Section, Slot Selectors matching Interface Design System */}
-      <div className={`p-6 rounded-3xl border backdrop-blur-md grid grid-cols-1 md:grid-cols-3 gap-5 ${
+      {/* Control Panel: Date, Dept (if Admin), Section, Slot Selectors */}
+      <div className={`p-6 rounded-3xl border backdrop-blur-md grid grid-cols-1 ${
+        isAdmin ? 'md:grid-cols-4' : 'md:grid-cols-3'
+      } gap-5 ${
         isDark ? 'bg-zinc-950/50 border-zinc-800' : 'bg-white/60 border-[#e5e2d9]'
       }`}>
         {/* Date Display */}
@@ -236,6 +257,30 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
           </div>
         </div>
 
+        {/* Department Selector for Admin */}
+        {isAdmin && (
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
+              <Filter size={12} />
+              Select Department
+            </label>
+            <Select value={selectedDept} onValueChange={(val) => setSelectedDept(val)}>
+              <SelectTrigger className={`w-full h-10 rounded-2xl text-xs font-bold ${
+                isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'
+              }`}>
+                <SelectValue placeholder="Select Department" />
+              </SelectTrigger>
+              <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
+                {Object.keys(DEPARTMENT_SECTIONS).map((dept) => (
+                  <SelectItem key={dept} value={dept} className="text-xs font-bold cursor-pointer">
+                    {dept}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
         {/* Section Selector */}
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold uppercase tracking-wider text-zinc-500 flex items-center gap-1.5">
@@ -251,7 +296,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
             <SelectContent className={isDark ? 'bg-zinc-950 border-zinc-800 text-zinc-200' : 'bg-white border-[#e5e2d9] text-[#191919]'}>
               {availableSections.map((sec) => (
                 <SelectItem key={sec} value={sec} className="text-xs font-bold cursor-pointer">
-                  Section {sec} ({userDept})
+                  Section {sec} ({selectedDept})
                 </SelectItem>
               ))}
             </SelectContent>
@@ -312,24 +357,26 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => handleMarkAll('Present')}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-zinc-700 hover:text-zinc-900'
-              }`}
-            >
-              Mark All Present
-            </button>
-            <button
-              onClick={() => handleMarkAll('Absent')}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
-                isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-zinc-700 hover:text-zinc-900'
-              }`}
-            >
-              Mark All Absent
-            </button>
-          </div>
+          {!isAdmin && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => handleMarkAll('Present')}
+                className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                  isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-zinc-700 hover:text-zinc-900'
+                }`}
+              >
+                Mark All Present
+              </button>
+              <button
+                onClick={() => handleMarkAll('Absent')}
+                className={`px-3 py-1.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                  isDark ? 'bg-zinc-900 border-zinc-800 text-zinc-300 hover:text-white' : 'bg-white border-[#e5e2d9] text-zinc-700 hover:text-zinc-900'
+                }`}
+              >
+                Mark All Absent
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Students Table */}
@@ -339,7 +386,7 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
           </div>
         ) : students.length === 0 ? (
           <div className="py-12 text-center text-xs text-zinc-500 font-mono">
-            No students found in Section {selectedSection} for {userDept}.
+            No students found in Section {selectedSection} for {selectedDept}.
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -365,8 +412,11 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
                       <td className="py-3.5 px-4 text-right">
                         <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl border bg-zinc-900/60 border-zinc-800">
                           <button
-                            onClick={() => toggleStatus(student.studentId, 'Present')}
-                            className={`px-3.5 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                            onClick={() => !isAdmin && toggleStatus(student.studentId, 'Present')}
+                            disabled={isAdmin}
+                            className={`px-3.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                              isAdmin ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'
+                            } ${
                               status === 'Present'
                                 ? 'bg-emerald-500 text-white shadow-md'
                                 : 'text-zinc-500 hover:text-zinc-300'
@@ -376,8 +426,11 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
                             Present
                           </button>
                           <button
-                            onClick={() => toggleStatus(student.studentId, 'Absent')}
-                            className={`px-3.5 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                            onClick={() => !isAdmin && toggleStatus(student.studentId, 'Absent')}
+                            disabled={isAdmin}
+                            className={`px-3.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                              isAdmin ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'
+                            } ${
                               status === 'Absent'
                                 ? 'bg-red-500 text-white shadow-md'
                                 : 'text-zinc-500 hover:text-zinc-300'
@@ -396,18 +449,25 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
           </div>
         )}
 
-        {/* Submit Attendance Button */}
+        {/* Submit Attendance Button for Faculty / Read-Only Notice for Admin */}
         <div className="pt-4 border-t border-zinc-800/20 flex justify-end">
-          <button
-            onClick={handleSaveAttendance}
-            disabled={saving || loading || students.length === 0}
-            className={`px-6 py-2.5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-50 transition-all ${
-              isDark ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-[#cc5a37] hover:bg-[#e05a47]'
-            }`}
-          >
-            <Save size={14} />
-            <span>{saving ? 'Submitting...' : `Save Attendance (${selectedSection} • ${selectedSlot})`}</span>
-          </button>
+          {isAdmin ? (
+            <div className="px-5 py-2 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-2">
+              <Filter size={14} />
+              <span>Read-Only Inspection Mode (Administrators Cannot Edit Attendance)</span>
+            </div>
+          ) : (
+            <button
+              onClick={handleSaveAttendance}
+              disabled={saving || loading || students.length === 0}
+              className={`px-6 py-2.5 rounded-full text-xs font-bold text-white flex items-center gap-2 cursor-pointer shadow-lg disabled:opacity-50 transition-all ${
+                isDark ? 'bg-emerald-500 hover:bg-emerald-600' : 'bg-[#cc5a37] hover:bg-[#e05a47]'
+              }`}
+            >
+              <Save size={14} />
+              <span>{saving ? 'Submitting...' : `Save Attendance (${selectedSection} • ${selectedSlot})`}</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
