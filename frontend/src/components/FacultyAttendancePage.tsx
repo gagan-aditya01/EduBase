@@ -211,14 +211,9 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
             <div className="flex items-center gap-2">
               <Sparkles size={20} className="text-[#cc5a37]" />
               <h1 className="text-2xl font-bold tracking-tight">
-                {isAdmin ? 'System Attendance Inspector (Read-Only)' : 'Faculty Attendance Console'}
+                {isAdmin ? 'System Attendance Inspector' : 'Faculty Attendance Console'}
               </h1>
             </div>
-            <p className="text-xs text-zinc-500 mt-1">
-              {isAdmin
-                ? 'Inspect daily attendance records across all departments and sections. (Read-Only Mode)'
-                : 'Mark period-wise daily attendance for department section rosters with continuous block validation.'}
-            </p>
           </div>
           {isAdmin ? (
             <div className="px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-bold flex items-center gap-2 shrink-0">

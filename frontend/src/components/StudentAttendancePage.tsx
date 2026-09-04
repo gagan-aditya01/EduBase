@@ -95,9 +95,6 @@ export function StudentAttendancePage({ user, theme = 'dark' }: StudentAttendanc
               <Sparkles size={20} className="text-[#cc5a37]" />
               <h1 className="text-2xl font-bold tracking-tight">My Attendance Ledger</h1>
             </div>
-            <p className="text-xs text-zinc-500 mt-1">
-              Real-time breakdown of your conducted hours, present hours, and exam eligibility status.
-            </p>
           </div>
 
           <div className="flex items-center gap-2">
