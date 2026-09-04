@@ -18,7 +18,6 @@ import { AuditLogPage } from './components/AuditLogPage';
 import { UserManagePage } from './components/UserManagePage';
 import { Logos3 } from './components/ui/logos3';
 import { WelcomeSplash } from './components/ui/WelcomeSplash';
-import TeamSection from './components/ui/team';
 import { CsvImporterModal } from './components/CsvImporterModal';
 import { GradebookPage } from './components/GradebookPage';
 import { StudentHome } from './components/StudentHome';
@@ -852,9 +851,6 @@ export default function App() {
 
           {/* Tech Stack Marquee Section */}
           <Logos3 heading="Powered by Modern Tech Stack" theme={theme} />
-
-        {/* Team Section */}
-        <TeamSection theme={theme} />
         </main>
       </motion.div>
 
