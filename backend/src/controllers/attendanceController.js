@@ -116,7 +116,43 @@ const getDepartmentStudents = async (req, res) => {
       department: { $regex: new RegExp(`^${department.trim()}$`, 'i') },
     }).sort({ studentId: 1 });
 
-    res.json(students);
+    // Fetch all attendance documents to calculate overall percentage for each student
+    const attendanceDocs = await Attendance.find({
+      department: { $regex: new RegExp(`^${department.trim()}$`, 'i') },
+    });
+
+    const studentStats = {};
+    attendanceDocs.forEach((doc) => {
+      const hours = doc.slotHours || 1;
+      (doc.records || []).forEach((r) => {
+        const sid = r.studentId.trim().toLowerCase();
+        if (!studentStats[sid]) {
+          studentStats[sid] = { totalHours: 0, presentHours: 0 };
+        }
+        studentStats[sid].totalHours += hours;
+        if (r.status === 'Present' || r.status === 'Late') {
+          studentStats[sid].presentHours += hours;
+        }
+      });
+    });
+
+    const studentsWithAttendance = students.map((s) => {
+      const sObj = s.toObject();
+      const stats = studentStats[s.studentId.trim().toLowerCase()];
+      if (stats && stats.totalHours > 0) {
+        sObj.overallPercentage = Math.round((stats.presentHours / stats.totalHours) * 100);
+        sObj.totalConductedHours = stats.totalHours;
+        sObj.totalPresentHours = stats.presentHours;
+      } else {
+        sObj.overallPercentage = 100;
+        sObj.totalConductedHours = 0;
+        sObj.totalPresentHours = 0;
+      }
+      sObj.isExamEligible = sObj.overallPercentage >= 75;
+      return sObj;
+    });
+
+    res.json(studentsWithAttendance);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -14,6 +14,10 @@ interface Student {
   name: string;
   department: string;
   section?: string;
+  overallPercentage?: number;
+  isExamEligible?: boolean;
+  totalConductedHours?: number;
+  totalPresentHours?: number;
 }
 
 interface User {
@@ -393,48 +397,64 @@ export function FacultyAttendancePage({ user, theme = 'dark', addToast }: Facult
                   <th className="py-3 px-4">Student ID</th>
                   <th className="py-3 px-4">Name</th>
                   <th className="py-3 px-4">Section</th>
-                  <th className="py-3 px-4 text-right">Attendance Status</th>
+                  {isAdmin ? (
+                    <th className="py-3 px-4 text-right">Overall Cumulative Attendance</th>
+                  ) : (
+                    <th className="py-3 px-4 text-right">Attendance Status</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-800/30">
                 {students.map((student) => {
                   const status = attendanceMap[student.studentId] || 'Present';
+                  const pct = student.overallPercentage !== undefined ? student.overallPercentage : 100;
+                  const isEligible = student.isExamEligible !== undefined ? student.isExamEligible : pct >= 75;
+
                   return (
                     <tr key={student._id} className="hover:bg-zinc-800/20 transition-colors">
                       <td className="py-3.5 px-4 font-mono font-bold text-emerald-400">{student.studentId}</td>
                       <td className="py-3.5 px-4 font-semibold">{student.name}</td>
                       <td className="py-3.5 px-4 font-mono text-zinc-400">{student.section || selectedSection}</td>
                       <td className="py-3.5 px-4 text-right">
-                        <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl border bg-zinc-900/60 border-zinc-800">
-                          <button
-                            onClick={() => !isAdmin && toggleStatus(student.studentId, 'Present')}
-                            disabled={isAdmin}
-                            className={`px-3.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                              isAdmin ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'
-                            } ${
-                              status === 'Present'
-                                ? 'bg-emerald-500 text-white shadow-md'
-                                : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
-                          >
-                            <CheckCircle2 size={12} />
-                            Present
-                          </button>
-                          <button
-                            onClick={() => !isAdmin && toggleStatus(student.studentId, 'Absent')}
-                            disabled={isAdmin}
-                            className={`px-3.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
-                              isAdmin ? 'cursor-not-allowed opacity-90' : 'cursor-pointer'
-                            } ${
-                              status === 'Absent'
-                                ? 'bg-red-500 text-white shadow-md'
-                                : 'text-zinc-500 hover:text-zinc-300'
-                            }`}
-                          >
-                            <XCircle size={12} />
-                            Absent
-                          </button>
-                        </div>
+                        {isAdmin ? (
+                          <div className="inline-flex items-center gap-3">
+                            <span className="text-xs font-mono text-zinc-400">
+                              {student.totalPresentHours || 0}/{student.totalConductedHours || 0} Hrs
+                            </span>
+                            <span className={`px-3 py-1 rounded-xl text-xs font-mono font-black border ${
+                              isEligible
+                                ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30'
+                                : 'bg-red-500/10 text-red-400 border-red-500/30'
+                            }`}>
+                              {pct}% {isEligible ? '(Eligible)' : '(Shortage)'}
+                            </span>
+                          </div>
+                        ) : (
+                          <div className="inline-flex items-center gap-1.5 p-1 rounded-2xl border bg-zinc-900/60 border-zinc-800">
+                            <button
+                              onClick={() => toggleStatus(student.studentId, 'Present')}
+                              className={`px-3.5 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                                status === 'Present'
+                                  ? 'bg-emerald-500 text-white shadow-md'
+                                  : 'text-zinc-500 hover:text-zinc-300'
+                              }`}
+                            >
+                              <CheckCircle2 size={12} />
+                              Present
+                            </button>
+                            <button
+                              onClick={() => toggleStatus(student.studentId, 'Absent')}
+                              className={`px-3.5 py-1 rounded-xl text-xs font-bold cursor-pointer transition-all flex items-center gap-1 ${
+                                status === 'Absent'
+                                  ? 'bg-red-500 text-white shadow-md'
+                                  : 'text-zinc-500 hover:text-zinc-300'
+                              }`}
+                            >
+                              <XCircle size={12} />
+                              Absent
+                            </button>
+                          </div>
+                        )}
                       </td>
                     </tr>
                   );
