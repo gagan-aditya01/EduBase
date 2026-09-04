@@ -1,6 +1,6 @@
 # 🎓 EduBase ERP - Enterprise Academic Management Portal
 
-EduBase is a full-stack Enterprise Resource Planning (ERP) platform built for universities and higher education institutions. It streamlines student lifecycle management, faculty administration, section gradebooks, and academic analytics within a secure, multi-tenant environment.
+EduBase is a full-stack Enterprise Resource Planning (ERP) platform built for universities and higher education institutions. It streamlines student lifecycle management, faculty administration, section gradebooks, continuous attendance tracking, and academic analytics within a secure, multi-tenant environment.
 
 Built with **React 18, TypeScript, Node.js, Express, MongoDB Atlas, Tailwind CSS, Recharts, Framer Motion, and Docker**.
 
@@ -29,15 +29,18 @@ Built with **React 18, TypeScript, Node.js, Express, MongoDB Atlas, Tailwind CSS
 - **Student Authentication**: Secure sign-in using Registration ID and reverse-ID security credentials.
 - **Active Academic Dashboard**: Displays profile metadata, cumulative CGPA status, and currently enrolled curriculum courses.
 - **Academic Performance Sheets**: Displays year-wise mark sheets (1st Year, 2nd Year, 3rd Year) with calculated Year SGPA for completed academic years.
-- **Official Certified Transcripts**: One-click generation of printable university academic transcripts with PDF export capabilities.
+- **Official Certified Transcripts**: One-click generation of printable university academic transcripts with digital signature verification by Controller of Examinations.
+- **Personal Attendance Tracking**: Student self-service console displaying total conducted hours, present hours, cumulative attendance percentage badge, and exam eligibility indicator ($\ge 75\%$).
 
 ### 👨‍🏫 Faculty Academic Console
-- **Department-Scoped Workspace**: Department isolation restricting faculty members strictly to students and analytics within their assigned department.
+- **Department-Scoped Workspace**: Department isolation restricting faculty members strictly to assigned sections and department rosters.
 - **Gradebook Evaluation Engine**: Section-based gradebook supporting weighted evaluation (*Assignment 1, Midterm, Assignment 2, End-Semester*) with automatic letter grade resolution (`O`, `A+`, `A`, `B+`, `B`, `C`, `P`, `F`).
+- **Section Attendance Marking**: Session-based attendance marking featuring `Present` and `Absent` toggles, `Mark All` shortcuts, continuous 1-hour and 2-hour block period selection, and live display of student current attendance percentages.
 - **Live Class Performance Analytics**: Real-time evaluation summary featuring class average scores, pass rate percentages, and dynamic grade distribution badges.
 
 ### 🛡️ Administrator ERP Governance
-- **Faculty Directory Management**: Complete faculty staff management console supporting account creation, department assignment, and automated 4-digit numeric ID generation.
+- **System Attendance Inspector**: Department-wide overall attendance monitoring console displaying cumulative attendance statistics (`totalPresentHours / totalConductedHours`), percentage badges, and exam eligibility status.
+- **Faculty Directory Management**: Complete faculty staff management console supporting account creation, department assignment, and automated numeric ID generation.
 - **System Audit Trail**: Real-time audit logging tracking user sign-ins, profile edits, mark submissions, and security events.
 - **Soft Delete & Data Recovery**: Non-destructive record protection with an Admin Trash Console for restoring or permanently purging records.
 - **Batch CSV Data Import**: Drag-and-drop CSV importer with automated data validation and error handling.
@@ -113,56 +116,6 @@ npm test
 
 ---
 
-## 👥 Core Engineering Team
-
-<div align="center">
-
-<table>
-  <tr>
-    <td align="center" width="50%">
-      <a href="https://github.com/YashwanthReddyPuli">
-        <img src="https://raw.githubusercontent.com/gagan-aditya01/EduBase/main/Teams/member1.jpg" width="140px" style="border-radius: 50%; object-fit: cover; aspect-ratio: 1/1;" alt="Yashwanth Profile Photo"/>
-        <br />
-        <br />
-        <sub><b>Yashwanth</b></sub>
-      </a>
-      <br />
-      <br />
-      <code><b>Lead Architect</b></code>
-      <br />
-      <br />
-      <i>Full-Stack Architecture, Express 5 REST APIs, MongoDB Relational Models & Dual JWT Security</i>
-      <br />
-      <br />
-      <a href="https://github.com/YashwanthReddyPuli">
-        <img src="https://img.shields.io/badge/GitHub-@YashwanthReddyPuli-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Profile"/>
-      </a>
-    </td>
-    <td align="center" width="50%">
-      <a href="https://github.com/gagan-aditya01">
-        <img src="https://raw.githubusercontent.com/gagan-aditya01/EduBase/main/Teams/member2.jpg" width="140px" style="border-radius: 50%; object-fit: cover; aspect-ratio: 1/1;" alt="Gagan Aditya Profile Photo"/>
-        <br />
-        <br />
-        <sub><b>Gagan Aditya</b></sub>
-      </a>
-      <br />
-      <br />
-      <code><b>UI/UX Engineer</b></code>
-      <br />
-      <br />
-      <i>Frontend Design System, Liquid Metal WebGL Shaders, Framer Motion Physics & UI Architecture</i>
-      <br />
-      <br />
-      <a href="https://github.com/gagan-aditya01">
-        <img src="https://img.shields.io/badge/GitHub-@gagan--aditya01-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Profile"/>
-      </a>
-    </td>
-  </tr>
-</table>
-
-</div>
-
----
-
 ## 📄 License
 This project is open source and available under the [MIT License](LICENSE).
+ available under the [MIT License](LICENSE).
